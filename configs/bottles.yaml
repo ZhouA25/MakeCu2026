@@ -1,0 +1,19 @@
+# Catalog of bottles we test with. Measure with calipers and fill in.
+# cap_type: push_and_turn (child-proof) | twist | snap | flip_top
+bottles:
+  - name: standard_amber_40dr
+    body_diameter_mm: 40
+    cap_diameter_mm: 43
+    height_mm: 75
+    cap_type: push_and_turn
+    press_depth_mm: 3
+    twist_deg: 270          # total CCW rotation to free the cap
+    regrips: 2              # how many grip-twist-release cycles
+  - name: otc_vitamin
+    body_diameter_mm: 55
+    cap_diameter_mm: 50
+    height_mm: 110
+    cap_type: twist
+    press_depth_mm: 0
+    twist_deg: 360
+    regrips: 3

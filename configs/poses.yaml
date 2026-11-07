@@ -1,0 +1,23 @@
+# Joint-space poses (degrees), taught by hand with:  python -m pillbot.control.teach --all
+# Gripper is NOT stored in poses; it's commanded separately.
+#
+# Start zone: a marked ~20x20 cm square on the table. Teach hover + grasp at its 4 corners;
+# bottle positions inside the zone are bilinearly interpolated between them (no IK needed).
+#   zone_*_00 = corner 1 (s=0,t=0)   zone_*_10 = corner 2 (s=1,t=0)
+#   zone_*_11 = corner 3 (s=1,t=1)   zone_*_01 = corner 4 (s=0,t=1)
+poses:
+  home:          {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_hover_00: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_hover_10: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_hover_11: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_hover_01: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_grasp_00: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_grasp_10: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_grasp_11: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  zone_grasp_01: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  clip_above:    {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # holding bottle, above the funnel
+  clip_insert:   {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # bottle seated in clip
+  cap_above:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws open, above cap
+  cap_grip:      {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws around cap
+  cap_press:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # a few mm BELOW cap_grip (makes the push force)
+  cap_drop:      {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # over the cap tray

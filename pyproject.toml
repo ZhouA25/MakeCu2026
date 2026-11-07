@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pillbot"
+version = "0.1.0"
+description = "Assisted-grip pill bottle opener on a LeRobot SO-101 arm"
+requires-python = ">=3.12"
+dependencies = [
+  "lerobot[core-scripts,dynamixel]>=0.7,<0.8",   # core-scripts = record/teleop/live view
+  "pyserial",
+  "opencv-python",
+  "numpy",
+  "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+train = ["lerobot[training]>=0.7,<0.8"]   # only on the GPU machine
+vision = ["ultralytics"]   # optional YOLO for bottle/cap detection
+
+[tool.setuptools.packages.find]
+where = ["src"]

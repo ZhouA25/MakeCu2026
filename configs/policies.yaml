@@ -1,0 +1,13 @@
+# Learned policies (trained with scripts/train.sh). Used by `python -m pillbot.run --pick policy`.
+hf_user: your-hf-username
+policies:
+  pick_place:
+    task: "Pick up the pill bottle and place it in the clip"
+    dataset: pillbot_pick_place
+    path: outputs/train/act_pick_place/checkpoints/last/pretrained_model
+    duration_s: 25
+  open_cap:
+    task: "Push down and twist the cap off the pill bottle"
+    dataset: pillbot_open_cap
+    path: outputs/train/act_open_cap/checkpoints/last/pretrained_model
+    duration_s: 40

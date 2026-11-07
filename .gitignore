@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+.DS_Store
+data/*
+!data/.gitkeep
+outputs/*
+!outputs/.gitkeep
+wandb/
+*.ckpt
+*.safetensors
+configs/*.local.yaml
+.env

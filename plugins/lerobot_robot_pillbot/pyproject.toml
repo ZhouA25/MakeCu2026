@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# Name MUST start with "lerobot_robot_" so LeRobot's CLIs auto-discover it
+name = "lerobot_robot_pillbot"
+version = "0.1.0"
+description = "All-XL330 Koch-style follower for PillBot (LeRobot plugin)"
+requires-python = ">=3.12"
+dependencies = ["lerobot[dynamixel]>=0.7,<0.8"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["lerobot_robot_pillbot*"]
