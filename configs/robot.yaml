@@ -41,7 +41,7 @@ cameras:
   wrist:    # ESP32-CAM on the hand, looking down the jaws (firmware/esp32_cam). Wireless: only
             # 5 V + GND go through the wrist. Needs the pillbot plugin installed.
     type: pillbot_ipcam
-    url: http://192.168.1.50:81/stream   # printed on the ESP32-CAM serial monitor at boot
+    url: http://pillbot-cam.local:81/stream   # or the IP printed at boot, e.g. http://192.168.1.50:81/stream
     width: 640                           # must match FRAME in the sketch (VGA = 640x480)
     height: 480
     fps: 15
@@ -49,6 +49,11 @@ cameras:
 
 # Camera used by scripted perception (bottle detection, zone mapping, marker tracking)
 perception_camera: phone
+
+perception:                # bottle color detection (tune: detect_bottle --tune)
+  hsv_low: [5, 80, 60]
+  hsv_high: [25, 255, 255]
+  min_area: 1500
 
 # ESP32 "PillBot Hub" (firmware/esp32_hub): 2x ultrasonic, START/STOP/MODE buttons, 4 servos, relay
 hub:

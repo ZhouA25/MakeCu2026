@@ -2,6 +2,7 @@
 // so LeRobot / OpenCV always get the same frame shape.
 //
 //   http://<ip>:81/stream     MJPEG stream  (use this URL in configs/robot.yaml -> cameras.wrist.url)
+//                             ONE viewer at a time: close browser tabs before PillBot/LeRobot connects
 //   http://<ip>/capture       single JPEG
 //   http://<ip>/led?v=0..255  flash LED brightness (lights the cap in the jaws; keep it low)
 //
@@ -12,12 +13,15 @@
 #include "esp_camera.h"
 #include "esp_http_server.h"
 #include <WiFi.h>
+#include <ESPmDNS.h>
+#include "secrets.h"   // WIFI_SSID_VALUE / WIFI_PASS_VALUE — copy secrets.example.h to secrets.h
 
 // ---- edit these ----
-const char* WIFI_SSID = "YOUR_WIFI";
-const char* WIFI_PASS = "YOUR_PASSWORD";
-const framesize_t FRAME = FRAMESIZE_VGA;   // 640x480 — must match width/height in robot.yaml
-const int JPEG_QUALITY = 12;               // 10 (better) .. 20 (faster)
+const char* WIFI_SSID = WIFI_SSID_VALUE;   // set in secrets.h
+const char* WIFI_PASS = WIFI_PASS_VALUE;
+const framesize_t FRAME = FRAMESIZE_QVGA;   // 320x240 — must match width/height in robot.yaml
+const int JPEG_QUALITY = 15;               // 10 (better) .. 20 (faster)
+const char* HOSTNAME = "pillbot-cam";      // -> http://pillbot-cam.local:81/stream (stable even if the IP changes)
 // --------------------
 
 // AI-Thinker pin map
@@ -80,18 +84,23 @@ static esp_err_t led_handler(httpd_req_t* req) {
   return httpd_resp_sendstr(req, "ok");
 }
 
-void startServers() {
+bool startServers() {
   httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
   httpd_uri_t cap = {"/capture", HTTP_GET, capture_handler, NULL};
   httpd_uri_t led = {"/led", HTTP_GET, led_handler, NULL};
-  if (httpd_start(&ctrl_httpd, &cfg) == ESP_OK) {
+  esp_err_t e1 = httpd_start(&ctrl_httpd, &cfg);
+  if (e1 == ESP_OK) {
     httpd_register_uri_handler(ctrl_httpd, &cap);
     httpd_register_uri_handler(ctrl_httpd, &led);
   }
   cfg.server_port = 81;
   cfg.ctrl_port += 1;
   httpd_uri_t stream = {"/stream", HTTP_GET, stream_handler, NULL};
-  if (httpd_start(&stream_httpd, &cfg) == ESP_OK) httpd_register_uri_handler(stream_httpd, &stream);
+  esp_err_t e2 = httpd_start(&stream_httpd, &cfg);
+  if (e2 == ESP_OK) httpd_register_uri_handler(stream_httpd, &stream);
+  Serial.printf("web server :80 %s, stream server :81 %s\n",
+                e1 == ESP_OK ? "OK" : esp_err_to_name(e1), e2 == ESP_OK ? "OK" : esp_err_to_name(e2));
+  return e1 == ESP_OK && e2 == ESP_OK;
 }
 
 void setup() {
@@ -103,18 +112,34 @@ void setup() {
   c.pin_xclk = XCLK_GPIO_NUM; c.pin_pclk = PCLK_GPIO_NUM; c.pin_vsync = VSYNC_GPIO_NUM;
   c.pin_href = HREF_GPIO_NUM; c.pin_sccb_sda = SIOD_GPIO_NUM; c.pin_sccb_scl = SIOC_GPIO_NUM;
   c.pin_pwdn = PWDN_GPIO_NUM; c.pin_reset = RESET_GPIO_NUM;
-  c.xclk_freq_hz = 20000000;
   c.pixel_format = PIXFORMAT_JPEG;
   c.frame_size = FRAME;
   c.jpeg_quality = JPEG_QUALITY;
-  c.fb_count = psramFound() ? 2 : 1;
-  c.fb_location = psramFound() ? CAMERA_FB_IN_PSRAM : CAMERA_FB_IN_DRAM;
+  bool psram = psramFound();
+  c.fb_count = psram ? 2 : 1;
+  c.fb_location = psram ? CAMERA_FB_IN_PSRAM : CAMERA_FB_IN_DRAM;
   c.grab_mode = CAMERA_GRAB_LATEST;           // always the newest frame = lowest latency
-  if (esp_camera_init(&c) != ESP_OK) {
-    Serial.println("Camera init failed — check the board selection / ribbon cable");
-    delay(3000);
+  Serial.printf("\nPSRAM: %s\n", psram ? "yes" : "NO (board menu: enable PSRAM / pick AI Thinker ESP32-CAM)");
+
+  // Try 20 MHz, then 10 MHz (some clone boards / sensors only work at 10 MHz)
+  const int clocks[] = {20000000, 10000000};
+  esp_err_t err = ESP_FAIL;
+  for (int clk : clocks) {
+    c.xclk_freq_hz = clk;
+    err = esp_camera_init(&c);
+    Serial.printf("camera init @ %d MHz: %s (0x%x)\n", clk / 1000000, esp_err_to_name(err), err);
+    if (err == ESP_OK) break;
+    esp_camera_deinit();
+    delay(200);
+  }
+  if (err != ESP_OK) {
+    Serial.println("Camera init failed. 0x105/0x20004 = sensor not found: reseat the ribbon "
+                   "(contacts facing the board, latch closed). 0x101 = no memory: enable PSRAM.");
+    delay(5000);
     ESP.restart();
   }
+  sensor_t* sens = esp_camera_sensor_get();
+  Serial.printf("sensor PID 0x%x (0x26 = OV2640, 0x3660 = OV3660, 0x5640 = OV5640)\n", sens->id.PID);
   pinMode(LED_GPIO_NUM, OUTPUT);
   analogWrite(LED_GPIO_NUM, 0);
 
@@ -123,8 +148,30 @@ void setup() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   Serial.print("Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) { delay(300); Serial.print("."); }
-  Serial.printf("\nREADY pillbot-cam  stream: http://%s:81/stream\n", WiFi.localIP().toString().c_str());
-  startServers();
+  Serial.println();
+  if (MDNS.begin(HOSTNAME)) {
+    MDNS.addService("http", "tcp", 80);
+    Serial.printf("mDNS: http://%s.local:81/stream\n", HOSTNAME);
+  }
+  if (!startServers()) {
+    Serial.println("Server start failed — restarting");
+    delay(3000);
+    ESP.restart();
+  }
+  Serial.printf("READY pillbot-cam  stream: http://%s:81/stream   photo: http://%s/capture\n",
+                WiFi.localIP().toString().c_str(), WiFi.localIP().toString().c_str());
 }
 
-void loop() { delay(1000); }
+void loop() {
+  static uint32_t last = 0;
+  if (millis() - last > 10000) {               // heartbeat: shows it's alive + current IP / signal
+    last = millis();
+    Serial.printf("alive  ip %s  rssi %d dBm\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
+  }
+  if (WiFi.status() != WL_CONNECTED) {         // reconnect if Wi-Fi drops
+    Serial.println("Wi-Fi lost, reconnecting");
+    WiFi.reconnect();
+    delay(2000);
+  }
+  delay(100);
+}

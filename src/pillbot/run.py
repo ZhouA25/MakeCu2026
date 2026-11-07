@@ -29,13 +29,13 @@ log = logging.getLogger("pillbot")
 
 def find_bottle(cfg) -> tuple[float, float] | None:
     from pillbot.perception.cameras import grab, perception_camera
-    from pillbot.perception.detect_bottle import locate_in_zone
+    from pillbot.perception.detect_bottle import locate_in_zone, thresholds
     from pillbot.perception.zone import ZoneMapper
     mapper = ZoneMapper.load()
     cap = perception_camera(cfg)
     try:
         for _ in range(15):                       # a few frames for a stable detection
-            st = locate_in_zone(grab(cap), mapper)
+            st = locate_in_zone(grab(cap), mapper, thresholds(cfg))
             if st:
                 return st
     finally:

@@ -199,6 +199,8 @@ tests/                simulation tests
 | `sensx_python` folder empty | `git submodule update --init` |
 | Motors not found | Wrong port, motor power off, or IDs/baud not set — rerun `scripts/setup_motors.sh` |
 | `No data from hub` | ESP32 not flashed / wrong port / `hub.enabled` — or set `hub.enabled: false` to run arm-only |
+| Wrist camera times out (`Stream timeout`) | The ESP32-CAM streams to **one viewer at a time** — close any browser tab on `:81/stream` (use `/capture` to peek instead), or press RST on the camera |
+| Browser can see the camera but Python can't | macOS: allow Terminal under System Settings → Privacy & Security → Local Network |
 | Wrist camera fails in LeRobot | Plugin not installed (`pillbot_ipcam` type), wrong URL, or stream size ≠ `width`/`height` — the error says which |
 | Camera won't open | Index changed (phone reconnects reorder them) — rerun `find_devices.sh`; grant camera permission to Terminal on macOS |
 | Arm sags / misses | Bring the zone & clip closer to the base, add an elbow rubber band, re-teach poses |

@@ -14,3 +14,6 @@ wandb/
 *.safetensors
 configs/*.local.yaml
 .env
+
+# Wi-Fi credentials for the ESP32-CAM
+firmware/esp32_cam/secrets.h
