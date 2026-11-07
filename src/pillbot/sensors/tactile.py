@@ -6,17 +6,49 @@ Backends (configs/robot.yaml -> tactile.backend):
   serial  any device streaming one CSV line per frame (our FSR firmware, or a TactX bridge)
   sensx   TouchTronix SensX25 (SNX0505-SNS-01) via their sensx Python API
   sensx2  two SensX25s, one per jaw
+  net     frames from `python -m pillbot.sensors.tactile_server`, so several programs can share
+          one sensor (only one program can open a serial port)
 
 All backends return a 2D numpy array (rows x cols) of pressure readings.
+How the sensor works, the Pi setup and a tuning guide: docs/tactile.md
+
+Quickest way in from any script:
+
+    from pillbot.sensors.tactile import open_tactile
+    with open_tactile() as tac:              # configs/robot.yaml -> tactile:, tared on open
+        s = tac.snapshot()                   # one consistent reading
+        print(s.contact, s.pressure, s.centroid)
 """
+import json
 import logging
+import socket
 import threading
 import time
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
+from dataclasses import dataclass
 
 import numpy as np
 
 log = logging.getLogger(__name__)
+
+
+@dataclass
+class TactileSnapshot:
+    """Everything the gripper logic needs, computed from ONE frame so the values agree."""
+    frame: np.ndarray | None                 # rows x cols, raw (untared); None = no fresh data
+    pressure: float                          # sum of all taxels minus the tare baseline
+    contact: bool                            # pressure >= contact_threshold
+    peak: float                              # hottest single taxel (raw)
+    centroid: tuple[float, float] | None     # pressure-weighted (row, col); moves when the cap slides
+
+
+def _centroid(f: np.ndarray) -> tuple[float, float] | None:
+    total = f.sum()
+    if total <= 0:
+        return None
+    rows, cols = np.indices(f.shape)
+    return float((rows * f).sum() / total), float((cols * f).sum() / total)
 
 
 class TactileSensor(ABC):
@@ -58,10 +90,15 @@ class TactileSensor(ABC):
     def centroid(self) -> tuple[float, float] | None:
         """Pressure-weighted (row, col) contact center — shifts when the cap slides in the jaws."""
         f = self.read()
-        if f is None or f.sum() <= 0:
-            return None
-        rows, cols = np.indices(f.shape)
-        return float((rows * f).sum() / f.sum()), float((cols * f).sum() / f.sum())
+        return None if f is None else _centroid(f)
+
+    def snapshot(self) -> TactileSnapshot:
+        """pressure / contact / centroid from a single frame (separate calls may each see a new one)."""
+        f = self.read()
+        if f is None:
+            return TactileSnapshot(None, 0.0, False, 0.0, None)
+        p = max(0.0, float(f.sum()) - self._baseline)
+        return TactileSnapshot(f, p, p >= self.contact_threshold, float(f.max()), _centroid(f))
 
 
 class NullTactile(TactileSensor):
@@ -131,36 +168,116 @@ class SerialTactile(TactileSensor):
             self._ser.close()
 
 
-class SensXTactile(TactileSensor):
-    """TouchTronix SensX 25 (SNX0505-SNS-01, 5x5 FSR, 12-bit values 0..4095).
+class _StaleGuard:
+    """Turns a frame older than `max_age_s` into None, so an unplugged sensor reads as
+    "no data" instead of repeating its last frame forever (e.g. "still gripping")."""
 
-    Install their driver:  git clone https://github.com/TouchTronix-Robotics/sensx_python
-                           pip install -e sensx_python
+    def __init__(self, name: str, max_age_s: float):
+        self.name, self.max_age_s, self._warned = name, max_age_s, False
+
+    def check(self, frame, age_s: float):
+        if frame is not None and age_s <= self.max_age_s:
+            self._warned = False
+            return frame
+        if frame is not None and not self._warned:
+            log.error("tactile %s: no new frame for %.2f s — cable/adapter unplugged?", self.name, age_s)
+            self._warned = True
+        return None
+
+
+class SensXTactile(TactileSensor):
+    """TouchTronix SensX 25 (SNX0505-SNS-01, 5x5) on a USB-TTL adapter, ~290 frames/s.
+
+    Driver: the sensx_python submodule (pip install -e sensx_python).
+    Values are kPa per taxel (0..534) in the sensor's factory "pressure" mode, 0 when untouched.
     The 5x5 sensor runs at 921600 baud (the library default is for the 16x12 model).
     """
 
-    def __init__(self, port: str, baud: int = 921600, shape=(5, 5), **kw):
+    def __init__(self, port: str, baud: int = 921600, shape=(5, 5), max_age_s: float = 0.25, **kw):
         super().__init__(**kw)
         self.port, self.baud, self.shape = port, baud, tuple(shape)
+        self.frames = 0                     # frames received since connect (rate = frames / elapsed)
+        self._guard = _StaleGuard(port, max_age_s)
         self._dev = None
 
     def connect(self):
         from sensx import SensX
-        self._dev = SensX(port=self.port, baud_rate=self.baud, rows=self.shape[0], cols=self.shape[1])
+        from pillbot.sensors.sensx_probe import serial_baud
+        # Opening the port also sends the start command; the sensor then streams on its own.
+        self._dev = SensX(port=self.port, baud_rate=serial_baud(self.port, self.baud),
+                          rows=self.shape[0], cols=self.shape[1])
+        self._dev.on_frame = self._count
         self._dev.start()
         t0 = time.time()
-        while self._dev.latest_frame is None and time.time() - t0 < 3:
+        while self._dev.latest_timestamp == 0 and time.time() - t0 < 3:   # frame starts as zeros, not None
             time.sleep(0.05)
-        if self._dev.latest_frame is None:
-            raise RuntimeError(f"SensX on {self.port}: no frames (check port/baud/cable)")
+        if self._dev.latest_timestamp == 0:
+            self._dev.close()
+            raise RuntimeError(f"SensX on {self.port}: no frames in 3 s. "
+                               "Run `python -m pillbot.tools.tactile_live doctor`")
+
+    def _count(self, frame, ts):
+        self.frames += 1
 
     def read(self):
-        f = self._dev.latest_frame if self._dev else None
-        return None if f is None else np.asarray(f, dtype=float).reshape(self.shape)
+        if self._dev is None:
+            return None
+        f = np.asarray(self._dev.latest_frame, dtype=float).reshape(self.shape)
+        return self._guard.check(f, time.perf_counter() - self._dev.latest_timestamp)
 
     def close(self):
         if self._dev:
             self._dev.close()
+
+
+class NetTactile(TactileSensor):
+    """Frames streamed by `python -m pillbot.sensors.tactile_server` (JSON lines over TCP).
+
+    Tares and thresholds locally, exactly like SensXTactile, so code can't tell the difference.
+    """
+
+    def __init__(self, url: str = "localhost:8765", shape=(5, 5), max_age_s: float = 0.25, **kw):
+        super().__init__(**kw)
+        host, _, port = url.removeprefix("tcp://").rpartition(":")
+        self.addr, self.shape = (host or "localhost", int(port)), tuple(shape)
+        self._latest: tuple[np.ndarray, float] | None = None
+        self._guard = _StaleGuard(url, max_age_s)
+        self._sock = None
+
+    def connect(self):
+        try:
+            self._sock = socket.create_connection(self.addr, timeout=3)
+        except OSError as e:
+            raise RuntimeError(f"tactile server {self.addr[0]}:{self.addr[1]}: {e} — "
+                               "start it with `python -m pillbot.sensors.tactile_server`") from e
+        self._sock.settimeout(None)
+        threading.Thread(target=self._loop, daemon=True).start()
+        t0 = time.time()
+        while self._latest is None and time.time() - t0 < 3:
+            time.sleep(0.05)
+        if self._latest is None:
+            raise RuntimeError(f"tactile server {self.addr}: connected but no frames")
+
+    def _loop(self):
+        try:
+            for line in self._sock.makefile("r"):
+                try:
+                    f = np.array(json.loads(line)["frame"], dtype=float).reshape(self.shape)
+                except (ValueError, KeyError):
+                    continue
+                self._latest = (f, time.perf_counter())
+        except OSError:
+            pass                                   # closed; read() goes stale and returns None
+
+    def read(self):
+        if self._latest is None:
+            return None
+        f, stamp = self._latest
+        return self._guard.check(f, time.perf_counter() - stamp)
+
+    def close(self):
+        if self._sock:
+            self._sock.close()
 
 
 class CombinedTactile(TactileSensor):
@@ -196,18 +313,40 @@ TactXTactile = SensXTactile   # old name
 
 
 def make_tactile(cfg: dict, io=None, hub=None, dry_run: bool = False) -> TactileSensor:
-    """configs/robot.yaml -> tactile.backend: sensx | sensx2 (one per jaw) | serial | mock | none"""
+    """configs/robot.yaml -> tactile.backend: sensx | sensx2 (one per jaw) | net | serial | mock | none"""
     t = cfg.get("tactile", {}) or {}
     backend = "mock" if dry_run else t.get("backend", "none")
     kw = dict(contact_threshold=t.get("contact_threshold", 50), slip_ratio=t.get("slip_ratio", 0.5))
-    shape, baud = t.get("shape", (5, 5)), t.get("baud", 921600)
+    shape, baud, age = t.get("shape", (5, 5)), t.get("baud", 921600), t.get("max_age_s", 0.25)
     if backend == "mock":
         return MockTactile(io, shape=shape, **kw)
     if backend == "serial":
         return SerialTactile(t["port"], t.get("baud", 115200), t.get("shape", (1, 1)), **kw)
     if backend == "sensx":
-        return SensXTactile(t["port"], baud, shape, **kw)
+        return SensXTactile(t["port"], baud, shape, max_age_s=age, **kw)
     if backend == "sensx2":
-        return CombinedTactile(SensXTactile(t["port"], baud, shape, **kw),
-                               SensXTactile(t["port2"], baud, shape, **kw))
+        return CombinedTactile(SensXTactile(t["port"], baud, shape, max_age_s=age, **kw),
+                               SensXTactile(t["port2"], baud, shape, max_age_s=age, **kw))
+    if backend == "net":
+        return NetTactile(t.get("url", "localhost:8765"), shape, max_age_s=age, **kw)
     return NullTactile(**kw)
+
+
+@contextmanager
+def open_tactile(config: str = "configs/robot.yaml", tare: bool = True, **overrides):
+    """make_tactile + connect + tare + close, for scripts outside the main pipeline.
+
+        with open_tactile(port="/dev/ttyUSB0") as tac:     # overrides any tactile: key
+            while not tac.in_contact(): ...
+    """
+    from pillbot.utils.config import load_yaml
+    cfg = load_yaml(config)
+    cfg["tactile"] = {**(cfg.get("tactile") or {}), **overrides}
+    tac = make_tactile(cfg)
+    tac.connect()
+    try:
+        if tare:
+            tac.tare()
+        yield tac
+    finally:
+        tac.close()
