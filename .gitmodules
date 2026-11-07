@@ -1,0 +1,3 @@
+[submodule "sensx_python"]
+	path = sensx_python
+	url = https://github.com/TouchTronix-Robotics/sensx_python.git
