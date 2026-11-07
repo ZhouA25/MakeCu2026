@@ -4,7 +4,8 @@ Backends (configs/robot.yaml -> tactile.backend):
   none    no sensor; grasping falls back to gripper-stall detection
   mock    simulated readings driven by the dry-run robot (for testing without hardware)
   serial  any device streaming one CSV line per frame (our FSR firmware, or a TactX bridge)
-  tactx   TouchTronix TactX via their Python API (fill in TactXTactile once you have the SDK)
+  sensx   TouchTronix SensX25 (SNX0505-SNS-01) via their sensx Python API
+  sensx2  two SensX25s, one per jaw
 
 All backends return a 2D numpy array (rows x cols) of pressure readings.
 """
@@ -162,19 +163,8 @@ class SensXTactile(TactileSensor):
             self._dev.close()
 
 
-class HubPressureTactile(TactileSensor):
-    """The thin-film pressure sensor on the other jaw, read through the ESP32 hub (ADS1115 A0)."""
-
-    def __init__(self, hub, **kw):
-        super().__init__(**kw)
-        self.hub = hub
-
-    def read(self):
-        return np.array([[float(self.hub.state.pressure)]])
-
-
 class CombinedTactile(TactileSensor):
-    """Contact if EITHER jaw feels it; pressure/slip from the primary (SensX) sensor."""
+    """Two sensors (one per jaw): contact if EITHER feels it; pressure/slip from the primary."""
 
     def __init__(self, primary: TactileSensor, secondary: TactileSensor):
         super().__init__(primary.contact_threshold, primary.slip_ratio)
@@ -206,20 +196,18 @@ TactXTactile = SensXTactile   # old name
 
 
 def make_tactile(cfg: dict, io=None, hub=None, dry_run: bool = False) -> TactileSensor:
-    """configs/robot.yaml -> tactile.backend: sensx | hub | sensx+hub | serial | mock | none"""
+    """configs/robot.yaml -> tactile.backend: sensx | sensx2 (one per jaw) | serial | mock | none"""
     t = cfg.get("tactile", {}) or {}
     backend = "mock" if dry_run else t.get("backend", "none")
     kw = dict(contact_threshold=t.get("contact_threshold", 50), slip_ratio=t.get("slip_ratio", 0.5))
-    film_kw = dict(contact_threshold=t.get("film_contact_threshold", 800), slip_ratio=kw["slip_ratio"])
+    shape, baud = t.get("shape", (5, 5)), t.get("baud", 921600)
     if backend == "mock":
-        return MockTactile(io, shape=t.get("shape", (5, 5)), **kw)
+        return MockTactile(io, shape=shape, **kw)
     if backend == "serial":
         return SerialTactile(t["port"], t.get("baud", 115200), t.get("shape", (1, 1)), **kw)
     if backend == "sensx":
-        return SensXTactile(t["port"], t.get("baud", 921600), t.get("shape", (5, 5)), **kw)
-    if backend == "hub":
-        return HubPressureTactile(hub, **film_kw)
-    if backend == "sensx+hub":
-        return CombinedTactile(SensXTactile(t["port"], t.get("baud", 921600), t.get("shape", (5, 5)), **kw),
-                               HubPressureTactile(hub, **film_kw))
+        return SensXTactile(t["port"], baud, shape, **kw)
+    if backend == "sensx2":
+        return CombinedTactile(SensXTactile(t["port"], baud, shape, **kw),
+                               SensXTactile(t["port2"], baud, shape, **kw))
     return NullTactile(**kw)

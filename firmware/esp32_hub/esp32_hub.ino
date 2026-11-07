@@ -1,21 +1,19 @@
 // PillBot Hub — ESP32 (ESP-WROOM-32 DevKit)
-// Reads: ADS1115 (film pressure, EMG), 2x HC-SR04, 3x touch buttons
+// Reads: 2x HC-SR04, 3x push buttons (START / STOP / MODE)
 // Drives: 4 servo channels (turntable, clamp, tray, spare), 1 relay (hobby-servo power)
 //
-// Libraries (Arduino Library Manager): "Adafruit ADS1X15", "ESP32Servo"
+// Library (Arduino Library Manager): "ESP32Servo"
 // Board: "ESP32 Dev Module". Pin map: hardware/wiring.md
 //
 // Serial protocol @115200, one line per message:
-//   ESP32 -> host  (every 20 ms):  S <ms> <press> <emg> <clip_mm> <zone_mm> <buttons>
+//   ESP32 -> host  (every 20 ms):  S <ms> <clip_mm> <zone_mm> <buttons>
 //                                  buttons bitmask: 1=START 2=STOP 4=MODE ; distances -1 = no echo
-//                  at boot:        READY pillbot-hub 1
+//                  at boot:        READY pillbot-hub 2
 //   host -> ESP32:  SV <ch> <us>   set servo channel 0..3 pulse (500..2500), 0 = detach (go limp)
 //                   RL <0|1>       relay off/on (hobby-servo power)
 //                   PING           -> PONG
 // Safety: STOP button immediately cuts the relay and detaches all servos (firmware-level).
 
-#include <Wire.h>
-#include <Adafruit_ADS1X15.h>
 #include <ESP32Servo.h>
 
 // ---- pins ----
@@ -27,13 +25,10 @@ const int PIN_RELAY = 17;
 const int PIN_LED = 2;
 const bool RELAY_ACTIVE_LOW = true;   // most cheap relay modules switch ON when IN is LOW
 
-Adafruit_ADS1115 ads1;
-bool adsOk = false;
 Servo servos[4];
 int servoUs[4] = {0, 0, 0, 0};
 bool relayOn = false;
 
-int16_t pressRaw = 0, emgRaw = 0;
 long clipMm = -1, zoneMm = -1;
 bool readClipNext = true;
 unsigned long lastReport = 0;
@@ -67,9 +62,10 @@ long readUltrasonicMm(int trig, int echo) {
   return (long)(us * 0.343 / 2.0);                 // speed of sound 343 m/s
 }
 
+// Push buttons wired pin -> button -> GND, internal pull-ups: pressed = LOW, unplugged = not pressed
 uint8_t buttons() {
-  return (digitalRead(PIN_BTN_START) ? 1 : 0) | (digitalRead(PIN_BTN_STOP) ? 2 : 0) |
-         (digitalRead(PIN_BTN_MODE) ? 4 : 0);
+  return (digitalRead(PIN_BTN_START) ? 0 : 1) | (digitalRead(PIN_BTN_STOP) ? 0 : 2) |
+         (digitalRead(PIN_BTN_MODE) ? 0 : 4);
 }
 
 void handleLine(const String& line) {
@@ -84,13 +80,10 @@ void setup() {
   Serial.begin(115200);
   pinMode(PIN_TRIG_CLIP, OUTPUT); pinMode(PIN_ECHO_CLIP, INPUT);
   pinMode(PIN_TRIG_ZONE, OUTPUT); pinMode(PIN_ECHO_ZONE, INPUT);
-  pinMode(PIN_BTN_START, INPUT_PULLDOWN); pinMode(PIN_BTN_STOP, INPUT_PULLDOWN); pinMode(PIN_BTN_MODE, INPUT_PULLDOWN);  // unplugged = not pressed
+  pinMode(PIN_BTN_START, INPUT_PULLUP); pinMode(PIN_BTN_STOP, INPUT_PULLUP); pinMode(PIN_BTN_MODE, INPUT_PULLUP);
   pinMode(PIN_RELAY, OUTPUT); pinMode(PIN_LED, OUTPUT);
   setRelay(false);                                   // servos unpowered until host enables
   ESP32PWM::allocateTimer(0); ESP32PWM::allocateTimer(1);
-  Wire.begin(21, 22);
-  adsOk = ads1.begin(0x48);
-  if (adsOk) { ads1.setGain(GAIN_ONE); ads1.setDataRate(RATE_ADS1115_860SPS); }  // +/-4.096 V
   Serial.println("READY pillbot-hub 1");
 }
 
@@ -104,10 +97,6 @@ void loop() {
   uint8_t b = buttons();
   if (b & 2) emergencyStop();                        // STOP wins, every loop
 
-  if (adsOk) {
-    pressRaw = ads1.readADC_SingleEnded(0);
-    emgRaw = ads1.readADC_SingleEnded(1);
-  }
   // alternate the two ultrasonic sensors so they don't hear each other
   if (readClipNext) clipMm = readUltrasonicMm(PIN_TRIG_CLIP, PIN_ECHO_CLIP);
   else              zoneMm = readUltrasonicMm(PIN_TRIG_ZONE, PIN_ECHO_ZONE);
@@ -116,7 +105,7 @@ void loop() {
   unsigned long now = millis();
   if (now - lastReport >= 20) {
     lastReport = now;
-    Serial.printf("S %lu %d %d %ld %ld %u\n", now, pressRaw, emgRaw, clipMm, zoneMm, b);
+    Serial.printf("S %lu %ld %ld %u\n", now, clipMm, zoneMm, b);
     digitalWrite(PIN_LED, relayOn ? HIGH : (now / 500) % 2);   // solid = servos powered, blink = idle
   }
 }

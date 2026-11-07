@@ -4,7 +4,7 @@ trigger -> find bottle -> pick -> place in clip -> (clamp) -> push + twist cap o
   python -m pillbot.run --dry-run                         # simulate everything, no hardware
   python -m pillbot.run                                   # scripted pick + scripted open (config defaults)
   python -m pillbot.run --open-method turntable           # bottle spun by the goBILDA turntable
-  python -m pillbot.run --trigger emg                     # start by flexing the muscle sensor
+  python -m pillbot.run --trigger zone                    # start as soon as a bottle is set down
   python -m pillbot.run --pick policy                     # ACT policy picks/places, script opens
   python -m pillbot.run --pick skip                       # bottle already in the clip
   python -m pillbot.run --zone-st 0.5,0.5                 # skip vision, known zone position
@@ -112,7 +112,7 @@ def main():
     ap.add_argument("--pick", choices=["scripted", "policy", "skip"], default="scripted")
     ap.add_argument("--open", choices=["scripted", "policy"], default="scripted", dest="open_mode")
     ap.add_argument("--open-method", choices=["wrist", "turntable"], help="default: config open_method")
-    ap.add_argument("--trigger", choices=["enter", "button", "emg", "zone"], help="default: config trigger.default")
+    ap.add_argument("--trigger", choices=["enter", "button", "zone"], help="default: config trigger.default")
     ap.add_argument("--zone-st", help="s,t in [0,1] — bypass camera detection")
     ap.add_argument("--spin-check", action="store_true", help="(wrist method) watch blue tape on bottle for spinning")
     ap.add_argument("--loop", action="store_true", help="repeat until Ctrl-C")
@@ -128,7 +128,7 @@ def main():
         sys.exit(f"Untaught poses: {missing}\nRun: python -m pillbot.control.teach --missing")
 
     hub = make_hub(cfg, dry_run=args.dry_run)
-    needs_hub = args.open_method == "turntable" or args.trigger in ("button", "emg", "zone")
+    needs_hub = args.open_method == "turntable" or args.trigger in ("button", "zone")
     if needs_hub and isinstance(hub, MockHub) and not args.dry_run:
         sys.exit(f"--open-method {args.open_method} / --trigger {args.trigger} need the ESP32 hub "
                  "(set hub.enabled: true in configs/robot.yaml)")

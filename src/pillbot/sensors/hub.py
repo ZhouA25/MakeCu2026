@@ -12,8 +12,6 @@ BTN_START, BTN_STOP, BTN_MODE = 1, 2, 4
 @dataclass
 class HubState:
     t_ms: int = 0
-    pressure: int = 0        # ADS1115 A0 raw (film sensor)
-    emg: int = 0             # ADS1115 A1 raw (muscle sensor)
     clip_mm: int = -1        # HC-SR04 at the clip (-1 = no echo)
     zone_mm: int = -1        # HC-SR04 at the start zone
     buttons: int = 0
@@ -49,8 +47,8 @@ class Hub:
             line = self._ser.readline().decode(errors="ignore").strip()
             if line.startswith("S "):
                 try:
-                    _, t, p, e, c, z, b = line.split()
-                    self.state = HubState(int(t), int(p), int(e), int(c), int(z), int(b))
+                    _, t, c, z, b = line.split()
+                    self.state = HubState(int(t), int(c), int(z), int(b))
                 except ValueError:
                     pass
             elif line.startswith(("READY", "ERR")):

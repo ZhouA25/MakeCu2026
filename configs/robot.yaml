@@ -47,19 +47,19 @@ cameras:
 # Camera used by scripted perception (bottle detection, zone mapping, marker tracking)
 perception_camera: phone
 
-# ESP32 "PillBot Hub" (firmware/esp32_hub): film pressure, EMG, ultrasonics, buttons, servos, relay
+# ESP32 "PillBot Hub" (firmware/esp32_hub): 2x ultrasonic, START/STOP/MODE buttons, 4 servos, relay
 hub:
   enabled: true          # needed for the turntable; set false to run arm-only
   port: /dev/tty.usbserialHUB
   baud: 115200
 
 tactile:
-  backend: sensx         # (dry runs always use mock) sensx | hub (film sensor) | sensx+hub (both jaws) | serial | mock | none
+  backend: sensx         # sensx | sensx2 (one per jaw, set port2) | serial | mock | none  (dry runs use mock)
   port: /dev/tty.usbserialSENSX   # SensX 25 (SNX0505-SNS-01) USB adapter
+  port2: /dev/tty.usbserialSENSX2 # only for backend sensx2 (if you ever get a second sensor)
   baud: 921600
   shape: [5, 5]
   contact_threshold: 300 # SensX: sum of 25 taxels (0..4095 each) above tare that counts as contact
-  film_contact_threshold: 800   # film sensor raw ADS1115 counts above tare
   slip_ratio: 0.5        # pressure falling below this fraction of grip pressure = slipping
 
 gripper:                 # LeRobot gripper units: 0 = closed, 100 = open
@@ -90,8 +90,7 @@ fixture:
   clip_seated_mm: 60         # clip ultrasonic reads <= this when a bottle is seated
 
 trigger:
-  default: enter             # enter | button | emg | zone
-  emg_threshold: 2000        # ADS1115 counts above resting baseline
+  default: enter             # enter | button | zone
   zone_present_mm: 120
   hold_s: 0.3
 

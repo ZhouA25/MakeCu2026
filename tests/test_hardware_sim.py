@@ -10,7 +10,7 @@ from pillbot.control.poses import load_poses
 from pillbot.control.robot_io import Aborted, RobotIO
 from pillbot.control.triggers import wait_for_trigger
 from pillbot.sensors.hub import BTN_START, BTN_STOP, HubState, MockHub
-from pillbot.sensors.tactile import CombinedTactile, HubPressureTactile, MockTactile, make_tactile
+from pillbot.sensors.tactile import CombinedTactile, MockTactile, NullTactile, make_tactile
 from pillbot.utils.config import ROOT, get_bottle, load_yaml
 
 CFG = load_yaml("configs/robot.yaml")
@@ -51,29 +51,27 @@ def test_stop_button_aborts_motion(io):
         io.move_to({"shoulder_pan": 40})
 
 
-def test_button_and_emg_triggers():
+def test_button_and_zone_triggers():
     hub = MockHub()
     hub.state = HubState(t_ms=1, buttons=BTN_START)
     assert wait_for_trigger("button", hub, {"hold_s": 0}, timeout=0.5)
-    hub.state = HubState(t_ms=1, emg=100)
+    hub.state = HubState(t_ms=1)
     assert not wait_for_trigger("button", hub, {"hold_s": 0}, timeout=0.1)
+    hub.state = HubState(t_ms=1, zone_mm=80)
+    assert wait_for_trigger("zone", hub, {"hold_s": 0, "zone_present_mm": 120}, timeout=0.5)
 
 
-def test_hub_pressure_and_combined_tactile(io):
-    hub = MockHub()
-    film = HubPressureTactile(hub, contact_threshold=800)
-    film.tare(n=2)
-    assert not film.in_contact()
-    hub.state = HubState(t_ms=1, pressure=5000)
-    assert film.in_contact()
-    combo = CombinedTactile(MockTactile(io), film)
-    assert combo.in_contact()                            # either jaw counts
+def test_combined_tactile_either_jaw(io):
+    io.sim_gripper_block = 30
+    io.set_gripper(25)
+    combo = CombinedTactile(NullTactile(), MockTactile(io))
+    assert combo.in_contact()                            # second jaw alone counts
 
 
 def test_make_tactile_backends(io):
     assert isinstance(make_tactile(CFG, io, dry_run=True), MockTactile)
-    cfg = {**CFG, "tactile": {**CFG["tactile"], "backend": "hub"}}
-    assert isinstance(make_tactile(cfg, io, hub=MockHub()), HubPressureTactile)
+    cfg = {**CFG, "tactile": {**CFG["tactile"], "backend": "none"}}
+    assert isinstance(make_tactile(cfg, io), NullTactile)
 
 
 def test_pipeline_cli_turntable_dry_run():
