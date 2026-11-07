@@ -7,6 +7,7 @@
 #   zone_*_11 = corner 3 (s=1,t=1)   zone_*_01 = corner 4 (s=0,t=1)
 poses:
   home:          {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+  scan:          {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # wrist cam looking down at the zone
   zone_hover_00: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
   zone_hover_10: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
   zone_hover_11: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}

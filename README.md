@@ -14,7 +14,7 @@ and drops the cap in a tray. The arm itself stays general-purpose; only the clam
 | Arm | [danslovich/5DOF_Robot_Arm](https://github.com/danslovich/5DOF_Robot_Arm): 5× Dynamixel XL330-M288, 4:1 printed planetary shoulder — driven through LeRobot 0.7 by our plugin (see `hardware/arm.md`) |
 | Fixture | Funnel clip + goBILDA 2000 servo clamp, driven by the "PillBot Hub" — an ESP32 **or** an Arduino UNO Q |
 | Touch | TouchTronix SensX25 (one, on the gripper finger) |
-| Vision | One fixed camera (webcam or phone on a tripod, ~45° down) + an **ESP32-CAM wrist camera** streaming over Wi-Fi |
+| Vision | **One camera:** an ESP32-CAM on the wrist, streaming over Wi-Fi. To find bottles the arm moves to a taught `scan` pose above the start zone and looks down |
 | Controls | START / STOP / MODE push buttons on the hub; STOP cuts servo power in firmware |
 
 Everything runs in **simulation** with `--dry-run`, so you can develop and test without hardware.
@@ -97,11 +97,28 @@ python -m pillbot.control.teach --name cap_press   # redo one
 Keep the start zone, clip and cap tray **close to the base** and grasp **top-down with the forearm
 vertical** — the XL330 elbow is the weakest joint (`hardware/arm.md`).
 
-**f. Calibrate the camera to the start zone** (redo whenever the camera or tape moves):
+**f. Calibrate the camera to the start zone** (redo whenever the `scan` pose or the tape moves).
+The wrist camera only sees the zone the same way every time from the `scan` pose
+(~25–35 cm above the zone, looking straight down — teach it in step e), so `--goto-scan` moves the arm
+there first:
 ```bash
-python -m pillbot.perception.zone --calibrate     # click the 4 tape corners in the same order you taught them
-python -m pillbot.perception.detect_bottle         # live check: bottle box + s,t position; q to quit
+python -m pillbot.perception.zone --calibrate --goto-scan    # click the 4 tape corners in the taught order
+python -m pillbot.perception.detect_bottle --goto-scan       # CLEAR the zone, press b (background), add a bottle
+python -m pillbot.perception.detect_bottle --goto-scan --tune   # sliders + mask if it sees shadows / misses bottles
 ```
+Detection works for **any bottle** (amber, white multivitamin, …): it compares against a photo of the
+empty zone, so re-take it (key `b`) if the camera, tape or lighting changes. Set
+`perception.zone_size_mm` to your tape square's real size — the preview then shows the bottle width
+in mm and which `bottles.yaml` profile it matches. Alternatives: `--method yolo` (pretrained,
+`pip install -e ".[vision]"`) or `--method color` (amber only).
+
+**Different bottles:** add each one to `configs/bottles.yaml` (body/cap diameter, cap type, twist
+degrees), and teach its height-dependent poses once:
+```bash
+python -m pillbot.control.teach --bottle otc_vitamin --bottle-poses   # saved as cap_grip@otc_vitamin, ...
+```
+Bottles without their own poses use the generic ones. Measure the widest cap the jaws open around
+and set `gripper.max_cap_mm` — runs refuse bottles whose cap won't fit.
 
 **g. Bench-test and tune the fixture — no arm needed** (hub + clamp servo + clip):
 ```bash
@@ -129,6 +146,7 @@ python -m pillbot.run --trigger zone           # hands-free: starts when a bottl
 python -m pillbot.run --pick skip              # bottle already in the clip — test opening only (do this first!)
 python -m pillbot.run --zone-st 0.5,0.5        # skip vision, use a known spot in the zone
 python -m pillbot.run --bottle otc_vitamin     # bottle profile from configs/bottles.yaml
+python -m pillbot.run --bottle auto            # measure the bottle, pick the matching profile
 python -m pillbot.run --loop                   # keep serving bottles until Ctrl-C
 python -m pillbot.run --dry-run                # any of the above, simulated
 ```
@@ -159,9 +177,10 @@ Tasks, dataset names and checkpoint paths live in `configs/policies.yaml`.
 | File | What's in it |
 |---|---|
 | `configs/robot.yaml` | arm type/ports/joints, cameras, hub, tactile backend, gripper, fixture, trigger, safety |
-| `configs/robot.local.yaml` | your machine's overrides (git-ignored) |
+| `configs/robot.local.yaml` | your machine's overrides (git-ignored). Only put the keys you change (ports, URLs, tuned values) — everything else comes from `robot.yaml`. `key: null` removes a key (e.g. a camera you don't have) |
 | `configs/poses.yaml` | taught joint poses (written by `teach`) |
-| `configs/bottles.yaml` | bottle profiles: cap type (`push_and_turn` / `twist`), twist degrees |
+| `configs/bottles.yaml` | bottle profiles: sizes, cap type (`push_and_turn` / `twist`), twist degrees |
+| `configs/background.local.png` | empty-zone photo for bottle detection (written by `detect_bottle`, key b) |
 | `configs/policies.yaml` | trained policies for `--pick policy` / `--open policy` |
 | `configs/zone_calib.local.yaml` | camera → zone calibration (written by `zone --calibrate`) |
 
@@ -199,6 +218,7 @@ tests/                simulation tests
 | `sensx_python` folder empty | `git submodule update --init` |
 | Motors not found | Wrong port, motor power off, or IDs/baud not set — rerun `scripts/setup_motors.sh` |
 | `No data from hub` | ESP32 not flashed / wrong port / `hub.enabled` — or set `hub.enabled: false` to run arm-only |
+| Bottle not detected / shadows detected | Re-take the background (`b`) with the zone empty; `--tune` the diff threshold and min area; avoid moving shadows |
 | Wrist camera times out (`Stream timeout`) | The ESP32-CAM streams to **one viewer at a time** — close any browser tab on `:81/stream` (use `/capture` to peek instead), or press RST on the camera |
 | Browser can see the camera but Python can't | macOS: allow Terminal under System Settings → Privacy & Security → Local Network |
 | Wrist camera fails in LeRobot | Plugin not installed (`pillbot_ipcam` type), wrong URL, or stream size ≠ `width`/`height` — the error says which |

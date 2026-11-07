@@ -1,19 +1,31 @@
-# Catalog of bottles we test with. Measure with calipers and fill in.
-# cap_type: push_and_turn (child-proof) | twist | snap | flip_top
+# Catalog of bottles. Measure with calipers and fill in.
+#   cap_type: push_and_turn (child-proof: push down while twisting) | twist (plain screw cap)
+#   twist_deg: total wrist rotation to free the cap (measure with: fixture_bench hand-open)
+#   body_diameter_mm is what the camera measures -> used by `--bottle auto` to pick the profile
+# Each bottle can have its own taught poses (taller bottle = cap higher):
+#   python -m pillbot.control.teach --bottle <name> --bottle-poses
 bottles:
-  - name: standard_amber_40dr
+  - name: standard_amber_40dr      # pharmacy amber vial, child-proof
     body_diameter_mm: 40
     cap_diameter_mm: 43
     height_mm: 75
     cap_type: push_and_turn
-    press_depth_mm: 3
-    twist_deg: 270          # total CCW rotation to free the cap
-    regrips: 2              # how many grip-twist-release cycles
-  - name: otc_vitamin
+    twist_deg: 270
+  - name: small_amber_20dr
+    body_diameter_mm: 33
+    cap_diameter_mm: 35
+    height_mm: 60
+    cap_type: push_and_turn
+    twist_deg: 270
+  - name: otc_vitamin              # typical white OTC / vitamin bottle, plain screw cap
     body_diameter_mm: 55
-    cap_diameter_mm: 50
+    cap_diameter_mm: 45
     height_mm: 110
     cap_type: twist
-    press_depth_mm: 0
     twist_deg: 360
-    regrips: 3
+  - name: multivitamin_large       # big multivitamin / supplement bottle
+    body_diameter_mm: 65
+    cap_diameter_mm: 50
+    height_mm: 140
+    cap_type: twist
+    twist_deg: 450

@@ -70,7 +70,7 @@ def test_zone_mapper():
 
 
 def test_lerobot_args():
-    assert "phone: {type: opencv" in cameras_arg(CFG)
+    assert "wrist: {type: pillbot_ipcam" in cameras_arg(CFG)
     cmd = rollout_cmd(CFG, load_yaml("configs/policies.yaml"), "pick_place")
     assert cmd[0] == "lerobot-rollout" and any(a.startswith("--task=") for a in cmd)
 

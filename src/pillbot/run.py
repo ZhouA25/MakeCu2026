@@ -7,18 +7,21 @@ trigger -> find bottle -> pick -> place in clip -> clamp -> grip cap, push down,
   python -m pillbot.run --pick policy                     # ACT policy picks/places, script opens
   python -m pillbot.run --pick skip                       # bottle already in the clip
   python -m pillbot.run --zone-st 0.5,0.5                 # skip vision, known zone position
+  python -m pillbot.run --bottle auto                     # pick the bottle profile from its measured width
   python -m pillbot.run --loop                            # keep serving bottles until Ctrl-C
 """
 import argparse
 import logging
 import sys
 
+from pillbot.control.bottle_select import check_fits, match_bottle
 from pillbot.control.fixture import Fixture
 from pillbot.control.open_sequence import OpenFailed, open_cap
 from pillbot.control.pick_place import pick_bottle, place_in_clip
 from pillbot.control.policy_runner import run_policy_phase
 from pillbot.control.poses import load_poses, untaught
 from pillbot.control.robot_io import Aborted, RobotIO
+from pillbot.perception.scan import camera_on_arm
 from pillbot.control.triggers import wait_for_trigger
 from pillbot.sensors.hub import BTN_STOP, MockHub, make_hub
 from pillbot.sensors.tactile import make_tactile
@@ -27,25 +30,40 @@ from pillbot.utils.config import get_bottle, load_yaml
 log = logging.getLogger("pillbot")
 
 
-def find_bottle(cfg) -> tuple[float, float] | None:
+def find_bottle(cfg, io=None, poses=None):
+    """-> (s, t, width_mm) of the bottle in the start zone, or None.
+    With the camera on the arm, look from the `scan` pose first."""
     from pillbot.perception.cameras import grab, perception_camera
-    from pillbot.perception.detect_bottle import locate_in_zone, thresholds
+    from pillbot.perception.detect_bottle import make_detector, settings, width_mm
+    from pillbot.perception.scan import camera_on_arm, flush, goto_scan
     from pillbot.perception.zone import ZoneMapper
+    if camera_on_arm(cfg) and io is not None:
+        goto_scan(io, poses or load_poses(), cfg)
     mapper = ZoneMapper.load()
+    detector = make_detector(cfg, mapper=mapper)
+    if getattr(detector, "background", True) is None:
+        raise OpenFailed("no background image — run detect_bottle and press b with the zone empty")
     cap = perception_camera(cfg)
     try:
+        flush(cap, 0.5)                           # drop frames buffered while the arm was moving
         for _ in range(15):                       # a few frames for a stable detection
-            st = locate_in_zone(grab(cap), mapper, thresholds(cfg))
-            if st:
-                return st
+            det = detector(grab(cap))
+            if det is None:
+                continue
+            st = settings(cfg)
+            s, t = mapper.to_zone(*det.anchor_px(st["anchor"]))
+            if mapper.inside(s, t):
+                return s, t, width_mm(det, mapper, st["zone_size_mm"], st["anchor"])
     finally:
         cap.release()
     return None
 
 
 def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
+    """`bottle`/`poses` may be None when --bottle auto: chosen from the measured width."""
     gcfg = cfg["gripper"]
-    io.move_to(poses["home"] | {"gripper": gcfg["open"]})
+    home = (poses or load_poses())["home"]
+    io.move_to(home | {"gripper": gcfg["open"]})
     tactile.tare()
     if not args.dry_run:
         wait_for_trigger(args.trigger, hub, cfg.get("trigger", {}))
@@ -54,21 +72,32 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
     if fixture:
         fixture.unclamp()
     if args.pick == "scripted":
+        width = None
         if args.zone_st:
             st = tuple(float(x) for x in args.zone_st.split(","))
         elif args.dry_run:
-            st = (0.5, 0.5)
+            st, width = (0.5, 0.5), 41.0
         else:
-            st = find_bottle(cfg)
-        if st is None:
-            raise OpenFailed("no bottle found in the start zone")
+            found = find_bottle(cfg, io, poses)
+            if found is None:
+                raise OpenFailed("no bottle found in the start zone")
+            *st, width = found
+        if bottle is None:                                  # --bottle auto
+            bottle = match_bottle(width) or get_bottle(cfg.get("default_bottle", "standard_amber_40dr"))
+            log.info("bottle ~%s mm wide -> profile %s", f"{width:.0f}" if width else "?", bottle["name"])
+            poses = load_poses(bottle=bottle["name"])
+            if (warn := check_fits(bottle, gcfg)):
+                raise OpenFailed(warn)
         log.info("bottle at zone s=%.2f t=%.2f", *st)
         if args.dry_run:
             io.sim_gripper_block = 35.0           # bottle body is wider than the cap
         if not pick_bottle(io, tactile, poses, gcfg, *st):
             raise OpenFailed("missed the bottle twice — check zone calibration / taught poses")
         place_in_clip(io, poses, gcfg)
-    elif args.pick == "policy":
+    if bottle is None:                                      # auto, but no measurement (policy / skip)
+        bottle = get_bottle(cfg.get("default_bottle", "standard_amber_40dr"))
+        poses = load_poses(bottle=bottle["name"])
+    if args.pick == "policy":
         if not run_policy_phase(io, cfg, pcfg, "pick_place", dry_run=args.dry_run):
             raise OpenFailed("pick_place policy failed")
 
@@ -89,7 +118,9 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
             log.info("open_cap policy finished: %s", ok)
         else:
             monitor, monitor_cap = None, None
-            if args.spin_check and not args.dry_run:
+            if args.spin_check and camera_on_arm(cfg):
+                log.warning("--spin-check needs a fixed camera; the wrist camera turns with the cap — skipped")
+            elif args.spin_check and not args.dry_run:
                 from pillbot.perception.cameras import perception_camera
                 from pillbot.perception.spin_monitor import BottleSpinMonitor
                 monitor_cap = perception_camera(cfg)
@@ -110,7 +141,8 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default="configs/robot.yaml")
-    ap.add_argument("--bottle", default="standard_amber_40dr")
+    ap.add_argument("--bottle", default="standard_amber_40dr",
+                    help="profile from bottles.yaml, or 'auto' = pick by the measured width")
     ap.add_argument("--pick", choices=["scripted", "policy", "skip"], default="scripted")
     ap.add_argument("--open", choices=["scripted", "policy"], default="scripted", dest="open_mode")
     ap.add_argument("--trigger", choices=["enter", "button", "zone"], help="default: config trigger.default")
@@ -123,8 +155,15 @@ def main():
 
     cfg, pcfg = load_yaml(args.config), load_yaml("configs/policies.yaml")
     args.trigger = args.trigger or cfg.get("trigger", {}).get("default", "enter")
-    poses, bottle = load_poses(), get_bottle(args.bottle)
-    if not args.dry_run and (missing := untaught(poses)):
+    if args.bottle == "auto":
+        bottle, poses = None, None
+        check_poses = load_poses()
+    else:
+        bottle = get_bottle(args.bottle)
+        poses = check_poses = load_poses(bottle=bottle["name"])
+        if (warn := check_fits(bottle, cfg["gripper"])):
+            sys.exit(warn)
+    if not args.dry_run and (missing := untaught(check_poses)):
         sys.exit(f"Untaught poses: {missing}\nRun: python -m pillbot.control.teach --missing")
 
     hub = make_hub(cfg, dry_run=args.dry_run)
@@ -152,7 +191,7 @@ def main():
                 code = 1
                 log.error("failed: %s", e)
                 io.set_gripper(cfg["gripper"]["open"])
-                io.move_to(poses["home"])
+                io.move_to(check_poses["home"])
             if not args.loop:
                 break
     except Aborted:

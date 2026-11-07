@@ -1,6 +1,7 @@
 """Map camera pixels -> position (s, t) in [0,1]^2 inside the taped start zone.
 
 Calibrate once per camera placement:  python -m pillbot.perception.zone --calibrate
+(wrist camera: add --goto-scan so the picture is taken from the `scan` pose)
 Click the 4 tape corners in order: 1 (s0,t0) -> 2 (s1,t0) -> 3 (s1,t1) -> 4 (s0,t1),
 matching the corner order you used when teaching zone_* poses.
 """
@@ -45,11 +46,16 @@ class ZoneMapper:
         return frame
 
 
-def calibrate(cfg):
+def calibrate(cfg, goto_scan: bool = False):
     from pillbot.perception.cameras import grab, perception_camera
+    from pillbot.perception.scan import connect_arm_at_scan, flush
+    arm = connect_arm_at_scan(cfg) if goto_scan else None
     cap = perception_camera(cfg)
+    flush(cap, 0.5)
     frame = grab(cap)
     cap.release()
+    if arm:
+        arm.disconnect()
     clicks = []
 
     def on_click(event, x, y, *_):
@@ -76,4 +82,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--calibrate", action="store_true", required=True)
     ap.add_argument("--config", default="configs/robot.yaml")
-    calibrate(load_yaml(ap.parse_args().config))
+    ap.add_argument("--goto-scan", action="store_true", help="wrist camera: move the arm to `scan` first")
+    a = ap.parse_args()
+    calibrate(load_yaml(a.config), goto_scan=a.goto_scan)

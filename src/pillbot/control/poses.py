@@ -6,15 +6,40 @@ corner poses is a decent approximation. Shrink the zone if grasps drift in the m
 from pillbot.utils.config import load_yaml
 
 REQUIRED = [
-    "home",
+    "home", "scan",
     "zone_hover_00", "zone_hover_10", "zone_hover_11", "zone_hover_01",
     "zone_grasp_00", "zone_grasp_10", "zone_grasp_11", "zone_grasp_01",
     "clip_above", "clip_insert", "cap_above", "cap_grip", "cap_press", "cap_drop",
 ]
 
 
-def load_poses(path: str = "configs/poses.yaml") -> dict:
-    return load_yaml(path)["poses"]
+# Poses that depend on bottle height (cap higher on a taller bottle). Each can be taught per bottle
+# as "<pose>@<bottle>", e.g. cap_grip@otc_vitamin; the plain name is the fallback for every bottle.
+BOTTLE_POSES = [
+    "zone_grasp_00", "zone_grasp_10", "zone_grasp_11", "zone_grasp_01",
+    "clip_insert", "cap_above", "cap_grip", "cap_press",
+]
+
+
+def load_poses(path: str = "configs/poses.yaml", bottle: str | None = None) -> dict:
+    """All poses; with `bottle`, any '<pose>@<bottle>' entries replace the generic ones."""
+    raw = load_yaml(path)["poses"]
+    poses = {k: v for k, v in raw.items() if "@" not in k}
+    if bottle:
+        for k, v in raw.items():
+            if k.endswith(f"@{bottle}") and v and any(v.values()):
+                poses[k.split("@")[0]] = v
+    return poses
+
+
+def bottle_specific(path: str = "configs/poses.yaml") -> dict[str, list[str]]:
+    """{bottle: [poses taught specifically for it]}"""
+    out: dict[str, list[str]] = {}
+    for k in load_yaml(path)["poses"]:
+        if "@" in k:
+            pose, b = k.split("@", 1)
+            out.setdefault(b, []).append(pose)
+    return out
 
 
 def lerp(a: dict, b: dict, t: float) -> dict:
