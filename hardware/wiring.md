@@ -40,6 +40,13 @@ Servo signal wires go to ESP32 pins; servo power does **not**.
 
 Avoid GPIO 0, 2 (as input), 12, 15 for external parts — they're boot strapping pins.
 
+## ESP32-CAM (wrist camera)
+- Power: **5 V and GND only** (from the 5 V rail, *not* the XL330 bus wires directly — Wi-Fi bursts pull ~300 mA
+  and brown the camera out). Put a 470 µF capacitor at the camera end.
+- Mount it on the hand above the jaws, looking down along them; the OV2640 lens focuses ~10 cm+ by default —
+  twist the lens slightly (glue dot off) for closer focus if the cap is blurry.
+- No data wires: it streams to the laptop/Pi over Wi-Fi (same network). The serial monitor prints its URL.
+
 ## Gripper cable bundle (the wrist rolls a lot!)
 SensX flex/USB, endoscope USB. Give them a loose service loop around the
 wrist-roll joint, spiral wrap, and strain-relieve both ends. Test a full ±150° wrist roll before running.

@@ -10,10 +10,19 @@ Both accept `joints: [...]` (motor IDs 1..N in that order, last must be `gripper
 a 5-servo arm (e.g. drop wrist_roll when the turntable does the twisting), and `use_degrees`
 (follower and leader MUST match).
 
+  camera type  pillbot_ipcam           network MJPEG camera (ESP32-CAM): `url: http://<ip>:81/stream`.
+                                       Stock `opencv` can't take a URL (it turns it into a Path) and
+                                       tries to set width/fps, which a stream refuses.
+
 Install:  pip install -e plugins/lerobot_robot_pillbot      (LeRobot CLIs auto-discover it)
 """
 from dataclasses import dataclass, field
 
+from pathlib import Path
+
+import cv2
+from lerobot.cameras import CameraConfig
+from lerobot.cameras.opencv import OpenCVCamera, OpenCVCameraConfig
 from lerobot.motors import Motor, MotorNormMode
 from lerobot.motors.motors_bus import SerialMotorsBus
 from lerobot.robots.config import RobotConfig
@@ -129,5 +138,40 @@ class PillbotKochLeader(KochLeader):
                                    motors=build_motors(config.joints, models, config.use_degrees))
 
 
-__all__ = ["PillbotKochFollower", "PillbotKochFollowerConfig", "PillbotKochLeader",
+# ---------------------------------------------------------------- network camera
+@CameraConfig.register_subclass("pillbot_ipcam")
+@dataclass
+class PillbotIPCameraConfig(OpenCVCameraConfig):
+    url: str = ""
+    index_or_path: int | Path = 0     # unused (url wins); kept so the parent dataclass is happy
+
+
+class PillbotIPCamera(OpenCVCamera):
+    """OpenCV camera that opens an MJPEG URL and accepts the stream's own size/fps."""
+
+    def __init__(self, config: PillbotIPCameraConfig):
+        if not config.url:
+            raise ValueError("pillbot_ipcam needs `url`, e.g. http://192.168.1.50:81/stream")
+        super().__init__(config)
+        self.index_or_path = config.url          # a str is passed to cv2.VideoCapture untouched
+
+    def __str__(self) -> str:
+        return f"PillbotIPCamera({self.config.url})"
+
+    def _configure_capture_settings(self) -> None:
+        w = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_WIDTH)))
+        h = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        if self.width is None or self.height is None:
+            self.width, self.height = w, h
+        elif w and h and (w, h) != (self.capture_width, self.capture_height):
+            raise RuntimeError(f"{self}: stream is {w}x{h} but config says "
+                               f"{self.capture_width}x{self.capture_height} — change FRAME in the "
+                               "ESP32-CAM sketch or width/height in robot.yaml")
+        self.capture_width, self.capture_height = w or self.capture_width, h or self.capture_height
+        if self.fps is None:
+            self.fps = self.videocapture.get(cv2.CAP_PROP_FPS) or 15
+        # fps is not enforced: a Wi-Fi stream delivers what it can; LeRobot reuses the latest frame
+
+
+__all__ = ["PillbotIPCamera", "PillbotIPCameraConfig", "PillbotKochFollower", "PillbotKochFollowerConfig", "PillbotKochLeader",
            "PillbotKochLeaderConfig", "resolve_models", "FOLLOWER_PRESETS", "LEADER_PRESETS"]

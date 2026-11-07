@@ -6,13 +6,22 @@ Don't run both at once — a camera can usually only be opened by one process.
 import cv2
 
 
+def camera_source(cam_cfg: dict):
+    """Device index / path for local cameras, URL for network ones (ESP32-CAM)."""
+    if cam_cfg.get("type") == "pillbot_ipcam":
+        return cam_cfg["url"]
+    return cam_cfg["index_or_path"]
+
+
 def open_camera(cam_cfg: dict) -> cv2.VideoCapture:
-    cap = cv2.VideoCapture(cam_cfg["index_or_path"])
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, cam_cfg.get("width", 640))
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_cfg.get("height", 480))
+    src = camera_source(cam_cfg)
+    cap = cv2.VideoCapture(src)
+    if not isinstance(src, str) or not src.startswith("http"):
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, cam_cfg.get("width", 640))
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_cfg.get("height", 480))
     if not cap.isOpened():
-        raise RuntimeError(f"Could not open camera {cam_cfg['index_or_path']} "
-                           "(check `lerobot-find-cameras opencv` and camera permissions)")
+        raise RuntimeError(f"Could not open camera {src} "
+                           "(check `lerobot-find-cameras opencv`, camera permissions, or the ESP32-CAM URL)")
     for _ in range(5):          # let auto-exposure settle
         cap.read()
     return cap

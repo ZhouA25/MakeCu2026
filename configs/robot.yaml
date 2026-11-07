@@ -19,10 +19,10 @@ leader:
                                 # skip the leader entirely if you don't have them — scripted mode needs none)
   use_degrees: true             # MUST match the follower
 
-# Two FIXED cameras (both ~45 deg down) + the endoscope as a small wrist camera.
+# Two FIXED cameras (both ~45 deg down) + an ESP32-CAM (or the USB endoscope) on the wrist.
 # Run `lerobot-find-cameras opencv` to get indices + supported resolutions.
 # Indices can change when the phone (dis)connects — re-check before each session.
-# Delete the `wrist` entry if the endoscope isn't mounted (LeRobot records every camera listed).
+# Delete the `wrist` entry if it isn't mounted (LeRobot records every camera listed).
 cameras:
   phone:    # iPhone Continuity Camera / DroidCam / Iriun on a tripod, opposite the arm
     type: opencv
@@ -37,12 +37,14 @@ cameras:
     height: 480
     fps: 30
 
-  wrist:    # USB endoscope on the gripper, looking down the jaws (fixed focus ~3-8 cm)
-    type: opencv
-    index_or_path: 2
-    width: 640
+  wrist:    # ESP32-CAM on the hand, looking down the jaws (firmware/esp32_cam). Wireless: only
+            # 5 V + GND go through the wrist. Needs the pillbot plugin installed.
+    type: pillbot_ipcam
+    url: http://192.168.1.50:81/stream   # printed on the ESP32-CAM serial monitor at boot
+    width: 640                           # must match FRAME in the sketch (VGA = 640x480)
     height: 480
-    fps: 30
+    fps: 15
+  # wrist (USB endoscope instead):  {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}
 
 # Camera used by scripted perception (bottle detection, zone mapping, marker tracking)
 perception_camera: phone
@@ -50,7 +52,7 @@ perception_camera: phone
 # ESP32 "PillBot Hub" (firmware/esp32_hub): 2x ultrasonic, START/STOP/MODE buttons, 4 servos, relay
 hub:
   enabled: true          # needed for the turntable; set false to run arm-only
-  port: /dev/tty.usbserialHUB
+  port: /dev/tty.usbserialHUB  # ESP32 over USB, or UNO Q: socket://<uno-q-address>:5555 (firmware/unoq_hub)
   baud: 115200
 
 tactile:

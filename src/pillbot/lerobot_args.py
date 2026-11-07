@@ -13,10 +13,15 @@ import sys
 from pillbot.utils.config import load_yaml
 
 
+def _cam_val(v) -> str:
+    v = str(v)
+    return f'"{v}"' if ":" in v or "/" in v else v      # URLs must be quoted inside the mapping
+
+
 def cameras_arg(cfg: dict) -> str:
     parts = []
     for name, c in cfg["cameras"].items():
-        inner = ", ".join(f"{k}: {v}" for k, v in c.items())
+        inner = ", ".join(f"{k}: {_cam_val(v)}" for k, v in c.items())
         parts.append(f"{name}: {{{inner}}}")
     return "{ " + ", ".join(parts) + " }"
 

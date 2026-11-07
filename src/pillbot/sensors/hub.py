@@ -22,7 +22,8 @@ class HubState:
 
 
 class Hub:
-    """Real hub over USB serial."""
+    """Real hub. `port` is a serial device (ESP32 over USB, e.g. /dev/cu.usbserial-0001)
+    or a network URL (UNO Q relay, e.g. socket://unoq.local:5555) — pyserial handles both."""
 
     def __init__(self, port: str, baud: int = 115200):
         self.port, self.baud = port, baud
@@ -33,14 +34,14 @@ class Hub:
 
     def connect(self, timeout: float = 3.0):
         import serial
-        self._ser = serial.Serial(self.port, self.baud, timeout=0.1)
+        self._ser = serial.serial_for_url(self.port, baudrate=self.baud, timeout=0.1)
         threading.Thread(target=self._loop, daemon=True).start()
         t0 = time.time()
         while time.time() - t0 < timeout:
             if self.state.t_ms:
                 return
             time.sleep(0.05)
-        raise RuntimeError(f"No data from hub on {self.port} — flashed firmware/esp32_hub?")
+        raise RuntimeError(f"No data from hub on {self.port} — ESP32 flashed / UNO Q app running?")
 
     def _loop(self):
         while not self._stop.is_set():

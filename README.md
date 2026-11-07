@@ -12,9 +12,9 @@ cap to unscrew it → the arm lifts the cap off into a tray.
 | Part | What we use |
 |---|---|
 | Arm | [danslovich/5DOF_Robot_Arm](https://github.com/danslovich/5DOF_Robot_Arm): 5× Dynamixel XL330-M288, 4:1 printed planetary shoulder — driven through LeRobot 0.7 by our plugin (see `hardware/arm.md`) |
-| Twisting | goBILDA 2000 servo turntable + servo clamp, driven by an ESP32 "PillBot Hub" |
+| Twisting | goBILDA 2000 servo turntable + servo clamp, driven by the "PillBot Hub" — an ESP32 **or** an Arduino UNO Q |
 | Touch | TouchTronix SensX25 (one, on the gripper finger) |
-| Vision | One fixed camera (webcam or phone on a tripod, ~45° down); optional endoscope as wrist cam |
+| Vision | One fixed camera (webcam or phone on a tripod, ~45° down) + an **ESP32-CAM wrist camera** streaming over Wi-Fi |
 | Controls | START / STOP / MODE push buttons on the hub; STOP cuts servo power in firmware |
 
 Everything runs in **simulation** with `--dry-run`, so you can develop and test without hardware.
@@ -68,9 +68,20 @@ bash scripts/find_devices.sh        # Dynamixel adapter, SensX adapter(s), ESP32
 bash scripts/setup_motors.sh        # IDs 1-5: shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper
 ```
 
-**c. Flash the ESP32 hub:** open `firmware/esp32_hub/esp32_hub.ino` in the Arduino IDE, board
+**c. Set up the hub** — pick one:
+
+*Arduino UNO Q:* follow `firmware/unoq_hub/README.md` (App Lab app: MCU sketch + Python relay),
+then set `hub.port: socket://<uno-q-address>:5555` in `configs/robot.local.yaml`.
+
+*ESP32:* open `firmware/esp32_hub/esp32_hub.ino` in the Arduino IDE, board
 "ESP32 Dev Module", install the **ESP32Servo** library, upload. The serial monitor (115200) should
 print `READY pillbot-hub 2` then `S ...` lines; pressing a button changes the last number.
+
+**c2. Flash the ESP32-CAM wrist camera:** open `firmware/esp32_cam/esp32_cam.ino`, set your Wi-Fi
+name/password at the top, board **"AI Thinker ESP32-CAM"**, upload (ESP32-CAM-MB USB board, or an FTDI
+adapter with IO0 → GND while resetting). The serial monitor (115200) prints
+`stream: http://<ip>:81/stream` — open it in a browser to check, then put that URL in
+`configs/robot.local.yaml` → `cameras.wrist.url`. Laptop/Pi and camera must be on the same Wi-Fi.
 
 **d. Calibrate the arm:**
 ```bash
@@ -157,6 +168,8 @@ src/pillbot/
   lerobot_args.py     builds LeRobot CLI flags from configs/ (used by scripts/)
 plugins/lerobot_robot_pillbot/   LeRobot plugin: pillbot_koch_follower / pillbot_koch_leader
 firmware/esp32_hub/   ESP32 hub firmware (ultrasonics, buttons, servos, relay)
+firmware/unoq_hub/    same hub on an Arduino UNO Q (MCU sketch + Linux-side TCP relay)
+firmware/esp32_cam/   ESP32-CAM wrist camera (fixed-size MJPEG stream over Wi-Fi)
 sensx_python/         TouchTronix SensX driver (git submodule)
 scripts/              find_devices, setup_motors, calibrate, teleop, record, train, rollout
 hardware/             arm notes, BOM, wiring, CAD/STL
@@ -172,6 +185,7 @@ tests/                simulation tests
 | `sensx_python` folder empty | `git submodule update --init` |
 | Motors not found | Wrong port, motor power off, or IDs/baud not set — rerun `scripts/setup_motors.sh` |
 | `No data from hub` | ESP32 not flashed / wrong port / `hub.enabled` — or set `hub.enabled: false` to run arm-only |
+| Wrist camera fails in LeRobot | Plugin not installed (`pillbot_ipcam` type), wrong URL, or stream size ≠ `width`/`height` — the error says which |
 | Camera won't open | Index changed (phone reconnects reorder them) — rerun `find_devices.sh`; grant camera permission to Terminal on macOS |
 | Arm sags / misses | Bring the zone & clip closer to the base, add an elbow rubber band, re-teach poses |
 | Cap won't come off | Flip `fixture.loosen_direction`, raise `twist_deg` in `bottles.yaml`, check the clip isn't letting the bottle slip |

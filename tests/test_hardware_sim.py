@@ -80,3 +80,44 @@ def test_pipeline_cli_turntable_dry_run():
                        cwd=ROOT, capture_output=True, text=True, env=env)
     assert r.returncode == 0, r.stderr
     assert "opened!" in r.stderr and "passes" in r.stderr
+
+
+def test_hub_over_tcp_like_uno_q():
+    """Hub client against a fake UNO Q relay on localhost (same protocol over socket://)."""
+    import socket
+    import threading
+    import time
+
+    from pillbot.sensors.hub import Hub
+
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(1)
+    port = srv.getsockname()[1]
+    got = []
+
+    def fake_unoq():
+        conn, _ = srv.accept()
+        conn.sendall(b"READY pillbot-hub-unoq 1\n")
+        f = conn.makefile("r")
+        for i in range(30):
+            conn.sendall(f"S {i + 1} 45 300 1\n".encode())
+            time.sleep(0.01)
+        conn.settimeout(1)
+        try:
+            got.append(f.readline().strip())
+        except OSError:
+            pass
+        conn.close()
+
+    threading.Thread(target=fake_unoq, daemon=True).start()
+    hub = Hub(f"socket://127.0.0.1:{port}")
+    hub.connect(timeout=2)
+    time.sleep(0.05)
+    assert hub.state.clip_mm == 45 and hub.state.zone_mm == 300 and hub.state.pressed(BTN_START)
+    hub.servo_us(0, 1500)
+    time.sleep(0.3)
+    assert got == ["SV 0 1500"]
+    hub._stop.set()
+    hub._ser.close()
+    srv.close()

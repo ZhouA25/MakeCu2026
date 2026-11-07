@@ -81,3 +81,13 @@ def test_full_pipeline_cli_dry_run():
                        capture_output=True, text=True, env=env)
     assert r.returncode == 0, r.stderr
     assert "opened!" in r.stderr
+
+
+def test_esp32_cam_config():
+    from pillbot.perception.cameras import camera_source
+    wrist = CFG["cameras"]["wrist"]
+    assert wrist["type"] == "pillbot_ipcam"
+    assert camera_source(wrist).startswith("http://") and camera_source(wrist).endswith("/stream")
+    assert camera_source({"index_or_path": 0}) == 0
+    arg = cameras_arg(CFG)
+    assert f'url: "{wrist["url"]}"' in arg            # URL quoted for LeRobot's parser

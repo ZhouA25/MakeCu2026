@@ -30,6 +30,11 @@ Rules that keep it working:
 4. Run the XL330s at 5–6 V (max 6 V!). Low-infill links. Empty bottles.
 5. Twisting caps is done by the goBILDA turntable, not the wrist (XL330 can't hold cap torque).
 
+## Wrist camera
+ESP32-CAM (`firmware/esp32_cam`) on the `hand`, above the jaws, looking down them. ~10 g at the end of the
+arm adds a little elbow load — another reason to keep the forearm vertical. Only 5 V + GND cross the
+wrist-roll joint, so leave a loose loop of those two wires.
+
 ## Things to check on the bench
 - **Gripper opening vs bottle size.** The stock `eef` finger is 18 mm wide × 63 mm long on a 46 mm
   hand — confirm it opens wider than your bottle body (40–55 mm). If not, grab the narrower cap /
