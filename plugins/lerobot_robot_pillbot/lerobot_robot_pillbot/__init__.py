@@ -7,8 +7,9 @@
                                                 m288 = 6x XL330-M288 (works, but stiffer by hand)
 
 Both accept `joints: [...]` (motor IDs 1..N in that order, last must be `gripper`) so you can build
-a 5-servo arm (e.g. drop wrist_roll when the turntable does the twisting), and `use_degrees`
-(follower and leader MUST match).
+a 5-servo arm (e.g. no wrist_flex on danslovich/5DOF_Robot_Arm), and `use_degrees`
+(follower and leader MUST match). The follower also takes `gripper_goal_current` (mA) — the gripper
+runs in current-limited mode, so this sets how hard it squeezes (it twists caps off by friction).
 
   camera type  pillbot_ipcam           network MJPEG camera (ESP32-CAM): `url: http://<ip>:81/stream`.
                                        Stock `opencv` can't take a URL (it turns it into a Path) and
@@ -69,6 +70,7 @@ class PillbotKochFollowerConfig(KochFollowerConfig):
     preset: str = "koch"
     models: list[str] | None = None
     joints: list[str] = field(default_factory=lambda: list(DEFAULT_JOINTS))
+    gripper_goal_current: int | None = None   # mA; None = motor default
 
 
 class PillbotKochFollower(KochFollower):
@@ -115,6 +117,9 @@ class PillbotKochFollower(KochFollower):
                 self.bus.write("Position_P_Gain", "elbow_flex", 1500)
                 self.bus.write("Position_I_Gain", "elbow_flex", 0)
                 self.bus.write("Position_D_Gain", "elbow_flex", 600)
+            if self.config.gripper_goal_current is not None:
+                # caps come off by friction: grip current sets the squeeze (and the max twist before slip)
+                self.bus.write("Goal_Current", "gripper", int(self.config.gripper_goal_current))
 
 
 # ---------------------------------------------------------------- leader

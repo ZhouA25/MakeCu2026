@@ -5,7 +5,7 @@ import sys
 import pytest
 
 from pillbot.control.fixture import Fixture
-from pillbot.control.open_sequence import open_cap_turntable
+from pillbot.control.open_sequence import open_cap
 from pillbot.control.poses import load_poses
 from pillbot.control.robot_io import Aborted, RobotIO
 from pillbot.control.triggers import wait_for_trigger
@@ -25,21 +25,29 @@ def io():
     return r
 
 
-def test_turntable_pulse_mapping():
-    f = Fixture(MockHub(), CFG["fixture"], dry_run=True)
-    assert f._us(0) == 1500 and f._us(150) == 2500 and f._us(-150) == 500
-    f.rotate_to(500)                     # clamped to range
-    assert f.angle == 150 and f.hub.servos[0] == 2500
-
-
-def test_open_with_turntable(io):
+def test_fixture_clamp_unclamp():
     hub = MockHub()
     fx = Fixture(hub, CFG["fixture"], dry_run=True)
+    fx.clamp()
+    assert fx.clamped and hub.servos[CFG["fixture"]["clamp_channel"]] == CFG["fixture"]["clamp_closed_us"]
+    fx.unclamp()
+    assert not fx.clamped and hub.servos[CFG["fixture"]["clamp_channel"]] == CFG["fixture"]["clamp_open_us"]
+
+
+def test_open_twists_with_wrist_in_configured_direction(io):
     io.sim_gripper_block = 15
-    stats = open_cap_turntable(io, MockTactile(io), get_bottle("otc_vitamin"), load_poses(), G, fx)
-    assert stats["turned_deg"] == 360 and stats["passes"] == 2 and stats["cap_lifted"]
-    assert fx.angle == 0                                 # homed
-    assert hub.servos[1] == CFG["fixture"]["clamp_open_us"]   # unclamped at the end
+    start = io.target["wrist_roll"]
+    rolls = []
+    orig = io.move_to
+    def spy(goal, **kw):
+        if "wrist_roll" in goal:
+            rolls.append(goal["wrist_roll"] - start)
+        return orig(goal, **kw)
+    io.move_to = spy
+    stats = open_cap(io, MockTactile(io), get_bottle("otc_vitamin"), load_poses(), G,
+                     ocfg={"twist_per_grip_deg": 120, "loosen_sign": 1})
+    assert stats["turned_deg"] == 360 and stats["cycles"] == 3 and stats["cap_lifted"]
+    assert max(rolls) == 120                               # twisted +120 each grip, then unwound to 0
 
 
 def test_stop_button_aborts_motion(io):
@@ -74,12 +82,12 @@ def test_make_tactile_backends(io):
     assert isinstance(make_tactile(cfg, io), NullTactile)
 
 
-def test_pipeline_cli_turntable_dry_run():
+def test_pipeline_cli_clamp_push_twist_dry_run():
     env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
-    r = subprocess.run([sys.executable, "-m", "pillbot.run", "--dry-run", "--open-method", "turntable"],
+    r = subprocess.run([sys.executable, "-m", "pillbot.run", "--dry-run", "--bottle", "otc_vitamin"],
                        cwd=ROOT, capture_output=True, text=True, env=env)
     assert r.returncode == 0, r.stderr
-    assert "opened!" in r.stderr and "passes" in r.stderr
+    assert "opened!" in r.stderr and "'turned_deg': 360.0" in r.stderr
 
 
 def test_hub_over_tcp_like_uno_q():

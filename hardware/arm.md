@@ -28,7 +28,12 @@ Rules that keep it working:
 3. Rubber band / spring from the upper arm to the forearm if the elbow sags; tune with torque off
    until the forearm roughly floats.
 4. Run the XL330s at 5–6 V (max 6 V!). Low-infill links. Empty bottles.
-5. Twisting caps is done by the goBILDA turntable, not the wrist (XL330 can't hold cap torque).
+5. **Twisting is done by the wrist** (`wrist_roll`), with the bottle clamped. This is the arm's hardest
+   job: an XL330 stalls at ~0.52 N·m and the cap only turns if the jaws don't slip. Help it:
+   - grippy jaws shaped to the cap (TPU, ridges matching the cap's knurling), SensX on one jaw;
+   - raise `follower.gripper_goal_current` (mA, max 1750) for a firmer squeeze;
+   - test early with a real child-proof bottle; if the wrist stalls, add a gear reduction on the
+     wrist (like the shoulder's planetary) or loosen the cap once by hand before the demo.
 
 ## Wrist camera
 ESP32-CAM (`firmware/esp32_cam`) on the `hand`, above the jaws, looking down them. ~10 g at the end of the

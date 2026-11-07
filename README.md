@@ -5,14 +5,14 @@ fixture that **picks up a pill bottle and opens it** for people with limited gri
 dexterity (arthritis, Parkinson's, post-stroke, elderly users).
 
 **How it works:** set a bottle in the taped start zone → the arm picks it up and drops it into a
-funnel clip on a servo turntable → the clip clamps → the arm grips the cap (TouchTronix SensX25
-tactile pads feel the contact and detect slipping) → the turntable spins the **bottle** under the held
-cap to unscrew it → the arm lifts the cap off into a tray.
+funnel clip → a servo clamp locks the bottle body → the arm grips the cap (a TouchTronix SensX25
+tactile pad feels the contact and detects slipping), **pushes down and twists** it off with its wrist →
+and drops the cap in a tray. The arm itself stays general-purpose; only the clamp is task-specific.
 
 | Part | What we use |
 |---|---|
 | Arm | [danslovich/5DOF_Robot_Arm](https://github.com/danslovich/5DOF_Robot_Arm): 5× Dynamixel XL330-M288, 4:1 printed planetary shoulder — driven through LeRobot 0.7 by our plugin (see `hardware/arm.md`) |
-| Twisting | goBILDA 2000 servo turntable + servo clamp, driven by the "PillBot Hub" — an ESP32 **or** an Arduino UNO Q |
+| Fixture | Funnel clip + goBILDA 2000 servo clamp, driven by the "PillBot Hub" — an ESP32 **or** an Arduino UNO Q |
 | Touch | TouchTronix SensX25 (one, on the gripper finger) |
 | Vision | One fixed camera (webcam or phone on a tripod, ~45° down) + an **ESP32-CAM wrist camera** streaming over Wi-Fi |
 | Controls | START / STOP / MODE push buttons on the hub; STOP cuts servo power in firmware |
@@ -103,8 +103,20 @@ python -m pillbot.perception.zone --calibrate     # click the 4 tape corners in 
 python -m pillbot.perception.detect_bottle         # live check: bottle box + s,t position; q to quit
 ```
 
-**g. Tune fixture servos** in `configs/robot.yaml` → `fixture:` (`clamp_open_us`, `clamp_closed_us`,
-`loosen_direction`), and the tactile `contact_threshold` while watching live readings.
+**g. Bench-test and tune the fixture — no arm needed** (hub + clamp servo + clip):
+```bash
+python -m pillbot.tools.fixture_bench status            # live ultrasonics + buttons
+python -m pillbot.tools.fixture_bench tune clamp        # find open/closed pulses -> saved to config
+python -m pillbot.tools.fixture_bench seat              # "bottle seated" distance -> saved to config
+python -m pillbot.tools.fixture_bench cycle             # clamp / unclamp a few times
+python -m pillbot.tools.fixture_bench hand-open         # clamp, then YOU push + twist the cap off by hand
+python -m pillbot.tools.fixture_bench servo 0 1500      # raw pulse on a channel (0 = limp)
+```
+Add `--dry-run` to try any of them without hardware. `hand-open` proves the clamp holds a real
+child-proof bottle while the cap is twisted, and can save the measured `twist_deg` to `bottles.yaml`.
+Then set `open.loosen_sign` (which way the wrist unscrews) and `follower.gripper_goal_current`
+(grip strength) once the arm is up.
+Then tune the tactile `contact_threshold` while watching live SensX readings.
 
 ---
 
@@ -124,7 +136,7 @@ python -m pillbot.run --dry-run                # any of the above, simulated
 **STOP**: the STOP button cuts servo power on the hub and aborts the run; the arm holds position
 until you support it and press Enter. Ctrl-C also stops.
 
-Suggested bring-up order: `--pick skip` (tune the clamp, turntable and grip on a clipped bottle) →
+Suggested bring-up order: `--pick skip` (tune the clamp, grip, push and twist on a clipped bottle) →
 `--zone-st 0.5,0.5` (tune pick/place) → full run with vision → `--trigger zone` for the demo.
 
 ---
@@ -136,7 +148,7 @@ Needs a leader arm for teleop demos. Record → train on a GPU → run:
 bash scripts/teleop.sh                         # check both camera views first
 bash scripts/record.sh pick_place              # ~50+ demos, vary the bottle position (EPISODES=50)
 DEVICE=cuda bash scripts/train.sh pick_place   # ACT, on Colab / a cloud GPU
-python -m pillbot.run --pick policy            # policy picks & places, scripted turntable opens
+python -m pillbot.run --pick policy            # policy picks & places, scripted push-and-twist opens
 ```
 Tasks, dataset names and checkpoint paths live in `configs/policies.yaml`.
 
@@ -153,7 +165,8 @@ Tasks, dataset names and checkpoint paths live in `configs/policies.yaml`.
 | `configs/policies.yaml` | trained policies for `--pick policy` / `--open policy` |
 | `configs/zone_calib.local.yaml` | camera → zone calibration (written by `zone --calibrate`) |
 
-Key switches in `robot.yaml`: `open_method: turntable | wrist`, `tactile.backend: sensx | sensx2 | mock | none`,
+Key switches in `robot.yaml`: `open:` (twist per grip, direction), `follower.gripper_goal_current`,
+`tactile.backend: sensx | mock | none`,
 `hub.enabled`, `trigger.default`.
 
 ## Repo layout
@@ -161,8 +174,9 @@ Key switches in `robot.yaml`: `open_method: turntable | wrist`, `tactile.backend
 src/pillbot/
   run.py              full pipeline CLI
   control/            robot_io (safe stepping, STOP), grasp (feel-for-contact, missed-grasp),
-                      pick_place, open_sequence (wrist / turntable), fixture, poses, teach,
+                      pick_place, open_sequence (grip, push, twist), fixture (clamp), poses, teach,
                       triggers, policy_runner
+  tools/fixture_bench.py  bench-test the hub + clip + clamp without the arm
   perception/         cameras, zone calibration, bottle detection, spin monitor
   sensors/            tactile (SensX25), hub (ESP32 serial client)
   lerobot_args.py     builds LeRobot CLI flags from configs/ (used by scripts/)

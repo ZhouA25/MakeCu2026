@@ -10,6 +10,7 @@ follower:
   # Arm: github.com/danslovich/5DOF_Robot_Arm — 5x XL330-M288, 4:1 printed planetary on the shoulder,
   # 150 mm links, NO wrist pitch. Motor IDs 1..5 follow this order (set with scripts/setup_motors.sh).
   joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper]
+  gripper_goal_current: 1000    # mA (XL330 max 1750). Higher = stronger grip on the cap, more heat
   use_degrees: true             # arm joints in degrees (scripted code assumes this)
 leader:
   type: pillbot_koch_leader
@@ -51,7 +52,7 @@ perception_camera: phone
 
 # ESP32 "PillBot Hub" (firmware/esp32_hub): 2x ultrasonic, START/STOP/MODE buttons, 4 servos, relay
 hub:
-  enabled: true          # needed for the turntable; set false to run arm-only
+  enabled: true          # drives the clamp; set false to run arm-only (no clamp)
   port: /dev/tty.usbserialHUB  # ESP32 over USB, or UNO Q: socket://<uno-q-address>:5555 (firmware/unoq_hub)
   baud: 115200
 
@@ -71,25 +72,18 @@ gripper:                 # LeRobot gripper units: 0 = closed, 100 = open
   squeeze: 4.0           # extra closing after contact for a firm grip
   stall_margin: 6.0      # no tactile: if gripper stops this far above `closed`, we're holding something
 
-# How to twist the cap off:
-#   wrist      — wrist_roll twists the cap (~90°/grip, several regrips). No extra hardware.
-#   turntable  — clip sits on a goBILDA servo turntable that spins the BOTTLE while the arm
-#                holds + presses the cap (~300° per pass). Needs hub + fixture.
-open_method: turntable   # XL330 wrist torque is too low for real caps — let the goBILDA do it
+# Opening: the clamp holds the bottle body; the ARM grips the cap, pushes down, and twists with wrist_roll.
+open:
+  twist_per_grip_deg: 90     # wrist_roll per grip; bigger = fewer regrips (limited by wrist cable slack)
+  loosen_sign: -1            # -1 = decreasing wrist_roll unscrews the cap. Flip to 1 if it tightens instead
+  max_slips: 3               # give up after this many slipped twists
 
 fixture:
-  turntable_channel: 0       # hub servo ch0 = GPIO25 (goBILDA 2000 #1)
-  turntable_center_us: 1500
-  turntable_deg_per_us: 0.15 # goBILDA 2000 spec
-  turntable_range_deg: 300
-  turntable_speed_dps: 90    # repositioning speed
-  twist_speed_dps: 45        # loosening speed (slower = more torque headroom)
-  loosen_direction: cw       # bottle direction (viewed from above) that unscrews a held cap; flip if wrong
-  clamp_channel: 1           # hub servo ch1 = GPIO26 (goBILDA #2 or D646WP)
-  clamp_open_us: 1100        # tune by hand!
+  clamp_channel: 0           # hub servo ch0 = GPIO25 (goBILDA 2000)
+  clamp_open_us: 1100        # tune: python -m pillbot.tools.fixture_bench tune clamp
   clamp_closed_us: 1700
   clamp_settle_s: 0.6
-  clip_seated_mm: 60         # clip ultrasonic reads <= this when a bottle is seated
+  clip_seated_mm: 60         # clip ultrasonic reads <= this when a bottle is seated (optional sensor)
 
 trigger:
   default: enter             # enter | button | zone

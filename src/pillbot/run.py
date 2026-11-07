@@ -1,9 +1,8 @@
 """Full PillBot run:
-trigger -> find bottle -> pick -> place in clip -> (clamp) -> push + twist cap off -> drop cap -> home.
+trigger -> find bottle -> pick -> place in clip -> clamp -> grip cap, push down, twist -> drop cap -> home.
 
   python -m pillbot.run --dry-run                         # simulate everything, no hardware
   python -m pillbot.run                                   # scripted pick + scripted open (config defaults)
-  python -m pillbot.run --open-method turntable           # bottle spun by the goBILDA turntable
   python -m pillbot.run --trigger zone                    # start as soon as a bottle is set down
   python -m pillbot.run --pick policy                     # ACT policy picks/places, script opens
   python -m pillbot.run --pick skip                       # bottle already in the clip
@@ -15,7 +14,7 @@ import logging
 import sys
 
 from pillbot.control.fixture import Fixture
-from pillbot.control.open_sequence import OpenFailed, open_cap, open_cap_turntable
+from pillbot.control.open_sequence import OpenFailed, open_cap
 from pillbot.control.pick_place import pick_bottle, place_in_clip
 from pillbot.control.policy_runner import run_policy_phase
 from pillbot.control.poses import load_poses, untaught
@@ -53,7 +52,6 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
 
     # 1. pick & place
     if fixture:
-        fixture.home()
         fixture.unclamp()
     if args.pick == "scripted":
         if args.zone_st:
@@ -74,34 +72,38 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
         if not run_policy_phase(io, cfg, pcfg, "pick_place", dry_run=args.dry_run):
             raise OpenFailed("pick_place policy failed")
 
-    if fixture and not args.dry_run and cfg.get("hub", {}).get("enabled") and not fixture.bottle_seated():
-        raise OpenFailed("clip ultrasonic doesn't see a seated bottle")
+    if fixture and not args.dry_run and cfg.get("hub", {}).get("enabled"):
+        if hub.state.clip_mm < 0:
+            log.warning("no clip ultrasonic reading — skipping the 'bottle seated' check")
+        elif not fixture.bottle_seated():
+            raise OpenFailed("clip ultrasonic doesn't see a seated bottle")
 
     # 2. open
     if args.dry_run:
         io.sim_gripper_block = 15.0               # cap
-    if args.open_mode == "policy":
-        ok = run_policy_phase(io, cfg, pcfg, "open_cap", dry_run=args.dry_run)
-        log.info("open_cap policy finished: %s", ok)
-    elif args.open_method == "turntable":
-        log.info("opened! %s", open_cap_turntable(io, tactile, bottle, poses, gcfg, fixture))
-    else:
-        monitor, monitor_cap = None, None
-        if args.spin_check and not args.dry_run:
-            from pillbot.perception.cameras import perception_camera
-            from pillbot.perception.spin_monitor import BottleSpinMonitor
-            monitor_cap = perception_camera(cfg)
-            monitor = BottleSpinMonitor(monitor_cap)
-            monitor.arm()
-        try:
-            if fixture:
-                fixture.clamp()
-            log.info("opened! %s", open_cap(io, tactile, bottle, poses, gcfg, monitor=monitor))
-            if fixture:
-                fixture.unclamp()
-        finally:
-            if monitor_cap is not None:
-                monitor_cap.release()
+    if fixture:
+        fixture.clamp()
+    try:
+        if args.open_mode == "policy":
+            ok = run_policy_phase(io, cfg, pcfg, "open_cap", dry_run=args.dry_run)
+            log.info("open_cap policy finished: %s", ok)
+        else:
+            monitor, monitor_cap = None, None
+            if args.spin_check and not args.dry_run:
+                from pillbot.perception.cameras import perception_camera
+                from pillbot.perception.spin_monitor import BottleSpinMonitor
+                monitor_cap = perception_camera(cfg)
+                monitor = BottleSpinMonitor(monitor_cap)
+                monitor.arm()
+            try:
+                stats = open_cap(io, tactile, bottle, poses, cfg["gripper"], monitor=monitor, ocfg=cfg.get("open"))
+                log.info("opened! %s", stats)
+            finally:
+                if monitor_cap is not None:
+                    monitor_cap.release()
+    finally:
+        if fixture:
+            fixture.unclamp()
     io.move_to(poses["home"])
 
 
@@ -111,29 +113,27 @@ def main():
     ap.add_argument("--bottle", default="standard_amber_40dr")
     ap.add_argument("--pick", choices=["scripted", "policy", "skip"], default="scripted")
     ap.add_argument("--open", choices=["scripted", "policy"], default="scripted", dest="open_mode")
-    ap.add_argument("--open-method", choices=["wrist", "turntable"], help="default: config open_method")
     ap.add_argument("--trigger", choices=["enter", "button", "zone"], help="default: config trigger.default")
     ap.add_argument("--zone-st", help="s,t in [0,1] — bypass camera detection")
-    ap.add_argument("--spin-check", action="store_true", help="(wrist method) watch blue tape on bottle for spinning")
+    ap.add_argument("--spin-check", action="store_true", help="watch blue tape on the bottle for spinning in the clamp")
     ap.add_argument("--loop", action="store_true", help="repeat until Ctrl-C")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
 
     cfg, pcfg = load_yaml(args.config), load_yaml("configs/policies.yaml")
-    args.open_method = args.open_method or cfg.get("open_method", "wrist")
     args.trigger = args.trigger or cfg.get("trigger", {}).get("default", "enter")
     poses, bottle = load_poses(), get_bottle(args.bottle)
     if not args.dry_run and (missing := untaught(poses)):
         sys.exit(f"Untaught poses: {missing}\nRun: python -m pillbot.control.teach --missing")
 
     hub = make_hub(cfg, dry_run=args.dry_run)
-    needs_hub = args.open_method == "turntable" or args.trigger in ("button", "zone")
-    if needs_hub and isinstance(hub, MockHub) and not args.dry_run:
-        sys.exit(f"--open-method {args.open_method} / --trigger {args.trigger} need the ESP32 hub "
-                 "(set hub.enabled: true in configs/robot.yaml)")
-    fixture = Fixture(hub, cfg["fixture"], dry_run=args.dry_run) if (
-        args.open_method == "turntable" or cfg.get("hub", {}).get("enabled") or args.dry_run) else None
+    if args.trigger in ("button", "zone") and isinstance(hub, MockHub) and not args.dry_run:
+        sys.exit(f"--trigger {args.trigger} needs the hub (set hub.enabled: true in configs/robot.yaml)")
+    hub_on = bool(cfg.get("hub", {}).get("enabled")) or args.dry_run
+    if not hub_on:
+        log.warning("hub disabled: no clamp — the clip alone must stop the bottle turning")
+    fixture = Fixture(hub, cfg["fixture"], dry_run=args.dry_run) if hub_on else None
 
     io = RobotIO.from_config(cfg, dry_run=args.dry_run)
     hub.connect()

@@ -34,9 +34,9 @@ and run `python -m pillbot.run --pick skip --trigger button`.
 | D2 / D4 | HC-SR04 #1 (clip) TRIG / ECHO | digital pins are 5 V tolerant → **no divider needed** |
 | D7 / D8 | HC-SR04 #2 (start zone) TRIG / ECHO | |
 | A0 / A1 / A2 | START / STOP / MODE buttons → GND | internal pull-ups; analog pins are NOT 5 V tolerant |
-| D9 | Servo ch0: turntable (goBILDA #1) | signal only — servo power from the 6 V rail via the relay |
-| D10 | Servo ch1: clamp | |
-| D11 | Servo ch2: cap tray (optional) | |
+| D9 | Servo ch0: clamp (goBILDA #1) | signal only — servo power from the 6 V rail via the relay |
+| D10 | Servo ch1: spare (cap tray) | |
+| D11 | Servo ch2: spare | |
 | D6 | Servo ch3: spare | |
 | D12 | Relay IN (hobby-servo power) | `RELAY_ACTIVE_LOW` in the sketch |
 
@@ -45,5 +45,5 @@ Power the UNO Q from a 5 V / 3 A USB-C supply.
 
 ## Latency / safety
 Each command goes laptop → Wi-Fi → Linux → Bridge → MCU (tens of ms). That's fine for the
-turntable and clamp. STOP is handled on the MCU directly, and the relay switches off if the
+clamp. STOP is handled on the MCU directly, and the relay switches off if the
 laptop disconnects.

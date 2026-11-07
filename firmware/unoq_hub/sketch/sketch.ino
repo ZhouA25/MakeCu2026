@@ -19,7 +19,7 @@
 const int PIN_TRIG_CLIP = 2, PIN_ECHO_CLIP = 4;
 const int PIN_TRIG_ZONE = 7, PIN_ECHO_ZONE = 8;
 const int PIN_BTN_START = A0, PIN_BTN_STOP = A1, PIN_BTN_MODE = A2;
-const int SERVO_PINS[4] = {9, 10, 11, 6};   // ch0 turntable, ch1 clamp, ch2 tray, ch3 spare (PWM pins)
+const int SERVO_PINS[4] = {9, 10, 11, 6};   // ch0 clamp, ch1 cap tray (optional), ch2-3 spare (PWM pins)
 const int PIN_RELAY = 12;
 const bool RELAY_ACTIVE_LOW = true;
 

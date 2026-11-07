@@ -1,5 +1,6 @@
-"""Scripted cap opening, bottle already in the clip:
-grip cap -> (press down) -> twist CCW -> release -> rotate wrist back -> repeat -> lift cap off.
+"""Scripted cap opening, bottle clamped in the clip:
+grip cap -> push down (child-proof caps) -> twist with wrist_roll -> release -> unwind wrist -> repeat
+-> lift the cap off -> drop it in the tray.
 
 Tactile (if available) is used to grip by feel and to detect the cap slipping in the jaws;
 a slipped twist doesn't count and the next grip squeezes harder.
@@ -17,16 +18,22 @@ from pillbot.utils.config import get_bottle, load_yaml
 
 log = logging.getLogger(__name__)
 
-TWIST_PER_GRIP = 90.0   # deg of wrist_roll per grip cycle; raise if your wrist range allows
-MAX_SLIPS = 3
+DEFAULT_OPEN = {
+    "twist_per_grip_deg": 90.0,   # wrist_roll per grip cycle; more = fewer regrips, but watch wrist cables
+    "loosen_sign": -1,            # -1: decreasing wrist_roll unscrews (CCW seen from above). Flip if wrong
+    "max_slips": 3,
+}
 
 
 class OpenFailed(RuntimeError):
     pass
 
 
-def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None) -> dict:
-    """Returns stats. `monitor` (optional) is a BottleSpinMonitor from perception."""
+def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None, ocfg: dict | None = None) -> dict:
+    """Returns stats. `monitor` (optional) is a BottleSpinMonitor from perception.
+    `ocfg` = configs/robot.yaml `open:` section (twist_per_grip_deg, loosen_sign, max_slips)."""
+    o = {**DEFAULT_OPEN, **(ocfg or {})}
+    per_grip, sign, max_slips = float(o["twist_per_grip_deg"]), (-1 if o["loosen_sign"] < 0 else 1), int(o["max_slips"])
     push = bottle["cap_type"] == "push_and_turn"
     io.move_to(poses["cap_above"] | {"gripper": gcfg["open"]})
     io.move_to(poses["cap_grip"])
@@ -39,21 +46,21 @@ def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None) -
             raise OpenFailed(f"could not grip cap: {g.reason}")
         if push:
             io.move_to(poses["cap_press"])                # push down while twisting
-        step = min(TWIST_PER_GRIP, bottle["twist_deg"] - turned)
+        step = min(per_grip, bottle["twist_deg"] - turned)
         roll0 = io.target["wrist_roll"]
-        io.move_to({"wrist_roll": roll0 - step})          # CCW = loosen (flip sign if your wrist is mirrored)
+        io.move_to({"wrist_roll": roll0 + sign * step})   # twist to loosen
 
         slipped = tactile.is_slipping(g.pressure)
         if monitor is not None and monitor.bottle_spun():
-            raise OpenFailed("bottle is spinning in the clip — tighten/line the clip")
+            raise OpenFailed("bottle is spinning in the clamp — tighten clamp_closed_us / add grippy liner")
 
         release(io, gcfg)
         io.move_to(poses["cap_grip"] | {"wrist_roll": roll0})   # back up + unwind the wrist
         if slipped:
             slips += 1
             extra += gcfg["squeeze"]
-            log.warning("open: cap slipped (%d/%d), squeezing harder", slips, MAX_SLIPS)
-            if slips >= MAX_SLIPS:
+            log.warning("open: cap slipped (%d/%d), squeezing harder", slips, max_slips)
+            if slips >= max_slips:
                 raise OpenFailed("cap keeps slipping — check pads / grip force")
             continue
         turned += step
@@ -65,51 +72,6 @@ def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None) -
     io.move_to(poses["cap_drop"])
     release(io, gcfg)
     return {"cycles": cycles, "slips": slips, "turned_deg": turned, "cap_lifted": g.success}
-
-
-def open_cap_turntable(io, tactile, bottle: dict, poses: dict, gcfg: dict, fixture) -> dict:
-    """Arm grips (+ presses) the cap and holds still; the turntable spins the bottle to unscrew it.
-
-    Each pass: pre-wind turntable (cap NOT held) -> grip cap -> press -> loosen up to ~300° -> release.
-    """
-    push = bottle["cap_type"] == "push_and_turn"
-    fixture.clamp()
-    io.move_to(poses["cap_above"] | {"gripper": gcfg["open"]})
-
-    remaining, passes, slips, extra = float(bottle["twist_deg"]), 0, 0, 0.0
-    while remaining > 0:
-        passes += 1
-        fixture.prewind()                                   # only while the cap is free
-        io.move_to(poses["cap_grip"])
-        g = grip_until_contact(io, tactile, gcfg, extra_squeeze=extra)
-        if not g.success:
-            raise OpenFailed(f"could not grip cap: {g.reason}")
-        if push:
-            io.move_to(poses["cap_press"])
-        stroke = min(remaining, fixture.loosen_stroke())
-        fixture.loosen(stroke)
-        slipped = tactile.is_slipping(g.pressure)
-        release(io, gcfg)
-        io.move_to(poses["cap_above"])
-        if slipped:
-            slips += 1
-            extra += gcfg["squeeze"]
-            log.warning("open: cap slipped in jaws (%d/%d)", slips, MAX_SLIPS)
-            if slips >= MAX_SLIPS:
-                raise OpenFailed("cap keeps slipping — check pads / grip force")
-            continue
-        remaining -= stroke
-        log.info("open: pass %d, %.0f deg left", passes, remaining)
-
-    io.move_to(poses["cap_grip"])
-    g = grip_until_contact(io, tactile, gcfg, extra_squeeze=extra)
-    io.move_to(poses["cap_above"])
-    io.move_to(poses["cap_drop"])
-    release(io, gcfg)
-    fixture.home()
-    fixture.unclamp()
-    return {"passes": passes, "slips": slips, "turned_deg": float(bottle["twist_deg"]) - remaining,
-            "cap_lifted": g.success}
 
 
 def main():
@@ -129,7 +91,7 @@ def main():
     tactile.connect()
     try:
         poses = load_poses()
-        print(open_cap(io, tactile, get_bottle(args.bottle), poses, cfg["gripper"]))
+        print(open_cap(io, tactile, get_bottle(args.bottle), poses, cfg["gripper"], ocfg=cfg.get("open")))
         io.move_to(poses["home"])
     finally:
         tactile.close()

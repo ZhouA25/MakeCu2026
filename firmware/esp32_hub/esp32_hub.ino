@@ -1,6 +1,6 @@
 // PillBot Hub — ESP32 (ESP-WROOM-32 DevKit)
 // Reads: 2x HC-SR04, 3x push buttons (START / STOP / MODE)
-// Drives: 4 servo channels (turntable, clamp, tray, spare), 1 relay (hobby-servo power)
+// Drives: 4 servo channels (ch0 clamp, ch1-3 spare), 1 relay (hobby-servo power)
 //
 // Library (Arduino Library Manager): "ESP32Servo"
 // Board: "ESP32 Dev Module". Pin map: hardware/wiring.md

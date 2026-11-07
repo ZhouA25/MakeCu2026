@@ -7,7 +7,7 @@
       │  USB                                                          phone / laptop cam
       └──────────── ESP32 #1 "PillBot Hub"
                         │ GPIO ─ 2× HC-SR04, 3× push buttons, relay
-                        │ PWM ── turntable servo, clamp servo, tray servo, spare
+                        │ PWM ── clamp servo (+ 3 spare channels)
 ```
 
 ## Power — three separate rails, ONE common ground
@@ -31,9 +31,9 @@ Servo signal wires go to ESP32 pins; servo power does **not**.
 | 32 | START button → GND | internal pull-up, pressed = LOW |
 | 33 | STOP button → GND | firmware cuts relay + servos instantly |
 | 27 | MODE button → GND | |
-| 25 | Servo ch0: **turntable** (goBILDA #1) | 500–2500 µs = 300° |
-| 26 | Servo ch1: **clamp** (goBILDA #2 or D646WP) | |
-| 13 | Servo ch2: cap tray / dispenser (MG90S) | |
+| 25 | Servo ch0: **clamp** (goBILDA #1) | tune with `fixture_bench tune clamp` |
+| 26 | Servo ch1: spare (e.g. cap tray flap) | |
+| 13 | Servo ch2: spare | |
 | 14 | Servo ch3: spare | |
 | 17 | Relay IN (hobby-servo power) | set RELAY_ACTIVE_LOW in firmware |
 | 2 | Onboard LED (status) | |
