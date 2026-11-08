@@ -33,7 +33,12 @@ git clone --recurse-submodules https://github.com/ZhouA25/MakeCu2026.git makecu
 cd makecu
 # (already cloned without it?)  git submodule update --init
 
-# Python 3.12 environment (install Miniforge first if you don't have conda)
+# Fastest: one script does the env, installs, port/camera detection and a check
+bash scripts/setup_laptop.sh                        # add a bundle from your old computer: ... pillbot-local-*.tgz
+python -m pillbot.tools.setup_local check           # anytime: what's missing (installs, ports, camera, calibration, poses)
+python -m pillbot.tools.setup_local export          # pack this computer's local-only files for another one
+
+# Or by hand — Python 3.12 environment (install Miniforge first if you don't have conda)
 conda create -y -n pillbot python=3.12
 conda activate pillbot
 conda install -y ffmpeg -c conda-forge

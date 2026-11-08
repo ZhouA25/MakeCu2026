@@ -34,9 +34,14 @@ def test_save_fixture_values_keeps_comments(tmp_path):
     assert cfg["fixture"]["clamp_open_us"] == 1234 and cfg["gripper"]["open"] == 60
 
 
-def test_tune_elbow_dry_run(capsys):
+def test_tune_elbow_dry_run(capsys, tmp_path):
+    import yaml
     from pillbot.tools.fixture_bench import main
-    main(["--dry-run", "tune", "elbow"])
+    from pillbot.utils.config import load_yaml
+    cfg = load_yaml("configs/robot.yaml")
+    cfg["pwm_joints"] = {"elbow_flex": {"channel": 1, "center_us": 1500, "us_per_deg": 6.67}}
+    (tmp_path / "r.yaml").write_text(yaml.safe_dump(cfg))
+    main(["--config", str(tmp_path / "r.yaml"), "--dry-run", "tune", "elbow"])
     out = capsys.readouterr().out
     assert "min_us: 1340" in out and "max_us: 1660" in out and "sign: 1" in out   # 1500 +/- 4x50, -/+ 40 margin
 

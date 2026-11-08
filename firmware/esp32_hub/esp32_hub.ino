@@ -1,6 +1,6 @@
 // PillBot Hub — ESP32 (ESP-WROOM-32 DevKit)
 // Reads: 2x HC-SR04, 3x push buttons (START / STOP / MODE)
-// Drives: 4 servo channels (ch0 clamp, ch1 ELBOW goBILDA, ch2-3 spare), 1 relay (hobby-servo power)
+// Drives: 4 servo channels (ch0 clamp, ch1-3 spare), 1 relay (hobby-servo power)
 //
 // Library (Arduino Library Manager): "ESP32Servo"
 // Board: "ESP32 Dev Module". Pin map: hardware/wiring.md
@@ -13,8 +13,8 @@
 //                   RL <0|1>       relay off/on (hobby-servo power)
 //                   PING           -> PONG
 // Safety: STOP button immediately cuts the relay and detaches the servos (firmware-level) — EXCEPT
-// channels in HOLD_ON_STOP: the elbow holds its angle, like the Dynamixels do, so the arm doesn't drop.
-// Wire the elbow servo's power straight from the supply, NOT through the relay.
+// channels in HOLD_ON_STOP keep their angle (for a hub servo that carries arm weight, e.g. a goBILDA
+// joint: power it straight from the supply, NOT through the relay). ch1 = spare, no arm joint on it now.
 
 #include <ESP32Servo.h>
 
@@ -23,7 +23,7 @@ const int PIN_TRIG_CLIP = 4,  PIN_ECHO_CLIP = 34;
 const int PIN_TRIG_ZONE = 16, PIN_ECHO_ZONE = 35;
 const int PIN_BTN_START = 32, PIN_BTN_STOP = 33, PIN_BTN_MODE = 27;
 const int SERVO_PINS[4] = {25, 26, 13, 14};
-const bool HOLD_ON_STOP[4] = {false, true, false, false};   // ch1 = elbow joint
+const bool HOLD_ON_STOP[4] = {false, true, false, false};   // ch1: reserved for an arm-joint servo
 const int PIN_RELAY = 17;
 const int PIN_LED = 2;
 const bool RELAY_ACTIVE_LOW = true;   // most cheap relay modules switch ON when IN is LOW

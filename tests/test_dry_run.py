@@ -176,8 +176,8 @@ def test_idle_rests_and_wakes():
     fx = Fix()
     go_idle(io, poses, cfg, fx)
     assert io.limp == {"shoulder_pan", "wrist_roll", "gripper"}            # gravity-free joints relaxed
-    assert fx.log == ["limp"]                       # goBILDA elbow still holds the arm: servo rail stays on
-    assert "elbow_flex" in io.joints and "elbow_flex" not in io.limp
+    assert fx.log == ["limp", ("power", False)]     # no hub servo holds the arm: servo rail off
+    assert "elbow_flex" in io.bus_joints and "elbow_flex" not in io.limp
     assert rest_pose({"home": {"a": 1}, "rest": {"a": 0}}) == {"a": 1}       # untaught rest -> home
     io.move_to({"elbow_flex": 5.0})                    # a move wakes only the joints it moves
     assert io.limp == {"shoulder_pan", "wrist_roll", "gripper"}
@@ -194,6 +194,9 @@ def test_pwm_elbow_joint():
     from pillbot.sensors.hub import MockHub
     from pillbot.utils.config import load_yaml
     cfg = load_yaml("configs/robot.yaml")
+    cfg["follower"] = cfg["follower"] | {"joints": [j for j in cfg["follower"]["joints"] if j != "elbow_flex"]}
+    cfg["pwm_joints"] = {"elbow_flex": {"channel": 1, "center_us": 1500, "us_per_deg": 6.67, "sign": 1,
+                                        "min_us": 600, "max_us": 2400}}       # optional hub-servo joint
     hub = MockHub()
     io = RobotIO.from_config(cfg, dry_run=True, hub=hub)
     io.connect()

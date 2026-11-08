@@ -7,12 +7,12 @@ follower:
   port: /dev/tty.usbmodemXXXX   # from `lerobot-find-port` (U2D2 / Waveshare bus board)
   id: pillbot_follower
   preset: all_m288              # we have 5-10 XL330-M288 and no XL430s
-  # Arm: github.com/danslovich/5DOF_Robot_Arm — XL330-M288s, 4:1 printed planetary on the shoulder,
-  # NO wrist pitch. The ELBOW is a goBILDA servo on the hub (XL330 too weak there): see pwm_joints.
-  # These are the Dynamixel joints only. Explicit IDs below were supplied by the user on 2026-11-08.
-  joints: [shoulder_pan, shoulder_lift, wrist_roll, gripper]
+  # Arm: github.com/danslovich/5DOF_Robot_Arm — 5x XL330-M288, 4:1 printed planetary on the shoulder,
+  # NO wrist pitch. RUBBER BANDS counterbalance the elbow (and help the shoulder): the XL330s alone
+  # were too weak there. Explicit IDs below were supplied by the user on 2026-11-08.
+  joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper]
   motor_ids: {shoulder_lift: 12, wrist_roll: 15, gripper: 10}
-  # shoulder_pan retains default 1; physical ID not yet confirmed.
+  # shoulder_pan and elbow_flex keep the defaults 1 and 3 — confirm with scan_port (setup doc, step 1).
   gripper_goal_current: 1000    # mA (XL330 max 1750). Higher = stronger grip on the cap, more heat
   use_degrees: true             # arm joints in degrees (scripted code assumes this)
 leader:
@@ -130,14 +130,14 @@ trigger:
   zone_present_mm: 120
   hold_s: 0.3
 
-pwm_joints:                  # joints driven by a hobby servo on the ESP32 hub instead of a Dynamixel
-  elbow_flex:                # goBILDA 2000 series (300° over 500-2500 us). Open loop: no position feedback
-    channel: 1               # hub servo ch1 = GPIO26 (ch0 = clamp). Holds its angle on STOP (firmware)
-    center_us: 1500          # pulse for 0° — MEASURE: fixture_bench servo 1 <us> until the forearm is at 0°
-    us_per_deg: 6.67         # 2000 us / 300°. MEASURE: two known angles, (us2 - us1) / (deg2 - deg1)
-    sign: 1                  # -1 if positive degrees bend the elbow the wrong way
-    min_us: 600              # hard limits: keep the forearm off the base / its own stops
-    max_us: 2400
+# pwm_joints:                # OPTIONAL: a joint driven by a hobby servo on the ESP32 hub instead of a
+#   elbow_flex:              # Dynamixel (remove it from follower.joints). Not used now: rubber bands
+#     channel: 1             # help the XL330 elbow instead. Tune: fixture_bench tune elbow
+#     center_us: 1500        # pulse for 0°
+#     us_per_deg: 6.67       # goBILDA 2000: 2000 us / 300°
+#     sign: 1
+#     min_us: 600            # safe limits
+#     max_us: 2400
 idle:                        # while waiting / when the program ends (control/idle.py)
   pose: rest                 # park here (teach: python -m pillbot.control.teach --name rest); untaught = home
   limp: [shoulder_pan, wrist_roll, gripper]   # torque off: joints gravity doesn't pull on. `all` = every
