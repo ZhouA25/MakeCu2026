@@ -51,8 +51,15 @@ Avoid GPIO 0, 2 (as input), 12, 15 for external parts — they're boot strapping
 SensX flex/USB, endoscope USB. Give them a loose service loop around the
 wrist-roll joint, spiral wrap, and strain-relieve both ends. Test a full ±150° wrist roll before running.
 
+## SensX25 tactile pad
+Sensor ⇄ Waveshare FT232R USB-TTL ⇄ USB. Sensor TX → adapter RX, sensor RX → adapter TX, GND → GND,
+VCC → VCC, with the adapter's 3.3V/5V jumper set to the sensor's voltage. Keep the USB adapter
+(not the Pi's GPIO UART) — reasons and Pi setup in `docs/tactile.md` §6. Mount the adapter near the
+wrist and run USB down the arm: USB tolerates servo noise better than a long TTL wire.
+
 ## Raspberry Pi notes
 - Pi 5 needs a 5V/5A supply or it throttles USB current (cameras + ESP32 + bus board are all USB).
+- Use `/dev/serial/by-id/...` names in `robot.local.yaml`; `ttyUSB0/1` swap with plug-in order.
 - Use a powered USB hub if devices drop out.
 - Phone camera on the Pi: Continuity Camera is Mac-only — use DroidCam/Iriun over USB, or just use the
   endoscope + a USB cam on the Pi. Simplest for the hackathon: run everything on the laptop.

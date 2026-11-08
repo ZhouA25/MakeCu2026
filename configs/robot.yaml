@@ -63,14 +63,20 @@ hub:
   port: /dev/tty.usbserialHUB  # ESP32 over USB, or UNO Q: socket://<uno-q-address>:5555 (firmware/unoq_hub)
   baud: 115200
 
+# SensX25 on a Waveshare FT232R USB-TTL adapter. Guide + Pi setup: docs/tactile.md
+# Find/check it:  python -m pillbot.tools.tactile_live doctor     Tune it:  python -m pillbot.tools.tactile_live
 tactile:
-  backend: sensx         # sensx | sensx2 (one per jaw, set port2) | serial | mock | none  (dry runs use mock)
-  port: /dev/tty.usbserialSENSX   # SensX 25 (SNX0505-SNS-01) USB adapter
+  backend: sensx         # sensx | sensx2 (one per jaw, set port2) | net (via tactile_server) | serial | mock | none
+                         # (dry runs always use mock)
+  port: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_BG00ZVUK-if00-port0   # Pi (stable name for OUR adapter)
+                         # Mac: /dev/cu.usbserial-BG00ZVUK — put it in robot.local.yaml
   port2: /dev/tty.usbserialSENSX2 # only for backend sensx2 (if you ever get a second sensor)
+  url: localhost:8765    # only for backend net: where `python -m pillbot.sensors.tactile_server` listens
   baud: 921600
   shape: [5, 5]
-  contact_threshold: 300 # SensX: sum of 25 taxels (0..4095 each) above tare that counts as contact
+  contact_threshold: 300 # sum of the 25 taxels (kPa each, 0..534) above tare that counts as contact — tune live
   slip_ratio: 0.5        # pressure falling below this fraction of grip pressure = slipping
+  max_age_s: 0.25        # no new frame for this long = sensor lost: reads as "no data", logs an error
 
 gripper:                 # LeRobot gripper units: 0 = closed, 100 = open
   open: 60

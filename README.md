@@ -133,7 +133,15 @@ Add `--dry-run` to try any of them without hardware. `hand-open` proves the clam
 child-proof bottle while the cap is twisted, and can save the measured `twist_deg` to `bottles.yaml`.
 Then set `open.loosen_sign` (which way the wrist unscrews) and `follower.gripper_goal_current`
 (grip strength) once the arm is up.
-Then tune the tactile `contact_threshold` while watching live SensX readings.
+Then tune the tactile `contact_threshold` while watching live SensX readings:
+
+**h. Tactile sensor (SensX25)** — how it works, Pi setup, using it from other programs: `docs/tactile.md`
+```bash
+python -m pillbot.tools.tactile_live doctor     # find the sensor's port / diagnose wiring
+python -m pillbot.tools.tactile_live            # live pressure + contact = what the gripper sees; tune contact_threshold
+python -m pillbot.tools.tactile_live plot       # heatmap window
+python -m pillbot.tools.fake_sensx              # virtual sensor for testing without hardware
+```
 
 ---
 
@@ -196,8 +204,10 @@ src/pillbot/
                       pick_place, open_sequence (grip, push, twist), fixture (clamp), poses, teach,
                       triggers, policy_runner
   tools/fixture_bench.py  bench-test the hub + clip + clamp without the arm
+  tools/tactile_live.py   find / watch / tune the SensX25;  tools/fake_sensx.py  virtual sensor
   perception/         cameras, zone calibration, bottle detection, spin monitor
-  sensors/            tactile (SensX25), hub (ESP32 serial client)
+  sensors/            tactile (SensX25 + backends), tactile_server (share it over TCP),
+                      sensx_probe (port/protocol detection), hub (ESP32 serial client)
   lerobot_args.py     builds LeRobot CLI flags from configs/ (used by scripts/)
 plugins/lerobot_robot_pillbot/   LeRobot plugin: pillbot_koch_follower / pillbot_koch_leader
 firmware/esp32_hub/   ESP32 hub firmware (ultrasonics, buttons, servos, relay)
@@ -216,6 +226,7 @@ tests/                simulation tests
 | `No matching distribution for lerobot` | Python < 3.12 — `conda activate pillbot`, check `python --version` |
 | `pillbot_koch_follower` unknown | `pip install -e plugins/lerobot_robot_pillbot` |
 | `sensx_python` folder empty | `git submodule update --init` |
+| SensX: no frames / port busy | `python -m pillbot.tools.tactile_live doctor` — wiring, permissions and more in `docs/tactile.md` §7 |
 | Motors not found | Wrong port, motor power off, or IDs/baud not set — rerun `scripts/setup_motors.sh` |
 | `No data from hub` | ESP32 not flashed / wrong port / `hub.enabled` — or set `hub.enabled: false` to run arm-only |
 | Bottle not detected / shadows detected | Re-take the background (`b`) with the zone empty; `--tune` the diff threshold and min area; avoid moving shadows |
