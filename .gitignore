@@ -17,3 +17,4 @@ configs/*.local.yaml
 
 # Wi-Fi credentials for the ESP32-CAM
 firmware/esp32_cam/secrets.h
+MUJOCO_LOG.TXT

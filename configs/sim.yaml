@@ -1,0 +1,69 @@
+# MuJoCo simulation of the PillBot arm + clamped bottle (src/pillbot/sim, guide: docs/simulation.md).
+# Every length is in METERS. Values marked MEASURE are guesses from hardware/arm.md — measure the real
+# arm and put them here; the closer they are, the better sim-trained policies transfer.
+
+arm:
+  # Lengths from your STLs (hardware/stl): link_1 = 150 mm, link_2 = 151 mm. Still MEASURE the joint-to-joint
+  # distances on the built arm — the STLs are an exploded assembly, so axis positions are estimates.
+  base_riser: 0.0           # block under the base (python -m pillbot.sim.workspace --risers 0 0.04 0.08)
+  riser_half_width: 0.075   # base ring is Ø140 mm
+  shoulder_height: 0.17     # MEASURE: table -> shoulder_lift axis (≈ base + drive plate + planetary, from STLs)
+  upper_arm: 0.15           # shoulder_lift axis -> elbow_flex axis (link_1.stl = 150 mm)
+  forearm: 0.15             # elbow_flex axis -> wrist_roll (link_2.stl = 151 mm)
+  link_mass: 0.06           # kg per link (PLA + one XL330)
+  meshes: true              # show your STLs (visual only; collisions use fitted boxes)
+  # Gripper = SO-101 wrist-roll follower (fixed jaw) + hinged moving jaw (hardware/stl/gripper_so101)
+  jaw_range_deg: [-10, 100] # SO-101 URDF; LeRobot gripper 0 -> -10° (closed), 100 -> 100° (wide open)
+  grasp_depth: 0.080        # how far out along the fingers (from the wrist) the cap is gripped
+  grip_torque_per_ma: 0.000297   # gripper servo N·m per mA of gripper_goal_current (XL330: 0.52 N·m @ 1750 mA)
+  palm_pusher: false        # printed block between the jaws that presses on the cap TOP (docs/simulation.md)
+  # Stall torque per joint (N·m): XL330-M288 = 0.52; shoulder has the 4:1 planetary (×0.8 efficiency).
+  torque: {shoulder_pan: 0.52, shoulder_lift: 1.6, elbow_flex: 0.52, wrist_roll: 0.52}
+  servo_stiffness_deg: 2.5   # position error at which a servo pushes with its full stall torque (MEASURE:
+                             # push a holding joint by hand until it gives; Dynamixel default P gain ~2-4°)
+  limits_deg:               # sim joint limits
+    shoulder_pan: [-150, 150]
+    shoulder_lift: [-100, 100]
+    elbow_flex: [-150, 150]
+    wrist_roll: [-180, 180]
+
+# Sim angle convention: all 0 = arm pointing straight up; +shoulder_lift / +elbow_flex lean toward +x.
+# The real arm's LeRobot calibration has its own zeros/directions: fill this in so the SAME degrees mean
+# the SAME pose (real = sign * sim + offset). Put the real arm in a pose, read its angles
+# (python -m pillbot.control.teach), match the pose in the sim viewer, repeat for a 2nd pose.
+joint_map:
+  shoulder_pan:  {sign: 1, offset_deg: 0}
+  shoulder_lift: {sign: 1, offset_deg: 0}
+  elbow_flex:    {sign: 1, offset_deg: 0}
+  wrist_roll:    {sign: 1, offset_deg: 0}
+
+fixture:
+  clip_xy: [0.11, 0.0]      # bottle center from the arm's base axis — 10-12 cm keeps the fingers
+                            # within ~2° of vertical for vials (python -m pillbot.sim.workspace)
+  clip_floor: 0.01          # bottle bottom sits this high in the clip
+  cap_height: 0.018
+  cap_mass: 0.01
+
+cap:                         # randomized per episode within these ranges (domain randomization)
+  thread_torque: [0.08, 0.30]    # N·m to turn the cap once unlocked (real vials ~0.1-0.4)
+  push_spring: 4000              # N/m of the child-proof spring
+  push_unlock_mm: [1.2, 2.0]     # cap must be pushed down this far before it turns (push_and_turn)
+  friction: [0.8, 1.2]           # jaw pad (TPU) on cap
+
+tactile:
+  taxel_pitch: 0.004        # SensX25 taxel spacing, MEASURE (5 x 5 grid on the moving jaw)
+
+wrist_camera:
+  offset: [0.012, -0.030, 0.020]   # MEASURE: beside the SO-101 body, over the grip line, looking down the
+                                    # jaws (hand frame: z out along the fingers). Further back can't see the cap
+  fovy_deg: 50
+  width: 320
+  height: 240
+
+gripper_open: 70            # gripper units used to approach the cap in the sim (SO-101 jaw at ~67°)
+press_depth_mm: 6           # cap_press pose: this far below the grip point. The sim found ~4 mm only
+                            # compresses the child-proof spring ~2 mm — barely enough; 6 mm unlocks every cap
+
+physics:
+  timestep: 0.002
+  noslip_iterations: 100   # friction solver passes; < ~50 under-transmits grip torque (measured)

@@ -19,6 +19,7 @@ dependencies = [
 dev = ["pytest", "ruff"]
 train = ["lerobot[training]>=0.7,<0.8"]   # only on the GPU machine
 vision = ["ultralytics"]   # optional YOLO for bottle/cap detection
+sim = ["mujoco>=3.2", "gymnasium>=1.0", "stable-baselines3>=2.3", "imageio"]   # docs/simulation.md
 
 [tool.setuptools.packages.find]
 where = ["src"]
