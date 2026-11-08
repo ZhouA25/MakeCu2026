@@ -34,14 +34,25 @@ class Hub:
 
     def connect(self, timeout: float = 3.0):
         import serial
-        self._ser = serial.serial_for_url(self.port, baudrate=self.baud, timeout=0.1)
+        self._ser = serial.serial_for_url(self.port, baudrate=self.baud, timeout=0.1, do_not_open=True)
+        # On many ESP32 boards DTR/RTS drive EN/IO0 (auto-reset). Some Linux drivers assert RTS on
+        # open, which holds the chip in reset -> no data. Release both lines before opening.
+        try:
+            self._ser.dtr = False
+            self._ser.rts = False
+        except (AttributeError, ValueError, NotImplementedError):
+            pass                                   # socket:// (UNO Q) has no control lines
+        self._ser.open()
         threading.Thread(target=self._loop, daemon=True).start()
         t0 = time.time()
         while time.time() - t0 < timeout:
             if self.state.t_ms:
                 return
             time.sleep(0.05)
-        raise RuntimeError(f"No data from hub on {self.port} — ESP32 flashed / UNO Q app running?")
+        raise RuntimeError(
+            f"No data from hub on {self.port}. Check: is it really the ESP32 (ls -l /dev/serial/by-id/)? "
+            f"Is the hub firmware on it (python -m serial.tools.miniterm --dtr 0 --rts 0 {self.port} 115200 "
+            "should show 'S ...' lines)? UNO Q: is the app running?")
 
     def _loop(self):
         while not self._stop.is_set():
