@@ -84,6 +84,8 @@ gripper:                 # LeRobot gripper units: 0 = closed, 100 = open
   max_cap_mm: 50         # widest cap the jaws can open around — MEASURE on the real gripper
   step: 2.0              # close this much per tick while searching for contact
   squeeze: 4.0           # extra closing after contact for a firm grip
+  target_pressure: null  # e.g. 500: after contact keep closing until the SensX pressure reaches this
+                         # (null = just `squeeze`). Find a good value with tactile_live / the sim
   stall_margin: 6.0      # no tactile: if gripper stops this far above `closed`, we're holding something
 
 # Opening: the clamp holds the bottle body; the ARM grips the cap, pushes down, and twists with wrist_roll.
@@ -91,7 +93,7 @@ open:
   twist_per_grip_deg: 90     # wrist_roll per grip; bigger = fewer regrips (limited by wrist cable slack)
   loosen_sign: -1            # -1 = decreasing wrist_roll unscrews the cap. Flip to 1 if it tightens instead
   max_slips: 3               # give up after this many slipped twists
-
+  max_extra_twists: 2        # after twist_deg, lift; if the cap is still threaded, twist this many more times
 fixture:
   clamp_channel: 0           # hub servo ch0 = GPIO25 (goBILDA 2000)
   clamp_open_us: 1100        # tune: python -m pillbot.tools.fixture_bench tune clamp

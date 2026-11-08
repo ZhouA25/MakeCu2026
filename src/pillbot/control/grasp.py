@@ -36,6 +36,11 @@ def grip_until_contact(io, tactile, gcfg: dict, extra_squeeze: float = 0.0) -> G
         if tactile.in_contact():
             target = max(closed, target - squeeze)
             io.set_gripper(target, settle_s=0.2)
+            # Optional: keep tightening until the pad reads a set grip pressure (gripper.target_pressure)
+            want = gcfg.get("target_pressure")
+            while want and tactile.pressure() < want and target > closed:
+                target = max(closed, target - step / 2)
+                io.set_gripper(target, settle_s=0.1)
             p = tactile.pressure()
             log.info("grasp: contact at gripper=%.1f pressure=%.0f", target, p)
             return GraspResult(True, target, p, "contact")

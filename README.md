@@ -18,6 +18,8 @@ and drops the cap in a tray. The arm itself stays general-purpose; only the clam
 | Controls | START / STOP / MODE push buttons on the hub; STOP cuts servo power in firmware |
 
 Everything runs in **simulation** with `--dry-run`, so you can develop and test without hardware.
+For physics (contacts, the child-proof cap, the SensX pad, the wrist camera, a trained reach policy)
+see **§5 Physics simulation** and `docs/simulation.md`.
 
 ---
 
@@ -180,6 +182,21 @@ Tasks, dataset names and checkpoint paths live in `configs/policies.yaml`.
 
 ---
 
+## 5. Physics simulation (MuJoCo) — no hardware needed
+
+The arm, clamped bottle, child-proof cap, SensX25 pad and wrist camera in MuJoCo. The real
+`open_sequence.py` runs against it unchanged, and a reach policy is trained in it
+(`models/sim/reach_ppo.zip`). Guide, results and design findings: **`docs/simulation.md`**.
+```bash
+pip install -e ".[sim]"
+python -m pillbot.sim.demo --video outputs/sim.gif   # reach -> find cap -> approach -> grip/push/untwist
+python -m pillbot.sim.demo --episodes 20             # success rate over randomized caps
+python -m pillbot.sim.workspace                      # where the arm can grab a cap from above
+python -m pillbot.sim.train reach                    # retrain the policy after measuring the arm
+```
+
+---
+
 ## Configuration
 
 | File | What's in it |
@@ -190,6 +207,7 @@ Tasks, dataset names and checkpoint paths live in `configs/policies.yaml`.
 | `configs/bottles.yaml` | bottle profiles: sizes, cap type (`push_and_turn` / `twist`), twist degrees |
 | `configs/background.local.png` | empty-zone photo for bottle detection (written by `detect_bottle`, key b) |
 | `configs/policies.yaml` | trained policies for `--pick policy` / `--open policy` |
+| `configs/sim.yaml` | physics simulation: arm measurements, servo strength, cap randomization (`docs/simulation.md`) |
 | `configs/zone_calib.local.yaml` | camera → zone calibration (written by `zone --calibrate`) |
 
 Key switches in `robot.yaml`: `open:` (twist per grip, direction), `follower.gripper_goal_current`,
@@ -208,6 +226,9 @@ src/pillbot/
   perception/         cameras, zone calibration, bottle detection, spin monitor
   sensors/            tactile (SensX25 + backends), tactile_server (share it over TCP),
                       sensx_probe (port/protocol detection), hub (ESP32 serial client)
+  sim/                MuJoCo physics: world, sim backends for the real control code, cap-finding,
+                      training env + PPO, demo, workspace check
+models/sim/           trained reach policy
   lerobot_args.py     builds LeRobot CLI flags from configs/ (used by scripts/)
 plugins/lerobot_robot_pillbot/   LeRobot plugin: pillbot_koch_follower / pillbot_koch_leader
 firmware/esp32_hub/   ESP32 hub firmware (ultrasonics, buttons, servos, relay)

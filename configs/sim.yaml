@@ -1,0 +1,69 @@
+# MuJoCo simulation of the PillBot arm + clamped bottle (src/pillbot/sim, guide: docs/simulation.md).
+# Every length is in METERS. Values marked MEASURE are guesses from hardware/arm.md — measure the real
+# arm and put them here; the closer they are, the better sim-trained policies transfer.
+
+arm:
+  base_riser: 0.12          # MEASURE: block the arm base stands on. Without one the arm can't grasp a
+                            # cap top-down (forearm vertical): run `python -m pillbot.sim.workspace`
+  riser_half_width: 0.045    # MEASURE: half the riser's width — keep it smaller than the clip distance
+  shoulder_height: 0.09     # MEASURE: table/riser top -> shoulder_lift axis
+  upper_arm: 0.15           # MEASURE: shoulder_lift axis -> elbow_flex axis
+  forearm: 0.15             # MEASURE: elbow_flex axis -> wrist_roll gear (where the hand starts)
+  hand: 0.046               # wrist -> finger base
+  finger_length: 0.063
+  finger_width: 0.018
+  grasp_depth: 0.040        # grasp point: this far from the finger base along the fingers
+  max_jaw_gap: 0.080        # gap between the jaws at gripper = 100
+  palm_pusher: false        # printed block between the jaws that presses on the cap TOP. In the sim it raised
+                            # vial opening from 24/32 to 32/32 (docs/simulation.md). Set true once it's built
+  link_mass: 0.06           # kg per link (PLA + one XL330)
+  # Stall torque per joint (N·m): XL330-M288 = 0.52; shoulder has the 4:1 planetary (×0.8 efficiency).
+  torque: {shoulder_pan: 0.52, shoulder_lift: 1.6, elbow_flex: 0.52, wrist_roll: 0.52}
+  servo_stiffness_deg: 2.5   # position error at which a servo pushes with its full stall torque (MEASURE:
+                             # push a holding joint by hand until it gives; Dynamixel default P gain ~2-4°)
+  grip_force_per_ma: 0.0097  # N of jaw force per mA of gripper_goal_current (~17 N at 1750 mA)
+  limits_deg:               # sim joint limits
+    shoulder_pan: [-150, 150]
+    shoulder_lift: [-100, 100]
+    elbow_flex: [-150, 150]
+    wrist_roll: [-180, 180]
+
+# Sim angle convention: all 0 = arm pointing straight up; +shoulder_lift / +elbow_flex lean toward +x.
+# The real arm's LeRobot calibration has its own zeros/directions: fill this in so the SAME degrees mean
+# the SAME pose (real = sign * sim + offset). Put the real arm in a pose, read its angles
+# (python -m pillbot.control.teach), match the pose in the sim viewer, repeat for a 2nd pose.
+joint_map:
+  shoulder_pan:  {sign: 1, offset_deg: 0}
+  shoulder_lift: {sign: 1, offset_deg: 0}
+  elbow_flex:    {sign: 1, offset_deg: 0}
+  wrist_roll:    {sign: 1, offset_deg: 0}
+
+fixture:
+  clip_xy: [0.11, 0.0]      # bottle center from the arm's base axis — 10-12 cm keeps the fingers
+                            # within ~2° of vertical for vials (python -m pillbot.sim.workspace)
+  clip_floor: 0.01          # bottle bottom sits this high in the clip
+  cap_height: 0.018
+  cap_mass: 0.01
+
+cap:                         # randomized per episode within these ranges (domain randomization)
+  thread_torque: [0.08, 0.30]    # N·m to turn the cap once unlocked (real vials ~0.1-0.4)
+  push_spring: 4000              # N/m of the child-proof spring
+  push_unlock_mm: [1.2, 2.0]     # cap must be pushed down this far before it turns (push_and_turn)
+  friction: [0.8, 1.2]           # jaw pad (TPU) on cap
+
+tactile:
+  taxel_pitch: 0.004        # SensX25 taxel spacing, MEASURE (5 x 5 grid on the moving jaw)
+
+wrist_camera:
+  offset: [0.0, -0.032, 0.02]   # from the wrist, on the hand: sideways, along the hand
+  fovy_deg: 50
+  width: 320
+  height: 240
+
+gripper_open: 95            # gripper units used to approach the cap in the sim (max_jaw_gap * 0.95 ≈ 76 mm)
+press_depth_mm: 6           # cap_press pose: this far below the grip point. The sim found ~4 mm only
+                            # compresses the child-proof spring ~2 mm — barely enough; 6 mm unlocks every cap
+
+physics:
+  timestep: 0.002
+  noslip_iterations: 100   # friction solver passes; < ~50 under-transmits grip torque (measured)

@@ -20,5 +20,5 @@ poses:
   clip_insert:   {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # bottle seated in clip
   cap_above:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws open, above cap
   cap_grip:      {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws around cap
-  cap_press:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # a few mm BELOW cap_grip (makes the push force)
+  cap_press:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # ~6 mm BELOW cap_grip (makes the push force; the sim found 4 mm is borderline)
   cap_drop:      {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # over the cap tray
