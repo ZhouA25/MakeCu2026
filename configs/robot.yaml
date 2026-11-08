@@ -106,6 +106,7 @@ open:
   loosen_sign: -1            # -1 = decreasing wrist_roll unscrews the cap. Flip to 1 if it tightens instead
   max_slips: 3               # give up after this many slipped twists
   max_extra_twists: 2        # after twist_deg, lift; if the cap is still threaded, twist this many more times
+  press: always              # push down to cap_press while twisting: always | child_proof (push_and_turn caps only) | never
 fixture:
   clamp_channel: 0           # hub servo ch0 = GPIO25 (goBILDA 2000)
   clamp_open_us: 1100        # tune: python -m pillbot.tools.fixture_bench tune clamp

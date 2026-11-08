@@ -91,3 +91,14 @@ def test_esp32_cam_config():
     assert camera_source({"index_or_path": 0}) == 0
     arg = cameras_arg(CFG)
     assert f'url: "{wrist["url"]}"' in arg            # URL quoted for LeRobot's parser
+
+
+def test_press_modes():
+    import pytest
+    from pillbot.control.open_sequence import should_press
+    child, plain = {"cap_type": "push_and_turn"}, {"cap_type": "twist"}
+    assert should_press(child, "always") and should_press(plain, "always")
+    assert should_press(child, "child_proof") and not should_press(plain, "child_proof")
+    assert not should_press(child, "never")
+    with pytest.raises(ValueError):
+        should_press(plain, "sometimes")

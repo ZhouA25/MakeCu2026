@@ -1,5 +1,5 @@
 """Scripted cap opening, bottle clamped in the clip:
-grip cap -> push down (child-proof caps) -> twist with wrist_roll -> release -> unwind wrist -> repeat
+grip cap -> push down (open.press: always / child_proof / never) -> twist with wrist_roll -> release -> unwind wrist -> repeat
 -> lift the cap off -> drop it in the tray.
 
 Tactile (if available) is used to grip by feel and to detect the cap slipping in the jaws;
@@ -23,7 +23,17 @@ DEFAULT_OPEN = {
     "loosen_sign": -1,            # -1: decreasing wrist_roll unscrews (CCW seen from above). Flip if wrong
     "max_slips": 3,
     "max_extra_twists": 2,        # cap still threaded after twist_deg (small slips add up)? twist more
+    "press": "always",            # push down to cap_press while twisting: always | child_proof | never
 }
+
+
+def should_press(bottle: dict, mode: str) -> bool:
+    """always: every cap (with a palm pusher the press adds twist friction on the cap top);
+    child_proof: only cap_type push_and_turn; never: no press."""
+    mode = str(mode).lower()
+    if mode not in ("always", "child_proof", "never"):
+        raise ValueError(f"open.press must be always | child_proof | never, not {mode!r}")
+    return mode == "always" or (mode == "child_proof" and bottle.get("cap_type") == "push_and_turn")
 
 
 class OpenFailed(RuntimeError):
@@ -40,12 +50,12 @@ def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None, o
     o = {**DEFAULT_OPEN, **(ocfg or {})}
     twist = twist or (lambda roll: io.move_to({"wrist_roll": roll}))
     per_grip, sign, max_slips = float(o["twist_per_grip_deg"]), (-1 if o["loosen_sign"] < 0 else 1), int(o["max_slips"])
-    push = bottle["cap_type"] == "push_and_turn"
+    push = should_press(bottle, o["press"])
     io.move_to(poses["cap_above"] | {"gripper": gcfg["open"]})
     io.move_to(poses["cap_grip"])
 
     def grip_push_twist(step: float) -> bool:
-        """One cycle: grip, push (child-proof), twist `step` degrees, release, unwind. True = slipped."""
+        """One cycle: grip, push (if press), twist `step` degrees, release, unwind. True = slipped."""
         g = grip_until_contact(io, tactile, gcfg, extra_squeeze=extra)
         if not g.success:
             raise OpenFailed(f"could not grip cap: {g.reason}")
