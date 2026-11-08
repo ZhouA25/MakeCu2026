@@ -15,8 +15,15 @@ from pillbot.sim.scene import build_xml, load_sim_config  # noqa: E402
 from pillbot.utils.config import ROOT, load_yaml  # noqa: E402
 
 
-def _gripped(seed=0, bottle="standard_amber_40dr"):
-    world, io, tac = make_sim(bottle, seed=seed, clip_xy=[0.11, 0.0])
+def _recommended():
+    """STS3215-class gripper servo + palm pusher: what the sim says to build."""
+    sim = load_sim_config()
+    sim["arm"] |= {"palm_pusher": True, "grip_torque_per_ma": 0.00089}
+    return sim
+
+
+def _gripped(seed=0, bottle="standard_amber_40dr", sim_cfg=None):
+    world, io, tac = make_sim(bottle, seed=seed, sim_cfg=sim_cfg, clip_xy=[0.11, 0.0])
     poses = cap_poses(world, io, world.cap_center)
     g = dict(world.robot_cfg["gripper"]) | {"open": world.sim["gripper_open"]}
     io.move_to(poses["cap_above"] | {"gripper": g["open"]}, timeout=10)
@@ -41,14 +48,16 @@ def test_ik_reaches_cap():
 
 
 def test_child_proof_needs_push():
-    world, io, tac, poses = _gripped(seed=0)
+    from pillbot.sim.kinematics import orbit_twist
+    world, io, _, poses = _gripped(seed=0, sim_cfg=_recommended())
     world.thread_torque = 0.05
-    io.move_to({"wrist_roll": -30})
+    twist, roll0 = orbit_twist(world, io), io.target["wrist_roll"]
+    twist(roll0 - 30)
     assert abs(world.cap_state()["turned_deg"]) < 3          # locked: jaws slip, cap stays
-    io.move_to({"wrist_roll": 0})
+    twist(roll0)
     io.move_to(poses["cap_press"])
     assert world.cap_state()["pressed_mm"] > world.unlock_mm
-    io.move_to({"wrist_roll": -30})
+    twist(roll0 - 30)
     assert world.cap_state()["turned_deg"] > 20              # pushed: it turns
 
 
@@ -63,9 +72,7 @@ def test_real_open_sequence_opens_easy_cap():
     """Recommended hardware: STS3215-class gripper servo + palm pusher, coordinated twist."""
     from pillbot.sim.kinematics import orbit_twist
     logging.disable(logging.WARNING)
-    sim = load_sim_config()
-    sim["arm"] |= {"palm_pusher": True, "grip_torque_per_ma": 0.00089}
-    world, io, tac = make_sim(seed=0, sim_cfg=sim, clip_xy=[0.11, 0.0])
+    world, io, tac = make_sim(seed=0, sim_cfg=_recommended(), clip_xy=[0.11, 0.0])
     world.thread_torque = 0.06
     poses = cap_poses(world, io, world.cap_center)
     g = dict(world.robot_cfg["gripper"]) | {"open": world.sim["gripper_open"]}

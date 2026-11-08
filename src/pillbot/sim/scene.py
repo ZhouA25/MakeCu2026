@@ -19,6 +19,9 @@ from pillbot.utils.config import ROOT, get_bottle, load_yaml
 TAXELS = 5
 LOOK_CM = (10, 8, 7, 6, 5)     # points this many cm in front of the wrist camera (aiming it = IK on one)
 PAD_THICK = 0.0005          # tactile/TPU pad half-thickness (1 mm pads)
+CLAMP_OPEN = 0.020          # clip clamp jaw clearance per side when open: the V-jaws centre the bottle
+CLAMP_HALF_H = 0.012        # clamp jaws cover 14-38 mm above the clip floor: higher and the SO-101 fingertips
+                            # (23 mm below the grip point) land on them when gripping the cap
 STL = ROOT / "hardware/stl"
 
 # SO-101 gripper geometry (hardware/stl/gripper_so101, frames from TheRobotStudio's so101 URDF), meters,
@@ -62,6 +65,46 @@ def _pusher_xml(a: dict, grasp) -> str:
             f'pos="{grasp[0]} 0 {bottom - 0.0125}" rgba="0.3 0.3 0.35 1" mass="0.005"/>')
 
 
+def _pocket(body_r: float, floor: float, n: int = 12, width: float = 0.012, slope_deg: float = 0.0) -> str:
+    """Funnel at floor level: a ring of slopes around the bottle's footprint that guides a base landing
+    off centre in. (A tall funnel would be in the way of the SO-101 fingertips, which reach ~23 mm
+    below the cap grip.) slope_deg 0 = no funnel."""
+    if slope_deg <= 0:
+        return ""
+    out, a = [], math.radians(slope_deg)
+    half, ca, sa = width / 2 / math.cos(a), math.cos(a), math.sin(a)   # plate half-length along the slope
+    for i in range(n):
+        phi = 2 * math.pi * i / n
+        c, s_ = math.cos(phi), math.sin(phi)
+        r0 = body_r + 0.0015                                   # inner (bottom) edge of the slope
+        cx, cy = (r0 + width / 2) * c, (r0 + width / 2) * s_
+        tang = math.pi * (r0 + width) / n
+        out.append(f'<geom class="solid" type="box" size="{half} {tang} 0.001" '
+                   f'pos="{cx} {cy} {floor + width * math.tan(a) / 2}" '
+                   f'xyaxes="{c * ca} {s_ * ca} {sa} {-s_} {c} 0" rgba="0.25 0.3 0.4 1"/>')
+    return "".join(out)
+
+
+def _clamp_jaws(body_r: float, floor: float, v_deg: float = 45.0) -> str:
+    out = []
+    for n, sgn in (("l", -1), ("r", 1)):
+        faces = []
+        # jaws sit above the pocket's slopes
+        for side in (1, -1):
+            ang = math.radians(v_deg) * side
+            nx, ny = sgn * math.cos(ang), math.sin(ang)          # outward normal at the touch line
+            tx, ty = body_r * nx - sgn * body_r, body_r * ny      # touch line, relative to the jaw body
+            cx, cy = tx + nx * 0.004, ty + ny * 0.004              # box centre, 4 mm behind its face
+            yaw = math.degrees(math.atan2(ny, nx))
+            faces.append(f'<geom class="pad" type="box" size="0.004 0.009 {CLAMP_HALF_H}" pos="{cx} {cy} 0" euler="0 0 {yaw}" '
+                         f'rgba="0.55 0.6 0.7 1" mass="0.01" friction="1.2 0.005 0.0001"/>')
+        out.append(f'''<body name="clamp_{n}" pos="{sgn * (body_r + CLAMP_OPEN)} 0 {floor + 0.014 + CLAMP_HALF_H}">
+        <joint name="clamp_{n}" type="slide" axis="{-sgn} 0 0" range="0 {CLAMP_OPEN + 0.006}" damping="20"/>
+        {"".join(faces)}
+      </body>''')
+    return "".join(out)
+
+
 def _mesh(name, file, **kw) -> str:
     extra = " ".join(f'{k}="{v}"' for k, v in kw.items())
     return f'<mesh name="{name}" file="{STL / file}" scale="0.001 0.001 0.001" {extra}/>'
@@ -89,13 +132,15 @@ def grasp_point(a: dict, cap_r: float) -> tuple[float, float, float]:
     return (fixed_face_x(z) + 2 * PAD_THICK + cap_r, 0.0, z)
 
 
-def _arm_xml(a: dict, cam: dict, cap_r: float) -> str:
+def _arm_xml(a: dict, cam: dict, cap_r: float, body_r: float, held_cap: float = 0.066,
+             held_body: float = 0.045) -> str:
     lim = a["limits_deg"]
     L1, L2 = a["upper_arm"], a["forearm"]
     pitch = a.get("taxel_pitch", 0.004)
     m = a["link_mass"]
     meshes = a.get("meshes", True)
     grasp = grasp_point(a, cap_r)
+    grasp_body = grasp_point(a, body_r)              # where the bottle's axis sits when gripping the body
     (fx_, fz_), f_tilt, f_len = _face(*FIXED_FACE)
     (mx_, mz_), m_tilt, m_len = _face(*MOVING_FACE)
     hx, hy, hz = JAW_HINGE
@@ -132,6 +177,12 @@ def _arm_xml(a: dict, cam: dict, cap_r: float) -> str:
                     rgba="0.25 0.25 0.25 {0 if meshes else 1}"/>
             </body>
             <site name="grasp" pos="{grasp[0]} {grasp[1]} {grasp[2]}" size="0.003" rgba="1 0 0 1"/>
+            <site name="grasp_body" pos="{grasp_body[0]} 0 {grasp_body[2]}" size="0.003" rgba="1 0.5 0 1"/>
+            <!-- the held bottle's base centre (it hangs in line with the fingers): placing aims THIS -->
+            <site name="held_base_cap" pos="{grasp[0]} 0 {grasp[2] + held_cap}" size="0.002" rgba="0 0 0 0"/>
+            <site name="held_base_body" pos="{grasp_body[0]} 0 {grasp_body[2] + held_body}" size="0.002" rgba="0 0 0 0"/>
+            <!-- gripper body / servo housing: what the cap would hit if the jaws grip the bottle too low -->
+            <geom name="palm" class="solid" type="box" size="0.0275 0.042 0.0195" pos="-0.0025 0.02 0.0255" rgba="0 0 0 0" mass="0"/>
             <site name="tcp_so101" pos="-0.0079 0.0002 0.0981" size="0.002" rgba="0 0 0 0"/>
             {_pusher_xml(a, grasp)}
             <camera name="wrist" pos="{cam['offset'][0]} {cam['offset'][1]} {cam['offset'][2]}" xyaxes="1 0 0 0 -1 0" fovy="{cam['fovy_deg']}"/>
@@ -165,6 +216,7 @@ def build_xml(sim: dict, bottle: dict, grip_current_ma: float = 1000) -> str:
     body_h = bottle["height_mm"] / 1000 - cap_h
     floor = fx["clip_floor"]
     cx, cy = fx["clip_xy"]
+    px, py = fx.get("pick_xy", (0.055, 0.095))
     grip_torque = grip_current_ma * a["grip_torque_per_ma"]
     riser = a["base_riser"]
     stiff = math.radians(a.get("servo_stiffness_deg", 2.5))
@@ -182,7 +234,9 @@ def build_xml(sim: dict, bottle: dict, grip_current_ma: float = 1000) -> str:
     <joint damping="0.08" armature="0.005"/>
     <default class="link"><geom contype="0" conaffinity="0" rgba="0.95 0.55 0.15 1"/></default>
     <default class="solid"><geom contype="1" conaffinity="1" friction="1 0.005 0.0001"/></default>
-    <default class="pad"><geom contype="1" conaffinity="1" friction="1 0.005 0.0001" mass="0.0005"
+    <!-- pads: condim 4 adds twisting friction (a real pad has area; with plain point contacts a bottle
+         held between two pads swings freely about the line joining them) -->
+    <default class="pad"><geom contype="1" conaffinity="1" condim="4" friction="1 0.01 0.0001" mass="0.0005"
                                solref="0.004 1" solimp="0.9 0.97 0.001"/></default>
   </default>
   <asset>
@@ -196,14 +250,23 @@ def build_xml(sim: dict, bottle: dict, grip_current_ma: float = 1000) -> str:
     <camera name="overview" pos="0.42 -0.38 0.36" mode="targetbody" target="bottle"/>
     <camera name="side" pos="0.10 -0.45 0.12" mode="targetbody" target="bottle"/>
     <geom name="table" type="plane" size="0.6 0.6 0.01" material="table" contype="1" conaffinity="1"/>
-    {f'<geom name="riser" type="box" size="{a.get('riser_half_width', 0.075)} {a.get('riser_half_width', 0.075)} {riser/2}" pos="0 0 {riser/2}" rgba="0.4 0.4 0.45 1" contype="1" conaffinity="1"/>' if riser > 0 else ''}
-    {_arm_xml(a, cam, cap_r)}
-    <!-- dark mat under the clip: a white cap against a light table is hard to see (real robot too) -->
-    <geom name="mat" type="box" size="0.09 0.09 0.0005" pos="{cx} {cy} 0.0005" rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
-    <body name="bottle" pos="{cx} {cy} 0">
-      <geom name="clip" type="box" size="{body_r + 0.012} {body_r + 0.012} {floor / 2 + 0.012}" pos="0 0 {floor / 2 + 0.012}" rgba="0.25 0.3 0.4 1" contype="0" conaffinity="0"/>
-      <geom name="bottle_body" class="solid" type="cylinder" size="{body_r} {body_h/2}" pos="0 0 {floor + body_h/2}" rgba="0.75 0.4 0.08 1"/>
-      <body name="cap_thread" pos="0 0 {floor + body_h}">
+    {f'<geom name="riser" type="cylinder" size="{a.get('riser_radius', 0.072)} {riser/2}" pos="0 0 {riser/2}" rgba="0.4 0.4 0.45 1" contype="1" conaffinity="1"/>' if riser > 0 else ''}
+    {_arm_xml(a, cam, cap_r, body_r, held_cap=bottle["height_mm"] / 1000 - cap_h / 2,
+              held_body=body_h - fx.get("body_grip_below_top", 0.012))}
+    <!-- dark mats under the pick spot and the clip: a white cap on a light table is hard to see -->
+    <geom name="pick_mat" type="box" size="0.07 0.07 0.0005" pos="{px} {py} 0.0005" rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
+    <body name="clip" pos="{cx} {cy} 0">
+      <geom name="clip_mat" type="box" size="0.09 0.09 0.0005" pos="0 0 0.0005" rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
+      <geom name="clip_floor" class="solid" type="box" size="{body_r + 0.02} {body_r + 0.02} {floor / 2}" pos="0 0 {floor / 2}" rgba="0.25 0.3 0.4 1"/>
+      {_pocket(body_r, floor, slope_deg=fx.get("pocket_slope_deg", 0))}
+      <!-- servo clamp (rack-and-pinion, hardware/stl/clamp): two V-jaws slide in and squeeze the body,
+           each touching it along two lines (a flat jaw on a round bottle lets it tilt and turn) -->
+      {_clamp_jaws(body_r, floor)}
+    </body>
+    <body name="bottle" pos="{cx} {cy} {floor}">
+      <freejoint name="bottle_free"/>
+      <geom name="bottle_body" class="solid" type="cylinder" size="{body_r} {body_h/2}" pos="0 0 {body_h/2}" mass="{fx.get('bottle_mass', 0.03)}" rgba="0.75 0.4 0.08 1"/>
+      <body name="cap_thread" pos="0 0 {body_h}">
         <inertial pos="0 0 0" mass="0.001" diaginertia="1e-7 1e-7 1e-7"/>
         <!-- x/y/lift are locked until the thread lets go; then the cap can be carried anywhere -->
         <joint name="cap_x" type="slide" axis="1 0 0" range="-0.4 0.4" damping="0.2" armature="1.0"/>
@@ -224,6 +287,8 @@ def build_xml(sim: dict, bottle: dict, grip_current_ma: float = 1000) -> str:
     <exclude body1="bottle" body2="cap"/>
   </contact>
   <equality>
+    <!-- rack-and-pinion: one pinion drives both racks, so the clamp jaws always move together (self-centring) -->
+    <joint name="clamp_rack" joint1="clamp_r" joint2="clamp_l" polycoef="0 1 0 0 0" solref="0.004 1"/>
     <!-- switched on by SimWorld: hold the cap where it is (child-proof lock / thread not yet free).
          MuJoCo constraint stiffness scales with the inertia of what's held, so the cap joints carry
          armature (added inertia, no weight): otherwise a 10 g cap sags/turns under the push/twist. -->
@@ -235,6 +300,8 @@ def build_xml(sim: dict, bottle: dict, grip_current_ma: float = 1000) -> str:
   <actuator>
     {actuators}
     <position name="gripper" joint="gripper" kp="{grip_torque / stiff}" forcerange="{-grip_torque} {grip_torque}"/>
+    <position name="clamp_l" joint="clamp_l" kp="{fx.get('clamp_force', 30) / 0.002}" forcerange="{-fx.get('clamp_force', 30)} {fx.get('clamp_force', 30)}"/>
+    <position name="clamp_r" joint="clamp_r" kp="{fx.get('clamp_force', 30) / 0.002}" forcerange="{-fx.get('clamp_force', 30)} {fx.get('clamp_force', 30)}"/>
   </actuator>
   <sensor>
     {''.join(f'<touch name="taxel_{r}_{c}" site="taxel_{r}_{c}"/>' for r in range(TAXELS) for c in range(TAXELS))}

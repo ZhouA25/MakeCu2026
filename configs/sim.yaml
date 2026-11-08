@@ -6,7 +6,7 @@ arm:
   # Lengths from your STLs (hardware/stl): link_1 = 150 mm, link_2 = 151 mm. Still MEASURE the joint-to-joint
   # distances on the built arm — the STLs are an exploded assembly, so axis positions are estimates.
   base_riser: 0.0           # block under the base (python -m pillbot.sim.workspace --risers 0 0.04 0.08)
-  riser_half_width: 0.075   # base ring is Ø140 mm
+  riser_radius: 0.072       # a round block just wider than the Ø140 mm base ring
   shoulder_height: 0.17     # MEASURE: table -> shoulder_lift axis (≈ base + drive plate + planetary, from STLs)
   upper_arm: 0.15           # shoulder_lift axis -> elbow_flex axis (link_1.stl = 150 mm)
   forearm: 0.15             # elbow_flex axis -> wrist_roll (link_2.stl = 151 mm)
@@ -38,9 +38,17 @@ joint_map:
   wrist_roll:    {sign: 1, offset_deg: 0}
 
 fixture:
-  clip_xy: [0.11, 0.0]      # bottle center from the arm's base axis — 10-12 cm keeps the fingers
-                            # within ~2° of vertical for vials (python -m pillbot.sim.workspace)
+  clip_xy: [0.12, 0.0]      # bottle center from the arm's base axis — 10-12 cm keeps the fingers
+                            # within ~2° of vertical for vials (python -m pillbot.sim.workspace); a
+                            # riser under the base must leave the clip's open jaws clear
+  pick_xy: [0.06, 0.104]    # the fixed spot the bottle is picked from (12 cm from the base, 60° round)
   clip_floor: 0.01          # bottle bottom sits this high in the clip
+  pocket_slope_deg: 0       # funnel around the clip floor; 45° made things worse (the held bottle tips on it)
+  clamp_force: 30           # N per clamp jaw (goBILDA servo through the rack-and-pinion clamp)
+  bottle_mass: 0.03         # kg, empty vial
+  pick_grip: cap            # carry the bottle by its cap (locked on until unscrewed) | body. With a palm
+                            # pusher it must be cap: in a body grip the pusher lands on the cap
+  body_grip_below_top: 0.012   # pick_grip: body -> grip this far below the body's top edge
   cap_height: 0.018
   cap_mass: 0.01
 
@@ -61,6 +69,8 @@ wrist_camera:
   height: 240
 
 gripper_open: 70            # gripper units used to approach the cap in the sim (SO-101 jaw at ~67°)
+tool_roll_deg: 90           # wrist roll for work at the bottle: the hinged jaw opens sideways, not
+                            # toward the base/riser (at 0 it hits a riser when the bottle is 12 cm out)
 press_depth_mm: 6           # cap_press pose: this far below the grip point. The sim found ~4 mm only
                             # compresses the child-proof spring ~2 mm — barely enough; 6 mm unlocks every cap
 

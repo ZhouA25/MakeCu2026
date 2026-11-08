@@ -13,7 +13,7 @@ import math
 import mujoco
 import numpy as np
 
-from pillbot.sim.scene import TAXELS, build_xml
+from pillbot.sim.scene import CLAMP_OPEN, TAXELS, build_xml
 from pillbot.utils.config import get_bottle, load_yaml
 
 ARM = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_roll")
@@ -38,11 +38,14 @@ class SimWorld:
         self.on_tick = None                                # optional fn(world) after every control tick
 
         m = self.model
-        jid = {n: m.joint(n).id for n in (*ARM, "gripper", "cap_x", "cap_y", "cap_rot", "cap_lift", "cap_press")}
+        jid = {n: m.joint(n).id for n in (*ARM, "gripper", "clamp_l", "clamp_r", "cap_x", "cap_y", "cap_rot", "cap_lift", "cap_press")}
         self.qadr = {n: int(m.jnt_qposadr[i]) for n, i in jid.items()}
         self.jnt_lift = jid["cap_lift"]
         self.dadr = {n: int(m.jnt_dofadr[i]) for n, i in jid.items()}
         self.act = {n: m.actuator(n).id for n in (*ARM, "gripper")}
+        self.clamp_act = [m.actuator("clamp_l").id, m.actuator("clamp_r").id]
+        self.clip_body = m.body("clip").id
+        self.free_q = int(m.jnt_qposadr[m.joint("bottle_free").id])
         self.eq_rot = m.equality("cap_rot_lock").id
         self.eq_thread = [m.equality(f"cap_{a}_lock").id for a in ("lift", "x", "y")]
         self.grasp_site = m.site("grasp").id
@@ -57,12 +60,22 @@ class SimWorld:
         self.reset()
 
     # ------------------------------------------------------------------ episode setup
-    def reset(self, clip_xy=None, randomize: bool = True, home: dict | None = None):
-        """New episode: arm at `home` (sim deg), bottle at `clip_xy`, fresh cap randomization."""
+    def reset(self, clip_xy=None, randomize: bool = True, home: dict | None = None,
+              start: str = "clip", pick_xy=None):
+        """New episode: arm at `home` (sim deg), clip at `clip_xy`, fresh cap randomization.
+        start="clip": the bottle is already clamped in the clip. start="zone": it stands on the table at
+        `pick_xy` (default fixture.pick_xy) with the clamp open, waiting to be picked up."""
         m, d = self.model, self.data
+        fx = self.sim["fixture"]
         mujoco.mj_resetData(m, d)
-        xy = self.sim["fixture"]["clip_xy"] if clip_xy is None else clip_xy
-        m.body_pos[self.bottle_body][:2] = xy
+        xy = fx["clip_xy"] if clip_xy is None else clip_xy
+        m.body_pos[self.clip_body][:2] = xy
+        if start == "zone":
+            bx, by = fx.get("pick_xy", (0.055, 0.095)) if pick_xy is None else pick_xy
+            d.qpos[self.free_q:self.free_q + 3] = [bx, by, 0.0]
+        else:
+            d.qpos[self.free_q:self.free_q + 3] = [xy[0], xy[1], fx["clip_floor"]]
+        d.qpos[self.free_q + 3:self.free_q + 7] = [1, 0, 0, 0]
         c = self.sim["cap"]
         pick = (lambda lo_hi: self.rng.uniform(*lo_hi)) if randomize else (lambda lo_hi: float(np.mean(lo_hi)))
         self.thread_torque = pick(c["thread_torque"])
@@ -79,22 +92,45 @@ class SimWorld:
             d.qpos[self.qadr[j]] = math.radians(q[j])
         self.set_targets(q | {"gripper": 100})
         d.qpos[self.qadr["gripper"]] = self.jaw_hi
+        self.set_clamp(start != "zone")
+        if start != "zone":                               # start with the jaws already on the bottle
+            for j in ("clamp_l", "clamp_r"):
+                d.qpos[self.qadr[j]] = CLAMP_OPEN
         mujoco.mj_forward(m, d)
         self._cap_logic()
+        if start != "zone":
+            self.step_seconds(0.2)
+            self.time = 0.0
 
     @property
     def clip_xy(self) -> np.ndarray:
-        return self.model.body_pos[self.bottle_body][:2].copy()
+        return self.model.body_pos[self.clip_body][:2].copy()
+
+    @property
+    def bottle_pos(self) -> np.ndarray:
+        """Where the bottle's bottom centre really is (true value, for checking)."""
+        return self.data.qpos[self.free_q:self.free_q + 3].copy()
 
     @property
     def cap_top_z(self) -> float:
-        return self.sim["fixture"]["clip_floor"] + self.bottle["height_mm"] / 1000
+        return float(self.bottle_pos[2]) + self.bottle["height_mm"] / 1000
 
     @property
     def cap_center(self) -> np.ndarray:
         """Where the jaws should close: middle of the cap's side wall (true value, for checking)."""
-        x, y = self.clip_xy
+        x, y, _ = self.bottle_pos
         return np.array([x, y, self.cap_top_z - self.sim["fixture"]["cap_height"] / 2])
+
+    def bottle_upright(self) -> float:
+        """Tilt of the bottle from vertical, degrees."""
+        _, x, y, _ = self.data.qpos[self.free_q + 3:self.free_q + 7]
+        return math.degrees(math.acos(max(-1.0, min(1.0, 1 - 2 * (x * x + y * y)))))
+
+    def set_clamp(self, closed: bool | float):
+        """Clip clamp: True/1 = squeeze the bottle body, False/0 = open (or anything in between)."""
+        frac = float(closed)
+        for a in self.clamp_act:
+            self.data.ctrl[a] = frac * (CLAMP_OPEN + 0.004)
 
     def show_bottle(self, visible: bool):
         """Hide/show bottle + cap (rendering only) — to capture an 'empty clip' background image."""

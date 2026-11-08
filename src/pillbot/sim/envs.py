@@ -31,7 +31,7 @@ def sample_reachable_goal(world, rng) -> np.ndarray:
     while True:
         q = {j: rng.uniform(*GOAL_RANGES[j]) for j in REACH}
         p, _ = world.fk(q)
-        near_riser = max(abs(p[0]), abs(p[1])) < a.get("riser_half_width", 0.045) + 0.04 \
+        near_riser = np.hypot(p[0], p[1]) < a.get("riser_radius", 0.072) + 0.04 \
             and p[2] < a["base_riser"] + 0.03
         if 0.03 < p[2] < 0.40 and not near_riser:
             return p

@@ -111,4 +111,42 @@ def make_sim(bottle: str = "standard_amber_40dr", seed: int | None = None, sim_c
     return world, io, tactile
 
 
-__all__ = ["ARM", "SimRobotIO", "SimTactile", "make_sim"]
+
+
+class SimHub:
+    """The ESP32 PillBot Hub in the sim: control/fixture.Fixture drives the sim's clip clamp through it,
+    exactly like it drives the goBILDA servo through the real hub (servo_us on the clamp channel)."""
+
+    def __init__(self, world: SimWorld, fcfg: dict | None = None):
+        self.world = world
+        self.fcfg = fcfg or world.robot_cfg["fixture"]
+        self.servos, self.relay_on, self.log = {}, False, []
+
+    @property
+    def state(self):
+        """Live readings: the clip ultrasonic sees the bottle once it's seated."""
+        from pillbot.sensors.hub import HubState
+        b, c = self.world.bottle_pos, self.world.clip_xy
+        seated = np.hypot(*(b[:2] - c)) < 0.006 and abs(b[2] - self.world.sim["fixture"]["clip_floor"]) < 0.004
+        return HubState(t_ms=int(self.world.time * 1000), clip_mm=40 if seated else 200, zone_mm=200)
+
+    def connect(self, timeout: float = 0):
+        pass
+
+    def servo_us(self, ch: int, us: int):
+        self.servos[ch] = int(us)
+        self.log.append(("SV", ch, int(us)))
+        if ch == self.fcfg["clamp_channel"] and us:
+            lo, hi = self.fcfg["clamp_open_us"], self.fcfg["clamp_closed_us"]
+            self.world.set_clamp(float(np.clip((us - lo) / (hi - lo), 0, 1)))
+            self.world.step_seconds(self.fcfg.get("clamp_settle_s", 0.6))   # the servo moving
+
+    def relay(self, on: bool):
+        self.relay_on = bool(on)
+        self.log.append(("RL", bool(on)))
+
+    def close(self):
+        self.relay_on = False
+
+
+__all__ = ["ARM", "SimHub", "SimRobotIO", "SimTactile", "make_sim"]

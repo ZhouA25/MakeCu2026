@@ -98,6 +98,36 @@ torque (0.52 N·m; 4:1 planetary on the shoulder), so a joint that's too weak *i
 
 All "open" runs use the coordinated twist. Wrist-only twisting fails even on easy caps (finding 1).
 
+### Whole task: pick from a fixed spot → place in the clip → clamp → unscrew
+
+`python -m pillbot.sim.demo --recommended --video outputs/sim.gif` runs it end to end, starting from the
+pick spot (`fixture.pick_xy`). `--start clip` skips straight to a bottle already clamped. Stages 2–4
+run the team's real `pick_bottle` / `place_in_clip` and `Fixture.clamp()`. A `SimHub` stands in for
+the ESP32 hub: its clamp servo drives the sim clamp, and its clip ultrasonic reports "seated".
+
+What it took to make picking and placing work at all:
+- **Pick by the cap, not the body.** A palm pusher is in the way of a body grip, and a cap grip leaves
+  room above the clamp jaws.
+- **Base riser ~8 cm and `tool_roll_deg: 90`.** Without the riser the arm can't lift the bottle clear.
+  Without the tool roll, the hinged jaw opens into the riser.
+- **Aim the bottle's base, not the gripper.** A bottle held by its cap hangs tilted, so placement solves
+  IK for a `held_base` site.
+- **Keep the clamp jaws low (≤ ~38 mm above the clip floor).** The SO-101 fingertips reach ~23 mm below
+  the cap grip. Taller jaws catch them, and opening fell to 0/8.
+- **Couple the clamp jaws (rack and pinion)** so the clamp centres the bottle as it closes.
+
+**Results today (16 randomized episodes, recommended hardware):** placement and clamping work every time,
+but the whole task opens only **1–2 / 16**. The main failure is the bottle landing 5–12 mm off centre
+(≈ half the runs fail the "seated" check). Next come missed or slipping cap grips after placement,
+because the cap is no longer where the gripper left it. Opening a bottle that's already clamped
+(`--start clip`) is 6/8. Things tried that did **not** help: tighter side guides (1/16), and a 45° funnel
+around the clip floor (0/16: the held bottle tips onto it). The funnel is still in the code as
+`fixture.pocket_slope_deg`; shallower slopes are untested.
+
+**Next steps:** release the bottle lower or let go before the clamp closes so it can settle, re-detect
+the cap with the wrist camera after clamping (already done; tighten the seated tolerance), and try a
+shallow (~20°) pocket.
+
 ## 4. What the sim found (act on these)
 
 1. **The cap sits ~12 mm off the wrist axis: twist with the arm, not just the wrist.** The SO-101 grips
