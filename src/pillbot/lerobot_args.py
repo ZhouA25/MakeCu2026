@@ -9,6 +9,7 @@ Used by scripts/*.sh, e.g.:  $(python -m pillbot.lerobot_args robot)
 """
 import shlex
 import sys
+import json
 
 from pillbot.utils.config import load_yaml
 
@@ -27,6 +28,8 @@ def cameras_arg(cfg: dict) -> str:
 
 
 def _fmt(v) -> str:
+    if isinstance(v, dict):
+        return json.dumps(v, separators=(",", ":"))
     if isinstance(v, bool):
         return "true" if v else "false"
     if isinstance(v, list):

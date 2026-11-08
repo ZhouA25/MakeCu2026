@@ -196,6 +196,19 @@ Tasks, dataset names and checkpoint paths live in `configs/policies.yaml`.
 
 ## 5. Physics simulation (MuJoCo) — no hardware needed
 
+Current assembly and recorded gripping workflow: **`docs/closed-loop-validation.md`**.
+The revised model has an independently actuated hinged end-effector jaw. Run
+`python -m pillbot.sim.validate_grip --mode jaw` or
+`python -m pillbot.sim.validate_grip --mode grip --seed 0 --episodes 5`.
+Every trial saves a local MP4 and telemetry under `outputs/closed_loop`, including failures.
+Recorded evidence: [all trial videos and results](outputs/closed_loop/validation-summary.md),
+[fixed-bottle push-and-twist demo](outputs/closed_loop/20261108T124616Z_fixed_push_twist_seed0_0a20aa/demo.mp4),
+and [simulation assumptions](docs/fixed-bottle-push-twist.md).
+Motor-ID overrides are wrist 15, end effector 10, shoulder lift 12.
+The historical reach checkpoint below predates the corrected assembly and must be retrained;
+model-version checks reject it. New grip validation uses feedback IK.
+
+
 Your arm (STLs in `hardware/stl`, SO-101 gripper), clamped bottle, child-proof cap, SensX25 pad and
 wrist camera in MuJoCo. The real `open_sequence.py` runs against it unchanged, and a reach policy is
 trained in it (`models/sim/reach_ppo.zip`). A URDF for ROS is generated from the same model.

@@ -1,0 +1,56 @@
+{
+  "poses": 50,
+  "meshes": [
+    [
+      "base",
+      "base"
+    ],
+    [
+      "base_plate",
+      "base_plate"
+    ],
+    [
+      "drive_plate",
+      "drive_plate"
+    ],
+    [
+      "shoulder_1",
+      "shoulder_1"
+    ],
+    [
+      "shoulder_2",
+      "shoulder_2"
+    ],
+    [
+      "link_1",
+      "link_1"
+    ],
+    [
+      "elbow_1",
+      "elbow_1"
+    ],
+    [
+      "elbow_2",
+      "elbow_2"
+    ],
+    [
+      "link_2",
+      "link_2"
+    ],
+    [
+      "wrist_gear_1",
+      "wrist_gear_1"
+    ],
+    [
+      "wrist_roll_follower_so101",
+      "gripper_body"
+    ],
+    [
+      "moving_jaw_so101",
+      "moving_jaw"
+    ]
+  ],
+  "max_position_error_m": 1.3877787807814457e-17,
+  "max_rotation_matrix_error": 0.0,
+  "dynamics_steps": 0
+}

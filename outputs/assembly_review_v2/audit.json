@@ -1,0 +1,531 @@
+{
+  "urdf_loads": true,
+  "mesh_references": [
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\base.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\base_plate.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\drive_plate.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\shoulder_1.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\shoulder_2.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\link_1.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\elbow_1.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\elbow_2.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\link_2.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\arm\\wrist_gear_1.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\gripper_so101\\wrist_roll_follower_so101.stl",
+      "exists": true
+    },
+    {
+      "path": "D:\\MakeCu2026\\hardware\\stl\\gripper_so101\\moving_jaw_so101.stl",
+      "exists": true
+    }
+  ],
+  "stl_checks": [
+    {
+      "path": "hardware\\stl\\arm\\base.stl",
+      "triangles": 11934,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -70.8385238647461,
+          -64.12958526611328,
+          -33.41212844848633
+        ],
+        [
+          69.1614761352539,
+          75.87041473388672,
+          17.587871551513672
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\base_plate.stl",
+      "triangles": 1408,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -70.82865142822266,
+          -64.12711334228516,
+          -38.41212844848633
+        ],
+        [
+          69.1614761352539,
+          75.8679428100586,
+          -33.41212844848633
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\drive_plate.stl",
+      "triangles": 11228,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -36.83852767944336,
+          -35.86528015136719,
+          76.40288543701172
+        ],
+        [
+          35.16147232055664,
+          36.12445068359375,
+          90.40288543701172
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\eef.stl",
+      "triangles": 2000,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -9.83852767944336,
+          -17.00461196899414,
+          550.7780151367188
+        ],
+        [
+          8.16147232055664,
+          -12.304612159729004,
+          614.0780029296875
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\elbow_1.stl",
+      "triangles": 23144,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -28.838542938232422,
+          -25.149038314819336,
+          275.7779846191406
+        ],
+        [
+          27.16127586364746,
+          22.92687225341797,
+          338.57281494140625
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\elbow_2.stl",
+      "triangles": 18046,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -28.838542938232422,
+          3.640030860900879,
+          282.8153991699219
+        ],
+        [
+          27.16127586364746,
+          51.7159423828125,
+          345.6102294921875
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\elbow_coupler.stl",
+      "triangles": 5902,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -15.0,
+          2.9000000953674316,
+          -20.997859954833984
+        ],
+        [
+          15.0,
+          8.899999618530273,
+          8.9978609085083
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\hand.stl",
+      "triangles": 2428,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -23.83852767944336,
+          -23.50461196899414,
+          529.2780151367188
+        ],
+        [
+          22.16147232055664,
+          22.49538803100586,
+          566.2780151367188
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\hand_plate.stl",
+      "triangles": 5406,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -23.837730407714844,
+          -23.503801345825195,
+          496.2779846191406
+        ],
+        [
+          22.16147232055664,
+          22.49538803100586,
+          502.2779846191406
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\link_1.stl",
+      "triangles": 122626,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -24.462995529174805,
+          -24.735492706298828,
+          166.2779998779297
+        ],
+        [
+          22.8972110748291,
+          36.775753021240234,
+          316.2779846191406
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\link_2.stl",
+      "triangles": 29640,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -24.448444366455078,
+          -26.359939575195312,
+          345.6102294921875
+        ],
+        [
+          22.883544921875,
+          22.49004554748535,
+          496.3280029296875
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\planet_gear_5mm_hole.stl",
+      "triangles": 13692,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          17.152036666870117,
+          17.10407829284668,
+          5.999997138977051
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\planet_gears.stl",
+      "triangles": 14004,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -65.42045593261719,
+          -12.182586669921875,
+          -102.74544525146484
+        ],
+        [
+          -48.26841735839844,
+          4.921491622924805,
+          -96.74544525146484
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\planetary_gear_box.stl",
+      "triangles": 25630,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -37.33852767944336,
+          -36.36520767211914,
+          91.62789916992188
+        ],
+        [
+          35.66147232055664,
+          36.6243782043457,
+          108.52790069580078
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\shoulder_1.stl",
+      "triangles": 11810,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -37.338523864746094,
+          30.961307525634766,
+          21.297117233276367
+        ],
+        [
+          35.66147232055664,
+          103.96131134033203,
+          106.20469665527344
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\shoulder_2.stl",
+      "triangles": 18096,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -36.838287353515625,
+          28.70288848876953,
+          41.87110137939453
+        ],
+        [
+          35.160945892333984,
+          77.44692993164062,
+          126.27799224853516
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\sun_gear.stl",
+      "triangles": 17544,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -7.515132427215576,
+          4.300000190734863,
+          -7.583310127258301
+        ],
+        [
+          7.515132427215576,
+          16.899999618530273,
+          7.583310127258301
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\wrist_gear_1.stl",
+      "triangles": 28462,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -13.990008354187012,
+          -17.104612350463867,
+          466.05718994140625
+        ],
+        [
+          12.312954902648926,
+          -11.004612922668457,
+          492.5987854003906
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\arm\\wrist_gear_2.stl",
+      "triangles": 7006,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -71.46961975097656,
+          -22.874675750732422,
+          -118.5553207397461
+        ],
+        [
+          -41.453548431396484,
+          7.057461738586426,
+          -113.0553207397461
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\base\\base_mainframe.stl",
+      "triangles": 22250,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          0.005148351192474365,
+          0.0,
+          0.02987682819366455
+        ],
+        [
+          139.99485778808594,
+          59.499996185302734,
+          194.029541015625
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\clamp\\clamp_jaw_RB9.01.062.021_x2.stl",
+      "triangles": 1468,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          2.421438694000244e-05,
+          0.0,
+          0.0007501803338527679
+        ],
+        [
+          46.000022888183594,
+          80.0,
+          16.000749588012695
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\clamp\\gear_rack_RB9.01.062.030.stl",
+      "triangles": 440,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          4.5,
+          9.350000381469727,
+          61.0
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\clamp\\gear_rack_RB9.01.062.031.stl",
+      "triangles": 470,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          4.5,
+          9.350000381469727,
+          61.0
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\clamp\\nail_RB9.01.062.100_x2.stl",
+      "triangles": 52,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          0.0,
+          0.0,
+          -8.782037597132586e-15
+        ],
+        [
+          4.200000286102295,
+          5.0,
+          9.0
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\gripper_so101\\moving_jaw_so101.stl",
+      "triangles": 9184,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -12.300000190734863,
+          -82.0,
+          -24.0
+        ],
+        [
+          11.0,
+          9.0,
+          23.0
+        ]
+      ]
+    },
+    {
+      "path": "hardware\\stl\\gripper_so101\\wrist_roll_follower_so101.stl",
+      "triangles": 11750,
+      "binary_structure_valid": true,
+      "finite": true,
+      "bounds_mm": [
+        [
+          -34.0,
+          -22.0,
+          6.0
+        ],
+        [
+          27.590999603271484,
+          63.0,
+          105.375
+        ]
+      ]
+    }
+  ],
+  "collision_elements": 0,
+  "closed_loop_tests_executed": 0,
+  "limitations": [
+    "Mesh structure checks do not establish mechanical correctness or watertightness.",
+    "Summary requests two Robonine parallel grippers; URDF uses SO-101 hinged gripper.",
+    "URDF has no collision elements; inertia and drivetrain seating require measurement.",
+    "Fixture and bottle are not included in the arm URDF."
+  ]
+}

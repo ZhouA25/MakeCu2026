@@ -13,6 +13,7 @@ Model, top to bottom:
   bottle (fixed in the clip) -> cap_thread [cap_rot: hinge, cap_lift: slide] -> cap [cap_press: spring]
 """
 import math
+from pillbot.sim.assembly import BASE_VISUALS, PAN_VISUALS, UPPER_VISUALS, FOREARM_VISUALS, color
 
 from pillbot.utils.config import ROOT, get_bottle, load_yaml
 
@@ -111,6 +112,7 @@ def _mesh(name, file, **kw) -> str:
 
 
 MESHES = "".join([
+    _mesh("drive_plate", "arm/drive_plate.stl"), _mesh("shoulder_1", "arm/shoulder_1.stl"), _mesh("shoulder_2", "arm/shoulder_2.stl"),
     _mesh("base", "arm/base.stl"), _mesh("base_plate", "arm/base_plate.stl"),
     _mesh("link_1", "arm/link_1.stl"), _mesh("elbow_1", "arm/elbow_1.stl"), _mesh("elbow_2", "arm/elbow_2.stl"),
     _mesh("link_2", "arm/link_2.stl"), _mesh("wrist_gear_1", "arm/wrist_gear_1.stl"),
@@ -145,20 +147,21 @@ def _arm_xml(a: dict, cam: dict, cap_r: float, body_r: float, held_cap: float = 
     (mx_, mz_), m_tilt, m_len = _face(*MOVING_FACE)
     hx, hy, hz = JAW_HINGE
     jr = a["jaw_range_deg"]
-    # STL assembly frame -> body frames: link_1 starts at z=166.3 mm, link_2 at 345.6 mm (hardware/stl/README.md)
-    upper_vis = (_vis("link_1", (0.8, -6.05, -166.3)) + _vis("elbow_1", (0.8, -6.05, -166.3), rgba="0.7 0.7 0.75 1")
-                 + _vis("elbow_2", (0.8, -6.05, -166.3), rgba="0.7 0.7 0.75 1")) if meshes else \
-        f'<geom class="link" type="capsule" size="0.016" fromto="0 0 0 0 0 {L1}"/>'
-    fore_vis = (_vis("link_2", (0.75, 1.99, -345.6)) + _vis("wrist_gear_1", (0.75, 1.99, -345.6), rgba="0.7 0.7 0.75 1")) \
-        if meshes else f'<geom class="link" type="capsule" size="0.014" fromto="0 0 0 0 0 {L2}"/>'
+    def visuals(parts):
+        return ''.join(_vis(name, xyz, rgba=color(name), euler=' '.join(str(math.degrees(v)) for v in rot)) for name, xyz, rot in parts)
+    upper_vis = visuals(UPPER_VISUALS) if meshes else f'<geom class="link" type="capsule" size="0.016" fromto="0 0 0 0 0 {L1}"/>'
+    fore_vis = visuals(FOREARM_VISUALS) if meshes else f'<geom class="link" type="capsule" size="0.014" fromto="0 0 0 0 0 {L2}"/>'
     hand_vis = _vis("gripper_body", (0, 0, 0), rgba="0.9 0.9 0.92 1") if meshes else ""
     jaw_vis = ('<geom type="mesh" mesh="moving_jaw" pos="0 0.0189 0" euler="-90 0 0" rgba="0.9 0.9 0.92 1" '
                'contype="0" conaffinity="0" mass="0"/>') if meshes else ""
     return f"""
+    <body name="stationary_base" pos="0 0 {a['base_riser']}">
+      {visuals(BASE_VISUALS) if meshes else ""}
+    </body>
     <body name="base" pos="0 0 {a['base_riser']}">
       <joint name="shoulder_pan" axis="0 0 1" range="{lim['shoulder_pan'][0]} {lim['shoulder_pan'][1]}"/>
-      {_vis("base", (0.8, -5.9, 38.4), rgba="0.6 0.6 0.65 1") + _vis("base_plate", (0.8, -5.9, 38.4), rgba="0.4 0.4 0.45 1") if meshes else ""}
-      <geom class="link" type="cylinder" size="0.03 {a['shoulder_height']/2}" pos="0 0 {a['shoulder_height']/2}" mass="0.15" rgba="0.6 0.6 0.65 1"/>
+      <inertial pos="0 0 {a['shoulder_height']/2}" mass="0.15" diaginertia="0.001 0.001 0.001"/>
+      {visuals(PAN_VISUALS) if meshes else f'<geom class="link" type="cylinder" size="0.03 {a["shoulder_height"]/2}" pos="0 0 {a["shoulder_height"]/2}" mass="0"/>'}
       <body name="upper_arm" pos="0 0 {a['shoulder_height']}">
         <joint name="shoulder_lift" axis="0 1 0" range="{lim['shoulder_lift'][0]} {lim['shoulder_lift'][1]}"/>
         <inertial pos="0 0 {L1/2}" mass="{m}" diaginertia="{m*L1*L1/12} {m*L1*L1/12} 1e-5"/>
@@ -264,7 +267,7 @@ def build_xml(sim: dict, bottle: dict, grip_current_ma: float = 1000) -> str:
       {_clamp_jaws(body_r, floor)}
     </body>
     <body name="bottle" pos="{cx} {cy} {floor}">
-      <freejoint name="bottle_free"/>
+      {'' if fx.get('fixed_to_ground', False) else '<freejoint name="bottle_free"/>'}
       <geom name="bottle_body" class="solid" type="cylinder" size="{body_r} {body_h/2}" pos="0 0 {body_h/2}" mass="{fx.get('bottle_mass', 0.03)}" rgba="0.75 0.4 0.08 1"/>
       <body name="cap_thread" pos="0 0 {body_h}">
         <inertial pos="0 0 0" mass="0.001" diaginertia="1e-7 1e-7 1e-7"/>

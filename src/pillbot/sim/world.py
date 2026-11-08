@@ -36,6 +36,7 @@ class SimWorld:
         self.hz = self.robot_cfg["safety"]["control_hz"]
         self._renderers: dict[tuple[int, int], mujoco.Renderer] = {}
         self.on_tick = None                                # optional fn(world) after every control tick
+        self.on_step = None                                # observation/recording, including settling
 
         m = self.model
         jid = {n: m.joint(n).id for n in (*ARM, "gripper", "clamp_l", "clamp_r", "cap_x", "cap_y", "cap_rot", "cap_lift", "cap_press")}
@@ -45,7 +46,8 @@ class SimWorld:
         self.act = {n: m.actuator(n).id for n in (*ARM, "gripper")}
         self.clamp_act = [m.actuator("clamp_l").id, m.actuator("clamp_r").id]
         self.clip_body = m.body("clip").id
-        self.free_q = int(m.jnt_qposadr[m.joint("bottle_free").id])
+        self.fixed_bottle = bool(self.sim['fixture'].get('fixed_to_ground', False))
+        self.free_q = None if self.fixed_bottle else int(m.jnt_qposadr[m.joint("bottle_free").id])
         self.eq_rot = m.equality("cap_rot_lock").id
         self.eq_thread = [m.equality(f"cap_{a}_lock").id for a in ("lift", "x", "y")]
         self.grasp_site = m.site("grasp").id
@@ -72,10 +74,14 @@ class SimWorld:
         m.body_pos[self.clip_body][:2] = xy
         if start == "zone":
             bx, by = fx.get("pick_xy", (0.055, 0.095)) if pick_xy is None else pick_xy
-            d.qpos[self.free_q:self.free_q + 3] = [bx, by, 0.0]
+            bottle_xyz = [bx, by, 0.0]
         else:
-            d.qpos[self.free_q:self.free_q + 3] = [xy[0], xy[1], fx["clip_floor"]]
-        d.qpos[self.free_q + 3:self.free_q + 7] = [1, 0, 0, 0]
+            bottle_xyz = [xy[0], xy[1], fx["clip_floor"]]
+        if self.fixed_bottle:
+            m.body_pos[self.bottle_body] = bottle_xyz
+        else:
+            d.qpos[self.free_q:self.free_q + 3] = bottle_xyz
+            d.qpos[self.free_q + 3:self.free_q + 7] = [1, 0, 0, 0]
         c = self.sim["cap"]
         pick = (lambda lo_hi: self.rng.uniform(*lo_hi)) if randomize else (lambda lo_hi: float(np.mean(lo_hi)))
         self.thread_torque = pick(c["thread_torque"])
@@ -109,6 +115,8 @@ class SimWorld:
     @property
     def bottle_pos(self) -> np.ndarray:
         """Where the bottle's bottom centre really is (true value, for checking)."""
+        if self.fixed_bottle:
+            return self.model.body_pos[self.bottle_body].copy()
         return self.data.qpos[self.free_q:self.free_q + 3].copy()
 
     @property
@@ -123,6 +131,8 @@ class SimWorld:
 
     def bottle_upright(self) -> float:
         """Tilt of the bottle from vertical, degrees."""
+        if self.fixed_bottle:
+            return 0.0
         _, x, y, _ = self.data.qpos[self.free_q + 3:self.free_q + 7]
         return math.degrees(math.acos(max(-1.0, min(1.0, 1 - 2 * (x * x + y * y)))))
 
@@ -170,8 +180,11 @@ class SimWorld:
             self._cap_logic()
             mujoco.mj_step(self.model, self.data, nstep=k)
             n -= k
+            self.time += k * self.model.opt.timestep
+            if self.on_step is not None:
+                mujoco.mj_kinematics(self.model, self.data)
+                self.on_step(self)
         mujoco.mj_kinematics(self.model, self.data)      # positions match the new state
-        self.time += seconds
 
     def tick(self):
         """One control period (1 / control_hz), like one command to the real servos."""

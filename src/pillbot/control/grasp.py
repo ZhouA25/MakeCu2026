@@ -38,12 +38,16 @@ def grip_until_contact(io, tactile, gcfg: dict, extra_squeeze: float = 0.0) -> G
             io.set_gripper(target, settle_s=0.2)
             # Optional: keep tightening until the pad reads a set grip pressure (gripper.target_pressure)
             want = gcfg.get("target_pressure")
-            while want and tactile.pressure() < want and target > closed:
+            p = tactile.pressure()
+            while want and p < want and target > closed:
                 target = max(closed, target - step / 2)
                 io.set_gripper(target, settle_s=0.1)
-            p = tactile.pressure()
+                p = tactile.pressure()
             log.info("grasp: contact at gripper=%.1f pressure=%.0f", target, p)
-            return GraspResult(True, target, p, "contact")
+            threshold = max(float(getattr(tactile, "contact_threshold", 0)), float(want or 0))
+            if p < threshold:
+                return GraspResult(False, target, p, "contact lost or grip pressure not reached after squeezing")
+            return GraspResult(True, target, p, "contact maintained after squeezing")
     return GraspResult(False, target, tactile.pressure(), "closed fully without contact (missed)")
 
 

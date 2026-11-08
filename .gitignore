@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+.sim-deps/
 venv/
 *.egg-info/
 .ipynb_checkpoints/

@@ -3,6 +3,8 @@
 All in **millimetres**. Renamed from the team's shared zip (original names in the last column).
 The simulation loads some of them as visuals (`src/pillbot/sim/scene.py`, `docs/simulation.md`).
 
+> Assembly correction (2026-11-08): see `docs/assembly-correction.md`. The original bounding-box lengths below are not joint-to-joint lengths. Shoulder brackets and drive plate are now used, and elbow halves belong to separate moving bodies.
+
 ## `arm/` — danslovich/5DOF_Robot_Arm parts
 Exported in the arm's (exploded) assembly frame, standing straight up, so most of them line up as a
 vertical arm when loaded together.

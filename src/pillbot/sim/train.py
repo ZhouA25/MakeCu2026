@@ -14,6 +14,8 @@ from pathlib import Path
 import numpy as np
 
 from pillbot.utils.config import ROOT
+from pillbot.sim.model_version import check_checkpoint, fingerprint, metadata_path
+import json
 
 DEFAULT_MODEL = ROOT / "models/sim/reach_ppo.zip"
 
@@ -22,6 +24,8 @@ class ReachPolicy:
     """A trained reach policy, used like a controller: policy.move(env_or_world, goal)."""
 
     def __init__(self, path: str | Path = DEFAULT_MODEL):
+        check_checkpoint(path)
+        self.path = path
         from stable_baselines3 import PPO
         self.model = PPO.load(str(path), device="cpu")
 
@@ -31,6 +35,7 @@ class ReachPolicy:
     def drive(self, world, goal, max_steps: int = 150, tol: float = 0.003) -> float:
         """Close the loop on a SimWorld (or, with the same observation, the real arm): returns the
         final distance to `goal` in meters."""
+        check_checkpoint(self.path, world.sim)
         from pillbot.sim.envs import ReachEnv
         env = ReachEnv.__new__(ReachEnv)                    # reuse obs/step logic on this world
         env.world, env.goal = world, np.asarray(goal, float)
@@ -66,21 +71,33 @@ def train(steps: int, n_envs: int, out: Path, seed: int = 0):
     model.learn(total_timesteps=steps)
     out.parent.mkdir(parents=True, exist_ok=True)
     model.save(str(out))
+    metadata_path(out).write_text(json.dumps({'model_fingerprint':fingerprint(), 'seed':seed,
+                                             'training_steps':steps}, indent=2), encoding='utf-8')
     env.close()
     print(f"saved {out}  ({(time.time() - t0) / 60:.1f} min)")
 
 
 def evaluate(path: Path, episodes: int = 100, seed: int = 123) -> dict:
     from pillbot.sim.envs import ReachEnv
+    from pillbot.sim.recording import RunRecorder
     pol, env = ReachPolicy(path), ReachEnv(seed=seed)
     final = []
     for ep in range(episodes):
         obs, _ = env.reset(seed=seed + ep)
-        for _ in range(env.max_steps):
-            obs, _, _, trunc, info = env.step(pol.act(obs))
-            if trunc:
-                break
-        final.append(info["dist"])
+        recording = RunRecorder(env.world, 'reach_eval', seed + ep)
+        recording.phase = 'reach_policy'
+        distance = None
+        try:
+            for _ in range(env.max_steps):
+                obs, _, _, trunc, info = env.step(pol.act(obs))
+                distance = float(info['dist'])
+                if trunc:
+                    break
+            final.append(distance)
+        finally:
+            recording.phase = 'pass' if distance is not None and distance < .005 else 'fail'
+            recording.finish({'success':distance is not None and distance < .005, 'final_distance_m':distance})
+    env.close()
     f = np.array(final) * 1000
     res = {"episodes": episodes, "median_mm": float(np.median(f)), "mean_mm": float(f.mean()),
            "within_5mm": float((f < 5).mean()), "within_10mm": float((f < 10).mean()),

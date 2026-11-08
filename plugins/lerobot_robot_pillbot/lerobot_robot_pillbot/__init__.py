@@ -6,10 +6,11 @@
   teleop type  pillbot_koch_leader     presets: m077 = 6x XL330-M077 (stock, easy to back-drive)
                                                 m288 = 6x XL330-M288 (works, but stiffer by hand)
 
-Both accept `joints: [...]` (motor IDs 1..N in that order, last must be `gripper`) so you can build
+Both accept `joints: [...]` (default motor IDs 1..N in that order, last must be `gripper`) so you can build
 a 5-servo arm (e.g. no wrist_flex on danslovich/5DOF_Robot_Arm), and `use_degrees`
 (follower and leader MUST match). The follower also takes `gripper_goal_current` (mA) — the gripper
 runs in current-limited mode, so this sets how hard it squeezes (it twists caps off by friction).
+The follower accepts `motor_ids: {joint_name: id}` overrides for existing nonsequential IDs.
 
   camera type  pillbot_ipcam           network MJPEG camera (ESP32-CAM): `url: http://<ip>:81/stream`.
                                        Stock `opencv` can't take a URL (it turns it into a Path) and
@@ -18,6 +19,7 @@ runs in current-limited mode, so this sets how hard it squeezes (it twists caps 
 Install:  pip install -e plugins/lerobot_robot_pillbot      (LeRobot CLIs auto-discover it)
 """
 from dataclasses import dataclass, field
+from .motor_ids import resolve_motor_ids
 
 from pathlib import Path
 
@@ -57,10 +59,11 @@ def resolve_models(preset: str, models: list[str] | None, joints: list[str], pre
     return chosen
 
 
-def build_motors(joints, models, use_degrees: bool) -> dict[str, Motor]:
+def build_motors(joints, models, use_degrees: bool, motor_ids=None) -> dict[str, Motor]:
     body = MotorNormMode.DEGREES if use_degrees else MotorNormMode.RANGE_M100_100
-    return {j: Motor(i + 1, m, MotorNormMode.RANGE_0_100 if j == "gripper" else body)
-            for i, (j, m) in enumerate(zip(joints, models))}
+    ids = resolve_motor_ids(joints, motor_ids)
+    return {j: Motor(ids[j], m, MotorNormMode.RANGE_0_100 if j == "gripper" else body)
+            for j, m in zip(joints, models)}
 
 
 # ---------------------------------------------------------------- follower
@@ -70,6 +73,7 @@ class PillbotKochFollowerConfig(KochFollowerConfig):
     preset: str = "koch"
     models: list[str] | None = None
     joints: list[str] = field(default_factory=lambda: list(DEFAULT_JOINTS))
+    motor_ids: dict[str, int] | None = None
     gripper_goal_current: int | None = None   # mA; None = motor default
 
 
@@ -81,7 +85,7 @@ class PillbotKochFollower(KochFollower):
         super().__init__(config)
         models = resolve_models(config.preset, config.models, config.joints, FOLLOWER_PRESETS)
         self.bus = SerialMotorsBus(port=config.port, calibration=self.calibration,
-                                   motors=build_motors(config.joints, models, config.use_degrees))
+                                   motors=build_motors(config.joints, models, config.use_degrees, config.motor_ids))
 
     def calibrate(self) -> None:
         """Koch calibration, made safe for geared joints and reduced joint sets.

@@ -8,8 +8,10 @@ follower:
   id: pillbot_follower
   preset: all_m288              # we have 5-10 XL330-M288 and no XL430s
   # Arm: github.com/danslovich/5DOF_Robot_Arm — 5x XL330-M288, 4:1 printed planetary on the shoulder,
-  # 150 mm links, NO wrist pitch. Motor IDs 1..5 follow this order (set with scripts/setup_motors.sh).
+  # NO wrist pitch. Explicit IDs below were supplied by the user on 2026-11-08.
   joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper]
+  motor_ids: {shoulder_lift: 12, wrist_roll: 15, gripper: 10}
+  # shoulder_pan and elbow_flex retain defaults 1 and 3; physical IDs not yet confirmed.
   gripper_goal_current: 1000    # mA (XL330 max 1750). Higher = stronger grip on the cap, more heat
   use_degrees: true             # arm joints in degrees (scripted code assumes this)
 leader:

@@ -30,6 +30,7 @@ import numpy as np
 
 from pillbot.control.open_sequence import OpenFailed, open_cap, open_with_retry
 from pillbot.sim.backends import make_sim
+from pillbot.sim.recording import RunRecorder
 from pillbot.sim.envs import sample_reachable_goal
 from pillbot.sim.kinematics import orbit_twist
 from pillbot.sim.perception import locate_cap
@@ -129,82 +130,96 @@ def run_episode(seed: int, bottle: str, policy, grip_pressure: float | None, rec
     pick = np.asarray(fx.get("pick_xy", (0.055, 0.095)), float)   # where the bottle should be set down
     world.reset(clip_xy=clip + rng.uniform(-0.003, 0.003, 2), start=start,
                 pick_xy=pick + rng.uniform(-0.01, 0.01, 2))      # ...placed by hand: ±1 cm
-    io.connect()
-    world.on_tick = recorder
-    gcfg = dict(world.robot_cfg["gripper"]) | {"open": world.sim.get("gripper_open", 95)}
-    if grip_pressure:
-        gcfg["target_pressure"] = grip_pressure
-    retry = world.robot_cfg.get("retry", {})
-    hub = SimHub(world)
-    fixture = Fixture(hub, world.robot_cfg["fixture"], dry_run=True)   # the real clamp code
+    recording = RunRecorder(world, 'open', seed)
     out = {"seed": seed}
-
-    def done(result):
-        out["result"] = result
-        cs = world.cap_state()
-        log.info("  -> %s (cap turned %.0f deg, carried %.0f mm away; thread %.2f N·m, unlock %.1f mm)",
-                 result, cs["turned_deg"], cs["moved_mm"], world.thread_torque, world.unlock_mm)
-        world.close()
-        return out
-
-    # 1. reach random points
-    errs = []
-    for _ in range(n_reach):
-        goal = sample_reachable_goal(world, rng)
-        errs.append(move_policy_or_ik(world, io, policy, goal) * 1000)
-    out["reach_mm"] = errs
-    log.info("1 reach     %d random points, errors %s mm", n_reach, [round(e, 1) for e in errs])
-
     try:
-        if start == "zone":
-            # 2. find the bottle at the pick spot (wrist camera looks at its cap)
-            fixture.unclamp()
-            seen = locate_cap(world, io, nominal_xy=pick, surface_z=0.0)
-            if seen is None:
-                return done("bottle not seen")
-            bxy = seen["cap_center"][:2]
-            out["find_bottle_mm"] = float(np.linalg.norm(bxy - world.bottle_pos[:2]) * 1000)
-            log.info("2 find      bottle at %s, true error %.1f mm", np.round(bxy, 3), out["find_bottle_mm"])
-            # 3. approach with the policy, 4. pick + place + clamp with the real code
-            poses, site = pick_place_poses(world, io, bxy)
-            io.move_to({"gripper": gcfg["open"]})
-            hover_pt = world.site_pose(io.to_sim(poses["zone_hover_00"]), site)[0]
-            out["approach_mm"] = move_policy_or_ik(world, io, policy, hover_pt) * 1000   # policy flies the grasp site
-            log.info("3 approach  above the bottle, error %.1f mm", out["approach_mm"])
+        io.connect()
+        world.on_tick = recorder
+        gcfg = dict(world.robot_cfg["gripper"]) | {"open": world.sim.get("gripper_open", 95)}
+        if grip_pressure:
+            gcfg["target_pressure"] = grip_pressure
+        retry = world.robot_cfg.get("retry", {})
+        hub = SimHub(world)
+        fixture = Fixture(hub, world.robot_cfg["fixture"], dry_run=True)   # the real clamp code
+
+        def done(result):
+            out["result"] = result
+            cs = world.cap_state()
+            log.info("  -> %s (cap turned %.0f deg, carried %.0f mm away; thread %.2f N·m, unlock %.1f mm)",
+                     result, cs["turned_deg"], cs["moved_mm"], world.thread_torque, world.unlock_mm)
+            return out
+
+        recording.phase = "reach"
+        # 1. reach random points
+        errs = []
+        for _ in range(n_reach):
+            goal = sample_reachable_goal(world, rng)
+            errs.append(move_policy_or_ik(world, io, policy, goal) * 1000)
+        out["reach_mm"] = errs
+        log.info("1 reach     %d random points, errors %s mm", n_reach, [round(e, 1) for e in errs])
+
+        try:
+            if start == "zone":
+                # 2. find the bottle at the pick spot (wrist camera looks at its cap)
+                recording.phase = "find_and_pick"
+                fixture.unclamp()
+                seen = locate_cap(world, io, nominal_xy=pick, surface_z=0.0)
+                if seen is None:
+                    return done("bottle not seen")
+                bxy = seen["cap_center"][:2]
+                out["find_bottle_mm"] = float(np.linalg.norm(bxy - world.bottle_pos[:2]) * 1000)
+                log.info("2 find      bottle at %s, true error %.1f mm", np.round(bxy, 3), out["find_bottle_mm"])
+                # 3. approach with the policy, 4. pick + place + clamp with the real code
+                poses, site = pick_place_poses(world, io, bxy)
+                io.move_to({"gripper": gcfg["open"]})
+                hover_pt = world.site_pose(io.to_sim(poses["zone_hover_00"]), site)[0]
+                out["approach_mm"] = move_policy_or_ik(world, io, policy, hover_pt) * 1000   # policy flies the grasp site
+                log.info("3 approach  above the bottle, error %.1f mm", out["approach_mm"])
+                tactile.tare()
+                if not pick_bottle(io, tactile, poses, gcfg, 0.5, 0.5, place=world.robot_cfg.get("place")):
+                    return done("failed: missed the bottle")
+                recording.phase = "place"
+                place_in_clip(io, poses, gcfg, place=world.robot_cfg.get("place"))
+                seated = clamp_and_check(io, tactile, fixture, poses, gcfg, fixture.bottle_seated,
+                                         place=world.robot_cfg.get("place"), retries=int(retry.get("seat", 1)))
+                out["seat_mm"] = float(np.linalg.norm(world.bottle_pos[:2] - world.clip_xy) * 1000)
+                log.info("4 place     seated %s, %.1f mm off centre, tilt %.1f°, clamped",
+                         fixture.bottle_seated(), out["seat_mm"], world.bottle_upright())
+                if not seated:
+                    return done("failed: bottle not seated in the clip")
+
+            # 5. find the cap in the clip (again before each open retry: the cap may have moved)
+            def find_cap_poses():
+                found = locate_cap(world, io, nominal_xy=world.clip_xy)
+                if found is None:
+                    raise OpenFailed("cap not seen")
+                cap = found["cap_center"]
+                out["find_mm"] = float(np.linalg.norm(cap - world.cap_center) * 1000)
+                log.info("5 find      cap at %s, true error %.1f mm", np.round(cap, 3), out["find_mm"])
+                return cap_poses(world, io, cap)
+
+            # 6. open with the real control code (retry a missed grip / slipping cap once)
+            recording.phase = "open_cap"
             tactile.tare()
-            if not pick_bottle(io, tactile, poses, gcfg, 0.5, 0.5, place=world.robot_cfg.get("place")):
-                return done("failed: missed the bottle")
-            place_in_clip(io, poses, gcfg, place=world.robot_cfg.get("place"))
-            seated = clamp_and_check(io, tactile, fixture, poses, gcfg, fixture.bottle_seated,
-                                     place=world.robot_cfg.get("place"), retries=int(retry.get("seat", 1)))
-            out["seat_mm"] = float(np.linalg.norm(world.bottle_pos[:2] - world.clip_xy) * 1000)
-            log.info("4 place     seated %s, %.1f mm off centre, tilt %.1f°, clamped",
-                     fixture.bottle_seated(), out["seat_mm"], world.bottle_upright())
-            if not seated:
-                return done("failed: bottle not seated in the clip")
-
-        # 5. find the cap in the clip (again before each open retry: the cap may have moved)
-        def find_cap_poses():
-            found = locate_cap(world, io, nominal_xy=world.clip_xy)
-            if found is None:
-                raise OpenFailed("cap not seen")
-            cap = found["cap_center"]
-            out["find_mm"] = float(np.linalg.norm(cap - world.cap_center) * 1000)
-            log.info("5 find      cap at %s, true error %.1f mm", np.round(cap, 3), out["find_mm"])
-            return cap_poses(world, io, cap)
-
-        # 6. open with the real control code (retry a missed grip / slipping cap once)
-        tactile.tare()
-        twist = orbit_twist(world, io) if orbit else None
-        stats = open_with_retry(
-            lambda p: open_cap(io, tactile, world.bottle, p, gcfg, ocfg=world.robot_cfg.get("open"), twist=twist),
-            io, gcfg, find_cap_poses, retries=int(retry.get("open", 1)))
-        out.update(stats)
-        removed = world.cap_state()["moved_mm"] > 30
-        log.info("6 open      %s", "cap off and in the tray" if removed else "cap not removed")
-        return done("opened" if removed else "cap not removed")
-    except OpenFailed as e:
-        return done(f"failed: {e}")
+            twist = orbit_twist(world, io) if orbit else None
+            stats = open_with_retry(
+                lambda p: open_cap(io, tactile, world.bottle, p, gcfg, ocfg=world.robot_cfg.get("open"), twist=twist),
+                io, gcfg, find_cap_poses, retries=int(retry.get("open", 1)))
+            out.update(stats)
+            removed = world.cap_state()["moved_mm"] > 30
+            log.info("6 open      %s", "cap off and in the tray" if removed else "cap not removed")
+            return done("opened" if removed else "cap not removed")
+        except OpenFailed as e:
+            return done(f"failed: {e}")
+    except BaseException as error:
+        out['result'] = f'failed: {type(error).__name__}: {error}'
+        raise
+    finally:
+        recording.phase = 'opened' if out.get('result') == 'opened' else 'failed'
+        try:
+            recording.finish({'success':out.get('result') == 'opened', **out})
+        finally:
+            world.close()
 
 
 class GifRecorder:
@@ -228,7 +243,7 @@ def main():
     ap.add_argument("--episodes", type=int, default=1)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--bottle", default="standard_amber_40dr")
-    ap.add_argument("--approach", choices=["policy", "ik"], default="policy")
+    ap.add_argument("--approach", choices=["policy", "ik"], default="ik")
     ap.add_argument("--model", type=Path, default=DEFAULT_MODEL)
     ap.add_argument("--grip-pressure", type=float, default=500,
                     help="gripper.target_pressure for the sim run (0 = contact + squeeze only)")
@@ -243,7 +258,7 @@ def main():
                     help="twist with wrist_roll alone (no arm compensation) to see why it fails")
     ap.add_argument("--start", choices=["zone", "clip"], default="zone",
                     help="zone: pick from the pick spot first (default); clip: bottle already clamped")
-    ap.add_argument("--video", type=Path, help="save a GIF of the (first) episode")
+    ap.add_argument("--video", type=Path, help="also save a legacy GIF of the first episode; every episode always gets a local MP4")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO if args.episodes == 1 else logging.WARNING,
                         format="%(message)s")

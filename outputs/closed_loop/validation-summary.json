@@ -1,0 +1,5073 @@
+{
+  "total_videos": 25,
+  "latest_cohort_runs": [
+    "20261108T121409Z_grip_seed1_edb14e",
+    "20261108T121528Z_grip_seed0_0c8cb4",
+    "20261108T121528Z_grip_seed2_85d43b",
+    "20261108T121611Z_grip_seed3_acc831",
+    "20261108T121649Z_grip_seed4_03598a"
+  ],
+  "latest_passes": 5,
+  "latest_trials": 5,
+  "records": [
+    {
+      "run": "20261108T103011Z_jaw_seed0_3709e4",
+      "mode": "jaw",
+      "seed": 0,
+      "success": true,
+      "video_verified": true,
+      "frames": 122,
+      "duration_s": 8.133333333333333,
+      "controller_hash": null,
+      "grasp_hash": null,
+      "result": {
+        "label": "jaw",
+        "seed": 0,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18041088506196434,
+              0.06430936014129161
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.025819470478723894,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 300
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "success": true,
+        "mode": "jaw",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18041088506196434,
+          0.06430936014129161
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "measured_jaw_units": [
+          15.16782168509185,
+          85.04251099773921,
+          15.166861862731002,
+          85.04247995012963
+        ],
+        "measured_travel_deg": 76.86321404850905,
+        "frames": 122,
+        "simulated_seconds": 8.095999999999973,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103011Z_jaw_seed0_3709e4\\demo.mp4"
+      }
+    },
+    {
+      "run": "20261108T103031Z_grip_seed0_62903d",
+      "mode": "grip",
+      "seed": 0,
+      "success": false,
+      "video_verified": true,
+      "frames": 393,
+      "duration_s": 26.2,
+      "controller_hash": null,
+      "grasp_hash": null,
+      "result": {
+        "label": "grip",
+        "seed": 0,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18041088506196434,
+              0.06430936014129161
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.025819470478723894,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 300
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18041088506196434,
+          0.06430936014129161
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.23671337647511184,
+        "grasp_error_mm": 0.7124437419938822,
+        "grasp": {
+          "success": true,
+          "gripper": 0,
+          "pressure": 95.79903373853988,
+          "reason": "contact"
+        },
+        "lift_error_mm": 0.9325654674032989,
+        "min_hold_height_mm": -0.16277043604440303,
+        "max_hold_tilt_deg": 2.3768052407615523e-05,
+        "contact_fraction": 0.0,
+        "max_relative_drift_mm": 0.9128859556810414,
+        "final_bottle_height_mm": -0.1627704360473798,
+        "final_bottle_tilt_deg": 1.8841142131235978e-05,
+        "frames": 393,
+        "simulated_seconds": 26.149999999997963,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103031Z_grip_seed0_62903d\\demo.mp4"
+      }
+    },
+    {
+      "run": "20261108T103255Z_grip_seed0_7902f1",
+      "mode": "grip",
+      "seed": 0,
+      "success": true,
+      "video_verified": true,
+      "frames": 415,
+      "duration_s": 27.666666666666668,
+      "controller_hash": null,
+      "grasp_hash": null,
+      "result": {
+        "label": "grip",
+        "seed": 0,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18041088506196434,
+              0.06430936014129161
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.025819470478723894,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18041088506196434,
+          0.06430936014129161
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.27237804584942354,
+        "grasp_error_mm": 0.6538410643103053,
+        "grasp": {
+          "success": true,
+          "gripper": 16.0,
+          "pressure": 200.1172122951838,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.5190912588724153,
+        "min_hold_height_mm": 25.842523762802262,
+        "max_hold_tilt_deg": 3.9054325624006685,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.3345124353297457,
+        "final_bottle_height_mm": -0.16277043605791353,
+        "final_bottle_tilt_deg": 3.306651113363206e-06,
+        "frames": 415,
+        "simulated_seconds": 27.62599999999776,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103255Z_grip_seed0_7902f1\\demo.mp4"
+      }
+    },
+    {
+      "run": "20261108T103424Z_grip_seed1_3de6ac",
+      "mode": "grip",
+      "seed": 1,
+      "success": false,
+      "video_verified": true,
+      "frames": 521,
+      "duration_s": 34.733333333333334,
+      "controller_hash": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 1,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18003546487410077,
+              0.0663513910889778
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.027883192254392675,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "101050d9916633bda35ba891cba43eaaed8177844fbd1b946a0f05303a8aee37",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.28870287837019365,
+          "unlock_mm": 1.4494651616083885
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18003546487410077,
+          0.0663513910889778
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.3088551297117145,
+        "grasp_error_mm": 0.3173764205878074,
+        "grasp": {
+          "success": true,
+          "gripper": 36.0,
+          "pressure": 212.8887431057702,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.1907794725981477,
+        "min_hold_height_mm": -0.17568791348885213,
+        "max_hold_tilt_deg": 6.430333610564205,
+        "contact_fraction": 0.0,
+        "max_relative_drift_mm": 6.012440738811736,
+        "error": "RuntimeError: Cartesian feedback timeout: 75.3 mm",
+        "frames": 521,
+        "simulated_seconds": 34.69999999999816,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103424Z_grip_seed1_3de6ac\\demo.mp4"
+      }
+    },
+    {
+      "run": "20261108T103424Z_grip_seed3_d7511e",
+      "mode": "grip",
+      "seed": 3,
+      "success": false,
+      "video_verified": true,
+      "frames": 288,
+      "duration_s": 19.2,
+      "controller_hash": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 3,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.17875694750143087,
+              0.06421043151978831
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.041025489304127936,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "7f304987378f0cc853c3c219356d33c5f8858b2c9cec6de9aea744a501c654cd",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.2080756479341609,
+          "unlock_mm": 1.2753029137923193
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.17875694750143087,
+          0.06421043151978831
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.36060185986863935,
+        "grasp_error_mm": 1.4078193091176758,
+        "grasp": {
+          "success": false,
+          "gripper": 0,
+          "pressure": 0.0,
+          "reason": "closed fully without contact (missed)"
+        },
+        "error": "RuntimeError: closed fully without contact (missed)",
+        "frames": 288,
+        "simulated_seconds": 19.197999999998874,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103424Z_grip_seed3_d7511e\\demo.mp4"
+      }
+    },
+    {
+      "run": "20261108T103504Z_grip_seed4_2e3649",
+      "mode": "grip",
+      "seed": 4,
+      "success": false,
+      "video_verified": true,
+      "frames": 268,
+      "duration_s": 17.866666666666667,
+      "controller_hash": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 4,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.1813291683167171,
+              0.06503398265844308
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04452487411415408,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "99db5be08dc3297ca1423ed80aa18d49334c5034470ad40a234def3bbddf6873",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.09778392525703247,
+          "unlock_mm": 1.6858846655960238
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.1813291683167171,
+          0.06503398265844308
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2691374205184575,
+        "grasp_error_mm": 1.391007884827044,
+        "grasp": {
+          "success": false,
+          "gripper": 0,
+          "pressure": 0.0,
+          "reason": "closed fully without contact (missed)"
+        },
+        "error": "RuntimeError: closed fully without contact (missed)",
+        "frames": 268,
+        "simulated_seconds": 17.803999999999064,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103504Z_grip_seed4_2e3649\\demo.mp4"
+      }
+    },
+    {
+      "run": "20261108T103538Z_grip_seed2_18e1b5",
+      "mode": "grip",
+      "seed": 2,
+      "success": false,
+      "video_verified": true,
+      "frames": 453,
+      "duration_s": 30.2,
+      "controller_hash": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 2,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.17928483640274795,
+              0.06439547343024238
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04128451481188561,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "ab90aa2271050a807d78bed2df82da51a272477047b083a8954340ebc56eb94d",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "9c6b7ce1660155d0fe73c8a4f87c863b99f4c433200c55548a65f9a742d07288",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.10022150726972132,
+          "unlock_mm": 1.6800804207725233
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.17928483640274795,
+          0.06439547343024238
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2688744734628955,
+        "grasp_error_mm": 1.0481372838765566,
+        "grasp": {
+          "success": true,
+          "gripper": 10.0,
+          "pressure": 161.85442297233288,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.10388760934446369,
+        "min_hold_height_mm": -0.15354905801837493,
+        "max_hold_tilt_deg": 5.0509930079323e-06,
+        "contact_fraction": 0.0,
+        "max_relative_drift_mm": 0.4721327921021976,
+        "final_bottle_height_mm": -0.1535490580181352,
+        "final_bottle_tilt_deg": 8.537736462515939e-07,
+        "frames": 453,
+        "simulated_seconds": 30.15599999999742,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103538Z_grip_seed2_18e1b5\\demo.mp4"
+      }
+    },
+    {
+      "run": "20261108T103726Z_grip_seed3_9e252f",
+      "mode": "grip",
+      "seed": 3,
+      "success": false,
+      "video_verified": true,
+      "frames": 521,
+      "duration_s": 34.733333333333334,
+      "controller_hash": "a81cf6f37e206d671d7e2dfb39ad0cd771a4703ce060a10575dfd5807c1fd8d3",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 3,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.17875694750143087,
+              0.06421043151978831
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.041025489304127936,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "a81cf6f37e206d671d7e2dfb39ad0cd771a4703ce060a10575dfd5807c1fd8d3",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "7f304987378f0cc853c3c219356d33c5f8858b2c9cec6de9aea744a501c654cd",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.2080756479341609,
+          "unlock_mm": 1.2753029137923193
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.17875694750143087,
+          0.06421043151978831
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.3149725521100422,
+        "grasp_error_mm": 0.31439351806762716,
+        "grasp": {
+          "success": true,
+          "gripper": 36.0,
+          "pressure": 197.4869763418877,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.16441531529310752,
+        "min_hold_height_mm": -0.1648253120641239,
+        "max_hold_tilt_deg": 7.227326926501271,
+        "contact_fraction": 0.0,
+        "max_relative_drift_mm": 9.316096628242304,
+        "error": "RuntimeError: Cartesian feedback timeout: 31.5 mm",
+        "frames": 521,
+        "simulated_seconds": 34.66599999999815,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T103726Z_grip_seed3_9e252f\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T120756Z_grip_seed3_d085e1",
+      "mode": "grip",
+      "seed": 3,
+      "success": false,
+      "video_verified": true,
+      "frames": 522,
+      "duration_s": 34.8,
+      "controller_hash": "c4a5726326d29e656a176c2b95b6f6029872ae75323c40d71e65b4cf12c7b54e",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 3,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18875694750143088,
+              0.06421043151978831
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.041025489304127936,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "c4a5726326d29e656a176c2b95b6f6029872ae75323c40d71e65b4cf12c7b54e",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "4117086137760f1a2b00afc34b2f910d25850bc3c8ab10d01f41ba5ee2b7f533",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.2080756479341609,
+          "unlock_mm": 1.2753029137923193
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18875694750143088,
+          0.06421043151978831
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.23834045232498713,
+        "grasp_error_mm": 0.4837327761374673,
+        "grasp": {
+          "success": true,
+          "gripper": 32.0,
+          "pressure": 291.01044608368517,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.905143116826998,
+        "min_hold_height_mm": 22.487415194048463,
+        "max_hold_tilt_deg": 3.156135243372289,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.22197618839581157,
+        "error": "RuntimeError: Cartesian feedback timeout: 3.0 mm",
+        "frames": 522,
+        "simulated_seconds": 34.73199999999817,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T120756Z_grip_seed3_d085e1\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T120929Z_grip_seed1_b7ccbf",
+      "mode": "grip",
+      "seed": 1,
+      "success": false,
+      "video_verified": true,
+      "frames": 246,
+      "duration_s": 16.4,
+      "controller_hash": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 1,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19003546487410078,
+              0.0663513910889778
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.027883192254392675,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "c100900d2d5e0cb955521bab4c2b7d62a46f25707000e733cbbac4dabf456df5",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.28870287837019365,
+          "unlock_mm": 1.4494651616083885
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19003546487410078,
+          0.0663513910889778
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2163824196274988,
+        "grasp_error_mm": 0.49968974658765564,
+        "grasp": {
+          "success": false,
+          "gripper": 36.0,
+          "pressure": 142.60224651028744,
+          "reason": "contact lost or grip pressure not reached after squeezing"
+        },
+        "error": "RuntimeError: contact lost or grip pressure not reached after squeezing",
+        "frames": 246,
+        "simulated_seconds": 16.30599999999925,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T120929Z_grip_seed1_b7ccbf\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T120929Z_grip_seed3_8b5354",
+      "mode": "grip",
+      "seed": 3,
+      "success": true,
+      "video_verified": true,
+      "frames": 388,
+      "duration_s": 25.866666666666667,
+      "controller_hash": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 3,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18875694750143088,
+              0.06421043151978831
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.041025489304127936,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "4117086137760f1a2b00afc34b2f910d25850bc3c8ab10d01f41ba5ee2b7f533",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.2080756479341609,
+          "unlock_mm": 1.2753029137923193
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18875694750143088,
+          0.06421043151978831
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.23834045232498713,
+        "grasp_error_mm": 0.4837327761374673,
+        "grasp": {
+          "success": true,
+          "gripper": 32.0,
+          "pressure": 291.01044608368517,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.905143116826998,
+        "min_hold_height_mm": 22.487415194048463,
+        "max_hold_tilt_deg": 3.156135243372289,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.22197618839581157,
+        "final_bottle_height_mm": -0.15364365872804256,
+        "final_bottle_tilt_deg": 1.4787793334710982e-06,
+        "frames": 388,
+        "simulated_seconds": 25.763999999998,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T120929Z_grip_seed3_8b5354\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T120956Z_grip_seed2_20b837",
+      "mode": "grip",
+      "seed": 2,
+      "success": true,
+      "video_verified": true,
+      "frames": 390,
+      "duration_s": 26.0,
+      "controller_hash": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 2,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18928483640274796,
+              0.06439547343024238
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04128451481188561,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "d0470fa6dac265626170f36b706f8459bcf1a6356402c775849415e0e632f7f3",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.10022150726972132,
+          "unlock_mm": 1.6800804207725233
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18928483640274796,
+          0.06439547343024238
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.29421119810531154,
+        "grasp_error_mm": 0.46562414823144693,
+        "grasp": {
+          "success": true,
+          "gripper": 33.0,
+          "pressure": 196.1393729197892,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.7874309743485695,
+        "min_hold_height_mm": 22.75696383559471,
+        "max_hold_tilt_deg": 2.68733801149548,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.16353814879889686,
+        "final_bottle_height_mm": -0.15354905801561583,
+        "final_bottle_tilt_deg": 8.537736462515939e-07,
+        "frames": 390,
+        "simulated_seconds": 25.915999999997982,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T120956Z_grip_seed2_20b837\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121011Z_grip_seed4_994cd3",
+      "mode": "grip",
+      "seed": 4,
+      "success": true,
+      "video_verified": true,
+      "frames": 388,
+      "duration_s": 25.866666666666667,
+      "controller_hash": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+      "grasp_hash": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+      "result": {
+        "label": "grip",
+        "seed": 4,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19132916831671712,
+              0.06503398265844308
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04452487411415408,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "1a6d635ca009321827398d42d66d7d4476b6f1eac6693f05bc6b7f588bee98bc",
+          "src/pillbot/control/grasp.py": "3f8ab578d524733814b5c298676b57c8b91f1f6c17e129d6d040b5935d4f625f",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2"
+        },
+        "model_xml_sha256": "e65e596900879c0ce959fa310fff5268fffce35bd09bc09628a3c09a63d16dfc",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.09778392525703247,
+          "unlock_mm": 1.6858846655960238
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19132916831671712,
+          0.06503398265844308
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2955860177915099,
+        "grasp_error_mm": 0.4652387945310933,
+        "grasp": {
+          "success": true,
+          "gripper": 33.0,
+          "pressure": 316.97662894116985,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 1.0600921226781723,
+        "min_hold_height_mm": 22.60358767726108,
+        "max_hold_tilt_deg": 3.089569641976436,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.1380359070779486,
+        "final_bottle_height_mm": -0.1524656925485583,
+        "final_bottle_tilt_deg": 0.0,
+        "frames": 388,
+        "simulated_seconds": 25.779999999998,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121011Z_grip_seed4_994cd3\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121118Z_grip_seed0_08f080",
+      "mode": "grip",
+      "seed": 0,
+      "success": true,
+      "video_verified": true,
+      "frames": 389,
+      "duration_s": 25.933333333333334,
+      "controller_hash": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 0,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19041088506196435,
+              0.06430936014129161
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.025819470478723894,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "39a9edab97e64629bd1c10c852f038cea4360afc9f82af612e5f3e1cc0cc217f",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.0836360798162764,
+          "unlock_mm": 1.850616191360218
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19041088506196435,
+          0.06430936014129161
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.3066377236736027,
+        "grasp_error_mm": 0.46264844900362795,
+        "grasp": {
+          "success": true,
+          "gripper": 32.0,
+          "pressure": 260.55785126612193,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.45137963344145415,
+        "min_hold_height_mm": 22.98289657426301,
+        "max_hold_tilt_deg": 2.86997022162614,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.14731594213596122,
+        "final_bottle_height_mm": -0.16277043605631186,
+        "final_bottle_tilt_deg": 8.537736462515939e-07,
+        "frames": 389,
+        "simulated_seconds": 25.83199999999799,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121118Z_grip_seed0_08f080\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121118Z_grip_seed3_dd5979",
+      "mode": "grip",
+      "seed": 3,
+      "success": true,
+      "video_verified": true,
+      "frames": 388,
+      "duration_s": 25.866666666666667,
+      "controller_hash": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 3,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18875694750143088,
+              0.06421043151978831
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.041025489304127936,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "4117086137760f1a2b00afc34b2f910d25850bc3c8ab10d01f41ba5ee2b7f533",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.2080756479341609,
+          "unlock_mm": 1.2753029137923193
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18875694750143088,
+          0.06421043151978831
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.23834045232498713,
+        "grasp_error_mm": 0.4837327761374673,
+        "grasp": {
+          "success": true,
+          "gripper": 32.0,
+          "pressure": 283.81392280510653,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.905143116826998,
+        "min_hold_height_mm": 22.487415194048463,
+        "max_hold_tilt_deg": 3.156135243372289,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.22197618839581157,
+        "final_bottle_height_mm": -0.15364365872804256,
+        "final_bottle_tilt_deg": 1.4787793334710982e-06,
+        "frames": 388,
+        "simulated_seconds": 25.763999999998,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121118Z_grip_seed3_dd5979\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121200Z_grip_seed1_65a573",
+      "mode": "grip",
+      "seed": 1,
+      "success": false,
+      "video_verified": true,
+      "frames": 477,
+      "duration_s": 31.8,
+      "controller_hash": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 1,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19003546487410078,
+              0.0663513910889778
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.027883192254392675,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "c100900d2d5e0cb955521bab4c2b7d62a46f25707000e733cbbac4dabf456df5",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.28870287837019365,
+          "unlock_mm": 1.4494651616083885
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": false,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19003546487410078,
+          0.0663513910889778
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2163824196274988,
+        "grasp_error_mm": 0.49968974658765564,
+        "grasp": {
+          "success": true,
+          "gripper": 36.0,
+          "pressure": 150.3046465709445,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.4205047340373043,
+        "min_hold_height_mm": -0.3000440329600463,
+        "max_hold_tilt_deg": 2.638046164949704,
+        "contact_fraction": 0.8888888888888888,
+        "max_relative_drift_mm": 2.07209649282019,
+        "final_bottle_height_mm": -0.16092475658345212,
+        "final_bottle_tilt_deg": 1.4787793334710982e-06,
+        "frames": 477,
+        "simulated_seconds": 31.681999999997192,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121200Z_grip_seed1_65a573\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121200Z_grip_seed4_ffd8fc",
+      "mode": "grip",
+      "seed": 4,
+      "success": true,
+      "video_verified": true,
+      "frames": 388,
+      "duration_s": 25.866666666666667,
+      "controller_hash": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 4,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19132916831671712,
+              0.06503398265844308
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04452487411415408,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "e65e596900879c0ce959fa310fff5268fffce35bd09bc09628a3c09a63d16dfc",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.09778392525703247,
+          "unlock_mm": 1.6858846655960238
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19132916831671712,
+          0.06503398265844308
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2955860177915099,
+        "grasp_error_mm": 0.4652387945310933,
+        "grasp": {
+          "success": true,
+          "gripper": 33.0,
+          "pressure": 315.1898501302217,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 1.0600921226781723,
+        "min_hold_height_mm": 22.60358767726108,
+        "max_hold_tilt_deg": 3.089569641976436,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.1380359070779486,
+        "final_bottle_height_mm": -0.1524656925485583,
+        "final_bottle_tilt_deg": 0.0,
+        "frames": 388,
+        "simulated_seconds": 25.779999999998,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121200Z_grip_seed4_ffd8fc\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121249Z_grip_seed2_09fc4a",
+      "mode": "grip",
+      "seed": 2,
+      "success": true,
+      "video_verified": true,
+      "frames": 390,
+      "duration_s": 26.0,
+      "controller_hash": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 2,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.18928483640274796,
+              0.06439547343024238
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04128451481188561,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "c2eb958a764b6156c942a9ac4ef9e25569b728c892e717094d0aef5d481d1ee1",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "d0470fa6dac265626170f36b706f8459bcf1a6356402c775849415e0e632f7f3",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.10022150726972132,
+          "unlock_mm": 1.6800804207725233
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 150,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.18928483640274796,
+          0.06439547343024238
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.29421119810531154,
+        "grasp_error_mm": 0.46562414823144693,
+        "grasp": {
+          "success": true,
+          "gripper": 33.0,
+          "pressure": 196.8006613217995,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.7874309743485695,
+        "min_hold_height_mm": 22.75696383559471,
+        "max_hold_tilt_deg": 2.68733801149548,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.16353814879889686,
+        "final_bottle_height_mm": -0.15354905801561583,
+        "final_bottle_tilt_deg": 8.537736462515939e-07,
+        "frames": 390,
+        "simulated_seconds": 25.915999999997982,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121249Z_grip_seed2_09fc4a\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121409Z_grip_seed1_edb14e",
+      "mode": "grip",
+      "seed": 1,
+      "success": true,
+      "video_verified": true,
+      "frames": 406,
+      "duration_s": 27.066666666666666,
+      "controller_hash": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 1,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19503546487410078,
+              0.0663513910889778
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.027883192254392675,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "3c246a4c992d8b992d506a496a66bb01db47315000ef78eac31054d408ea5965",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.28870287837019365,
+          "unlock_mm": 1.4494651616083885
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 200,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19503546487410078,
+          0.0663513910889778
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.19987001900650597,
+        "grasp_error_mm": 0.7861770614439153,
+        "grasp": {
+          "success": true,
+          "gripper": 32.0,
+          "pressure": 272.26446391910713,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.7559805911230576,
+        "min_hold_height_mm": 19.97175798855255,
+        "max_hold_tilt_deg": 3.956100915035923,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.18116941224583952,
+        "final_bottle_height_mm": -0.160924756577095,
+        "final_bottle_tilt_deg": 1.6108968939569464e-05,
+        "frames": 406,
+        "simulated_seconds": 26.953999999997837,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121409Z_grip_seed1_edb14e\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121528Z_grip_seed0_0c8cb4",
+      "mode": "grip",
+      "seed": 0,
+      "success": true,
+      "video_verified": true,
+      "frames": 388,
+      "duration_s": 25.866666666666667,
+      "controller_hash": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 0,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19541088506196436,
+              0.06430936014129161
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.025819470478723894,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "5cc028da21c2c1fde02dc528d496acf2cdb326251ec00dd51f8f498020ff8ab2",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.0836360798162764,
+          "unlock_mm": 1.850616191360218
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 200,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19541088506196436,
+          0.06430936014129161
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2793073493322045,
+        "grasp_error_mm": 0.7525061579112461,
+        "grasp": {
+          "success": true,
+          "gripper": 31.0,
+          "pressure": 228.76691398322689,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.8600675084999522,
+        "min_hold_height_mm": 22.298896624315578,
+        "max_hold_tilt_deg": 3.4730741744284894,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.14046501349226936,
+        "final_bottle_height_mm": -0.16277043605628988,
+        "final_bottle_tilt_deg": 4.00455336570039e-06,
+        "frames": 388,
+        "simulated_seconds": 25.795999999998,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121528Z_grip_seed0_0c8cb4\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121528Z_grip_seed2_85d43b",
+      "mode": "grip",
+      "seed": 2,
+      "success": true,
+      "video_verified": true,
+      "frames": 393,
+      "duration_s": 26.2,
+      "controller_hash": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 2,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19428483640274796,
+              0.06439547343024238
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04128451481188561,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "e50b686b958efbb6c665d3f47b28230c4c5db9ee1426b93db49ceceeb62982ad",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.10022150726972132,
+          "unlock_mm": 1.6800804207725233
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 200,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19428483640274796,
+          0.06439547343024238
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.2681416542538776,
+        "grasp_error_mm": 0.7555420997536627,
+        "grasp": {
+          "success": true,
+          "gripper": 31.0,
+          "pressure": 390.65567740800566,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.9140636383250417,
+        "min_hold_height_mm": 22.246185478405977,
+        "max_hold_tilt_deg": 3.538750546640847,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.1380422834061065,
+        "final_bottle_height_mm": -0.15354905801844784,
+        "final_bottle_tilt_deg": 1.9090959104164224e-06,
+        "frames": 393,
+        "simulated_seconds": 26.067999999997962,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121528Z_grip_seed2_85d43b\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121611Z_grip_seed3_acc831",
+      "mode": "grip",
+      "seed": 3,
+      "success": true,
+      "video_verified": true,
+      "frames": 388,
+      "duration_s": 25.866666666666667,
+      "controller_hash": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 3,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19375694750143088,
+              0.06421043151978831
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.041025489304127936,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "0dfa4af94be0a0f309d747ff60cc12295e563be756b12556e54c500c63ca2e83",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.2080756479341609,
+          "unlock_mm": 1.2753029137923193
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 200,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19375694750143088,
+          0.06421043151978831
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.21903889435687215,
+        "grasp_error_mm": 0.7733037245003552,
+        "grasp": {
+          "success": true,
+          "gripper": 32.0,
+          "pressure": 261.71493482697736,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 1.0408417761864346,
+        "min_hold_height_mm": 21.513131396470904,
+        "max_hold_tilt_deg": 3.5609870988178853,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.1358473028348326,
+        "final_bottle_height_mm": -0.15364365872804803,
+        "final_bottle_tilt_deg": 2.561320938754782e-06,
+        "frames": 388,
+        "simulated_seconds": 25.797999999997995,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121611Z_grip_seed3_acc831\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T121649Z_grip_seed4_03598a",
+      "mode": "grip",
+      "seed": 4,
+      "success": true,
+      "video_verified": true,
+      "frames": 389,
+      "duration_s": 25.933333333333334,
+      "controller_hash": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "grip",
+        "seed": 4,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.12,
+              0.0
+            ],
+            "pick_xy": [
+              0.19632916831671712,
+              0.06503398265844308
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.04452487411415408,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "7163d2259f5281a1d7e2b551d25aec5c89b7dd873f914ab41c6ab780fb897df5",
+          "src/pillbot/sim/scene.py": "102e78f961fc7e7091eafce4c5797f44ed2ddef464045408319cbc13a0e2f986",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "d14a5b27460c910cf708e9448d04c42ba035446c95d6a331b9153dcc73265044",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030"
+        },
+        "model_xml_sha256": "8717337cc6c037be322ccecb4cf3c568fc95e2c366cb7ca8aa07484f3f537d0c",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.09778392525703247,
+          "unlock_mm": 1.6858846655960238
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 1,
+          "target_pressure": 200,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "success": true,
+        "mode": "grip",
+        "hold_seconds": 3.0,
+        "initial_xy_m": [
+          0.19632916831671712,
+          0.06503398265844308
+        ],
+        "benchmark": "known bench location; vision not validated",
+        "hover_error_mm": 0.26891493033073344,
+        "grasp_error_mm": 0.7538325759636754,
+        "grasp": {
+          "success": true,
+          "gripper": 32.0,
+          "pressure": 267.2222072374006,
+          "reason": "contact maintained after squeezing"
+        },
+        "lift_error_mm": 0.4592392216088325,
+        "min_hold_height_mm": 21.763028532057277,
+        "max_hold_tilt_deg": 3.767484792442202,
+        "contact_fraction": 1.0,
+        "max_relative_drift_mm": 0.21989169512911996,
+        "final_bottle_height_mm": -0.1524656925485722,
+        "final_bottle_tilt_deg": 2.699869328381916e-06,
+        "frames": 389,
+        "simulated_seconds": 25.83199999999799,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T121649Z_grip_seed4_03598a\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T124435Z_fixed_push_twist_seed0_2ac45e",
+      "mode": "fixed_push_twist",
+      "seed": 0,
+      "success": false,
+      "video_verified": true,
+      "frames": 395,
+      "duration_s": 26.333333333333332,
+      "controller_hash": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "fixed_push_twist",
+        "seed": 0,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.18,
+              0.065
+            ],
+            "pick_xy": [
+              0.06,
+              0.104
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.03,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01,
+            "fixed_to_ground": true
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile; known bench target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "2d972989ef9fa1be130285a624ba6c5ce4b40f468ea6c7d1e7706b597c057d48",
+          "src/pillbot/sim/scene.py": "421b7203090aaf258dd19cfbf81f044a6f42636ed382d8a0f46fd92567eec7c7",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "605707826172f4715f7cbd83db97717f39ee30bd02b640b842941a65f42685f4",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030",
+          "src/pillbot/sim/validate_twist.py": "04bad71814bc631a95fce2cacf8ab8741ef318613f32c8f94bf47ffe9f42e119"
+        },
+        "model_xml_sha256": "18918a67d0333bf30a2e27d97f92e1e0e639fe8ebf49ca5327ed50d8e655bfc7",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.0836360798162764,
+          "unlock_mm": 1.850616191360218
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 2,
+          "target_pressure": 350,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "mode": "fixed_push_twist",
+        "success": false,
+        "pusher": false,
+        "commanded_twist_deg": 90,
+        "fixed_body_dofs": 0,
+        "grasp": {
+          "success": true,
+          "gripper": 33.0,
+          "pressure": 2935.888933153755,
+          "reason": "contact maintained after squeezing"
+        },
+        "cap_after_press": {
+          "turned_deg": 0.0019951135302919104,
+          "pressed_mm": 0.8127641132766871,
+          "lifted_mm": -0.004919153963730182,
+          "moved_mm": 0.006736066696648463,
+          "free": false
+        },
+        "cap_after_twist": {
+          "turned_deg": 0.011397939047116818,
+          "pressed_mm": 0.13676773151031957,
+          "lifted_mm": -0.0009908265297364814,
+          "moved_mm": 0.004320755057078261,
+          "free": false
+        },
+        "actual_wrist_deg": 0.48403578692229654,
+        "actual_cap_twist_deg": 0.009402825516824908,
+        "unlocked_fraction_during_twist": 0.0,
+        "max_cap_press_mm": 1.6824381178071215,
+        "max_bottle_displacement_mm": 0.0,
+        "final_cap_state": {
+          "turned_deg": -0.005368206900349761,
+          "pressed_mm": 0.024524999999999998,
+          "lifted_mm": -0.00018326346502405637,
+          "moved_mm": 1.2354905632926217e-144,
+          "free": false
+        },
+        "bottle_displacement_mm": 0.0,
+        "frames": 395,
+        "simulated_seconds": 26.24399999999796,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T124435Z_fixed_push_twist_seed0_2ac45e\\demo.mp4",
+        "video_verified": true
+      }
+    },
+    {
+      "run": "20261108T124616Z_fixed_push_twist_seed0_0a20aa",
+      "mode": "fixed_push_twist",
+      "seed": 0,
+      "success": true,
+      "video_verified": true,
+      "frames": 502,
+      "duration_s": 33.46666666666667,
+      "controller_hash": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+      "grasp_hash": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+      "result": {
+        "label": "fixed_push_twist",
+        "seed": 0,
+        "simulation_only": true,
+        "fps": 15,
+        "sim_config": {
+          "arm": {
+            "base_riser": 0.08,
+            "riser_radius": 0.072,
+            "shoulder_height": 0.118407579422,
+            "upper_arm": 0.23320687561,
+            "forearm": 0.18551260376,
+            "link_mass": 0.06,
+            "meshes": true,
+            "jaw_range_deg": [
+              -10,
+              100
+            ],
+            "grasp_depth": 0.08,
+            "grip_torque_per_ma": 0.000297,
+            "palm_pusher": false,
+            "torque": {
+              "shoulder_pan": 0.52,
+              "shoulder_lift": 1.6,
+              "elbow_flex": 0.52,
+              "wrist_roll": 0.52
+            },
+            "servo_stiffness_deg": 2.5,
+            "limits_deg": {
+              "shoulder_pan": [
+                -150,
+                150
+              ],
+              "shoulder_lift": [
+                -100,
+                100
+              ],
+              "elbow_flex": [
+                -150,
+                150
+              ],
+              "wrist_roll": [
+                -180,
+                180
+              ]
+            }
+          },
+          "joint_map": {
+            "shoulder_pan": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "shoulder_lift": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "elbow_flex": {
+              "sign": 1,
+              "offset_deg": 0
+            },
+            "wrist_roll": {
+              "sign": 1,
+              "offset_deg": 0
+            }
+          },
+          "fixture": {
+            "clip_xy": [
+              0.18,
+              0.065
+            ],
+            "pick_xy": [
+              0.06,
+              0.104
+            ],
+            "clip_floor": 0.0,
+            "pocket_slope_deg": 0,
+            "clamp_force": 30,
+            "bottle_mass": 0.03,
+            "pick_grip": "cap",
+            "body_grip_below_top": 0.012,
+            "cap_height": 0.018,
+            "cap_mass": 0.01,
+            "fixed_to_ground": true
+          },
+          "cap": {
+            "thread_torque": [
+              0.08,
+              0.3
+            ],
+            "push_spring": 4000,
+            "push_unlock_mm": [
+              1.2,
+              2.0
+            ],
+            "friction": [
+              0.8,
+              1.2
+            ]
+          },
+          "tactile": {
+            "taxel_pitch": 0.004
+          },
+          "wrist_camera": {
+            "offset": [
+              0.012,
+              -0.03,
+              0.02
+            ],
+            "fovy_deg": 50,
+            "width": 320,
+            "height": 240
+          },
+          "gripper_open": 70,
+          "tool_roll_deg": 90,
+          "press_depth_mm": 6,
+          "physics": {
+            "timestep": 0.002,
+            "noslip_iterations": 100
+          }
+        },
+        "robot_config": {
+          "gripper": {
+            "open": 60,
+            "closed": 0,
+            "max_cap_mm": 50,
+            "step": 2.0,
+            "squeeze": 4.0,
+            "target_pressure": null,
+            "release_crack": 12,
+            "stall_margin": 6.0
+          },
+          "safety": {
+            "max_joint_step_deg": 2.0,
+            "control_hz": 30
+          },
+          "tactile_threshold": 100
+        },
+        "model_sha256": "5841fab5172f6cba09e29dd65df81d16666f66881c56484b9dfae4cf3fbac95a",
+        "status": "complete",
+        "controller_inputs": "joint encoders, tactile, simulated cap-compression feedback; known fixed target",
+        "ground_truth": "bottle pose/contact forces used only for scoring and telemetry",
+        "configured_motor_ids": {
+          "shoulder_lift": 12,
+          "wrist_roll": 15,
+          "gripper": 10
+        },
+        "joint_angle_convention": "sim degrees; real = sign * sim + offset_deg using joint_map",
+        "source_sha256": {
+          "src/pillbot/sim/validate_grip.py": "b79f5a246798281d406c5e445e421ddb4429aff4773c7a1c8ffa9a68e6568174",
+          "src/pillbot/control/grasp.py": "889ef3c2ae8a3ce03c54ba9f98de3e9735f7e45886c2c4c8703d084ecde133a6",
+          "src/pillbot/sim/world.py": "2d972989ef9fa1be130285a624ba6c5ce4b40f468ea6c7d1e7706b597c057d48",
+          "src/pillbot/sim/scene.py": "421b7203090aaf258dd19cfbf81f044a6f42636ed382d8a0f46fd92567eec7c7",
+          "src/pillbot/sim/assembly.py": "9c12546a30571e2fd1c17d40b06e2ea1f7e9792c42d43df9fb71c1c6b76833b2",
+          "src/pillbot/sim/recording.py": "605707826172f4715f7cbd83db97717f39ee30bd02b640b842941a65f42685f4",
+          "src/pillbot/sim/backends.py": "c868eae0c702c95f6827589678f077ef633e8573c50193110c05cdd6b00ba030",
+          "src/pillbot/sim/validate_twist.py": "56b85c12bb620e15b9104437c217a6245e56d16ab7347612ec84c372877d51ee"
+        },
+        "model_xml_sha256": "18918a67d0333bf30a2e27d97f92e1e0e639fe8ebf49ca5327ed50d8e655bfc7",
+        "randomized_cap": {
+          "thread_torque_Nm": 0.0836360798162764,
+          "unlock_mm": 1.850616191360218
+        },
+        "effective_gripper_config": {
+          "open": 75,
+          "closed": 0,
+          "max_cap_mm": 50,
+          "step": 2.0,
+          "squeeze": 2,
+          "target_pressure": 350,
+          "release_crack": 12,
+          "stall_margin": 6.0
+        },
+        "mode": "fixed_push_twist",
+        "success": true,
+        "pusher": false,
+        "commanded_twist_deg": 90,
+        "fixed_body_dofs": 0,
+        "grasp": {
+          "success": true,
+          "gripper": 33.0,
+          "pressure": 2935.888933153755,
+          "reason": "contact maintained after squeezing"
+        },
+        "cap_after_press": {
+          "turned_deg": 0.021535911379837094,
+          "pressed_mm": 1.8570369106975217,
+          "lifted_mm": -0.01206438597484416,
+          "moved_mm": 0.007433104873705201,
+          "free": false
+        },
+        "cap_after_twist": {
+          "turned_deg": 93.94119214861183,
+          "pressed_mm": 2.2933769745857866,
+          "lifted_mm": -0.015552503244337965,
+          "moved_mm": 0.0063295399407873165,
+          "free": false
+        },
+        "actual_wrist_deg": 0.22668810006422,
+        "actual_cap_twist_deg": 93.91965623723199,
+        "unlocked_fraction_during_twist": 1.0,
+        "max_cap_press_mm": 2.6421248294630737,
+        "max_bottle_displacement_mm": 0.0,
+        "final_cap_state": {
+          "turned_deg": 93.93953905226908,
+          "pressed_mm": 0.024525000000000005,
+          "lifted_mm": -0.00018326346502405656,
+          "moved_mm": 1.7186126548278666e-140,
+          "free": false
+        },
+        "bottle_displacement_mm": 0.0,
+        "frames": 502,
+        "simulated_seconds": 33.33999999999763,
+        "video": "D:\\MakeCu2026\\outputs\\closed_loop\\20261108T124616Z_fixed_push_twist_seed0_0a20aa\\demo.mp4",
+        "video_verified": true
+      }
+    }
+  ]
+}
