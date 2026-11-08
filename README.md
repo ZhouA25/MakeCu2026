@@ -167,6 +167,18 @@ Suggested bring-up order: `--pick skip` (tune the clamp, grip, push and twist on
 
 ---
 
+### Live viewer (watch from any browser)
+The ESP32-CAM serves only one stream client, so the machine running PillBot (e.g. the Pi) keeps that
+one connection and re-shares it to as many browsers as you like:
+```bash
+python -m pillbot.tools.live_view        # standalone: open http://pillbot.local:8080 (or the machine's IP)
+python -m pillbot.run --view             # same page during a real run, with live run status
+```
+The page shows the video with the detection box (or the detection **mask** / raw view), bottle
+position/width/profile, the run phase and last log line, the SensX pressure grid, and a
+**Capture background** button — so you can re-take the empty-zone photo from your laptop or phone
+while the Pi runs everything. Don't open the camera's own `:81/stream` at the same time.
+
 ## 4. Learned policy (optional)
 
 Needs a leader arm for teleop demos. Record → train on a GPU → run:
@@ -204,6 +216,7 @@ src/pillbot/
                       pick_place, open_sequence (grip, push, twist), fixture (clamp), poses, teach,
                       triggers, policy_runner
   tools/fixture_bench.py  bench-test the hub + clip + clamp without the arm
+  tools/live_view.py      browser viewer: annotated camera, mask, status, SensX grid
   tools/tactile_live.py   find / watch / tune the SensX25;  tools/fake_sensx.py  virtual sensor
   perception/         cameras, zone calibration, bottle detection, spin monitor
   sensors/            tactile (SensX25 + backends), tactile_server (share it over TCP),

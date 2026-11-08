@@ -9,6 +9,7 @@ trigger -> find bottle -> pick -> place in clip -> clamp -> grip cap, push down,
   python -m pillbot.run --zone-st 0.5,0.5                 # skip vision, known zone position
   python -m pillbot.run --bottle auto                     # pick the bottle profile from its measured width
   python -m pillbot.run --loop                            # keep serving bottles until Ctrl-C
+  python -m pillbot.run --view                            # watch live at http://<this machine>:8080
 """
 import argparse
 import logging
@@ -33,29 +34,31 @@ log = logging.getLogger("pillbot")
 def find_bottle(cfg, io=None, poses=None):
     """-> (s, t, width_mm) of the bottle in the start zone, or None.
     With the camera on the arm, look from the `scan` pose first."""
-    from pillbot.perception.cameras import grab, perception_camera
+    import time
     from pillbot.perception.detect_bottle import make_detector, settings, width_mm
-    from pillbot.perception.scan import camera_on_arm, flush, goto_scan
+    from pillbot.perception.scan import camera_on_arm, goto_scan
+    from pillbot.perception.shared_camera import SharedCamera
     from pillbot.perception.zone import ZoneMapper
-    if camera_on_arm(cfg) and io is not None:
-        goto_scan(io, poses or load_poses(), cfg)
     mapper = ZoneMapper.load()
     detector = make_detector(cfg, mapper=mapper)
     if getattr(detector, "background", True) is None:
-        raise OpenFailed("no background image — run detect_bottle and press b with the zone empty")
-    cap = perception_camera(cfg)
-    try:
-        flush(cap, 0.5)                           # drop frames buffered while the arm was moving
-        for _ in range(15):                       # a few frames for a stable detection
-            det = detector(grab(cap))
-            if det is None:
-                continue
-            st = settings(cfg)
-            s, t = mapper.to_zone(*det.anchor_px(st["anchor"]))
-            if mapper.inside(s, t):
-                return s, t, width_mm(det, mapper, st["zone_size_mm"], st["anchor"])
-    finally:
-        cap.release()
+        raise OpenFailed("no background image — run detect_bottle / live_view and capture it with the zone empty")
+    cam = SharedCamera.get(cfg)             # same connection the live viewer uses
+    if camera_on_arm(cfg) and io is not None:
+        goto_scan(io, poses or load_poses(), cfg)
+    after = time.time()                     # only trust frames taken after the arm settled
+    st = settings(cfg)
+    for _ in range(15):                     # a few frames for a stable detection
+        frame = cam.wait_new(after, timeout=3.0)
+        if frame is None:
+            raise OpenFailed(f"no frames from camera '{cam.name}': {cam.error or 'timeout'}")
+        after = cam.latest()[1]
+        det = detector(frame)
+        if det is None:
+            continue
+        s, t = mapper.to_zone(*det.anchor_px(st["anchor"]))
+        if mapper.inside(s, t):
+            return s, t, width_mm(det, mapper, st["zone_size_mm"], st["anchor"])
     return None
 
 
@@ -149,6 +152,8 @@ def main():
     ap.add_argument("--zone-st", help="s,t in [0,1] — bypass camera detection")
     ap.add_argument("--spin-check", action="store_true", help="watch blue tape on the bottle for spinning in the clamp")
     ap.add_argument("--loop", action="store_true", help="repeat until Ctrl-C")
+    ap.add_argument("--view", action="store_true", help="live viewer at http://<this machine>:8080 during the run")
+    ap.add_argument("--view-port", type=int, default=8080)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
@@ -180,6 +185,10 @@ def main():
     io.connect()
     tactile.connect()
     io.should_stop = lambda: hub.state.pressed(BTN_STOP)
+    view = None
+    if args.view and not args.dry_run:
+        from pillbot.tools.live_view import start_live_view
+        view = start_live_view(cfg, args.view_port, tactile)
     if fixture:
         fixture.power(True)
     code = 0
@@ -202,6 +211,11 @@ def main():
     except KeyboardInterrupt:
         log.warning("stopped by user")
     finally:
+        if view:
+            view.stop()
+        from pillbot.perception.shared_camera import SharedCamera
+        for cam in list(SharedCamera._instances.values()):
+            cam.close()
         if fixture:
             fixture.power(False)
         tactile.close()

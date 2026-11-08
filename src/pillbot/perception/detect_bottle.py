@@ -42,6 +42,18 @@ DEFAULTS = {
     "align": True,                # background: undo small camera shifts (arm backlash) first
     "camera_on_arm": False,
     "anchor": "auto",             # auto (center if camera_on_arm else base) | center | base
+    "shape_filter": "auto",       # auto (on for a top-down view) | on | off — reject hands, boxes, ...
+    "min_curve": 0.045,           # how far the outline bends away from a 4-corner polygon (0 = a box).
+                                  # Bottles 0.06-0.2 at ANY camera angle, boxes 0-0.03 (measured)
+    "max_aspect": 3.5,            # long/short side: rejects sticks, cables, the arm
+    "min_symmetry": 0.86,         # outline vs itself turned 180°: bottles 0.87-1.0, lopsided things
+                                  # (tape dispenser, stapler, mug with handle) 0.55-0.85
+    "zone_only": True,            # once the zone is calibrated, ignore everything outside it
+    "zone_margin": 0.15,          # ...plus this fraction of the zone size around it
+    "min_roundness": 0.0,         # optional strict check for a perfectly top-down camera (circle 1.0)
+    "min_solidity": 0.88,         # blob area / its convex hull: fills gaps like between fingers
+    "reject_border": True,        # things entering from the image edge (hands, the arm) are not bottles
+    "diameter_mm": [25, 80],      # plausible bottle/cap size seen from above (needs zone calibration)
     "scan_settle_s": 0.8,
 }
 COCO_BOTTLE = 39
@@ -88,21 +100,136 @@ def settings(cfg: dict | None = None) -> dict:
     st = {k: p.get(k, v) for k, v in DEFAULTS.items()}
     if st["anchor"] == "auto":
         st["anchor"] = "center" if st["camera_on_arm"] else "base"
+    if st["shape_filter"] == "auto":
+        st["shape_filter"] = "on" if st["anchor"] == "center" else "off"   # side views are rectangles
     return st
 
 
 thresholds = settings   # old name
 
 
-def _largest_blob(mask, min_area, label) -> Detection | None:
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contours = [c for c in contours if cv2.contourArea(c) >= min_area]
-    if not contours:
+def quad_error(contour) -> float:
+    """Max distance between the outline and its best 4-corner polygon, relative to the blob's width.
+    Boxes (any angle, blurred, slightly rounded corners) ~0-0.03; bottles/caps (round ends) >= 0.06."""
+    hull = cv2.convexHull(contour)
+    peri = cv2.arcLength(hull, True)
+    eps = 0.02 * peri
+    q = cv2.approxPolyDP(hull, eps, True)
+    while len(q) > 4 and eps < 0.2 * peri:
+        eps *= 1.25
+        q = cv2.approxPolyDP(hull, eps, True)
+    if len(q) != 4:
+        return 1.0                                   # can't even be squeezed into 4 corners: curved
+    q = q.reshape(-1, 2).astype(np.float32)
+    pts = contour.reshape(-1, 2)[::3]
+    d = max(abs(cv2.pointPolygonTest(q, (float(x), float(y)), True)) for x, y in pts)
+    (_, _), (w, h), _ = cv2.minAreaRect(contour)
+    return float(d / max(1.0, min(w, h)))
+
+
+def symmetry(contour) -> float:
+    """Overlap (IoU) of the blob with itself rotated 180° about its centroid.
+    Circles/ellipses/pill shapes ~1.0; lopsided objects much lower."""
+    x, y, w, h = cv2.boundingRect(contour)
+    pad = max(w, h)
+    blob = np.zeros((h + 2 * pad, w + 2 * pad), np.uint8)
+    cv2.drawContours(blob, [contour - [x - pad, y - pad]], -1, 255, -1)
+    m = cv2.moments(blob, binaryImage=True)
+    if not m["m00"]:
+        return 0.0
+    cx, cy = m["m10"] / m["m00"], m["m01"] / m["m00"]
+    rot = cv2.warpAffine(blob, cv2.getRotationMatrix2D((cx, cy), 180, 1), (blob.shape[1], blob.shape[0]))
+    inter, union = np.count_nonzero(blob & rot), np.count_nonzero(blob | rot)
+    return inter / union if union else 0.0
+
+
+def blob_shape(contour) -> dict:
+    area = float(cv2.contourArea(contour))
+    (ccx, ccy), r = cv2.minEnclosingCircle(contour)
+    hull = cv2.convexHull(contour)
+    hull_area = float(cv2.contourArea(hull)) or 1.0
+    (rx, ry), (rw, rh), _ = cv2.minAreaRect(contour)
+    short, long_ = sorted((rw, rh))
+    return {"area": area, "roundness": area / (np.pi * r * r) if r > 0 else 0.0,
+            "solidity": area / hull_area, "radius_px": float(r), "circle_center": (float(ccx), float(ccy)),
+            "width_px": float(short), "aspect": float(long_ / max(short, 1.0)), "rect_center": (float(rx), float(ry)),
+            "curve": quad_error(contour), "symmetry": symmetry(contour)}
+
+
+def _px_to_mm(mapper, zone_mm, center, radius_px) -> float | None:
+    """Diameter in mm of a circle of radius_px at `center`, via the zone calibration."""
+    if mapper is None or not zone_mm:
         return None
-    best = max(contours, key=cv2.contourArea)
-    m = cv2.moments(best)
-    cx, cy = (m["m10"] / m["m00"], m["m01"] / m["m00"]) if m["m00"] else (None, None)
-    return Detection(*cv2.boundingRect(best), area=float(cv2.contourArea(best)), label=label, cx=cx, cy=cy)
+    x, y = center
+    s1, t1 = mapper.to_zone(x - radius_px, y)
+    s2, t2 = mapper.to_zone(x + radius_px, y)
+    return float(np.hypot(s2 - s1, t2 - t1) * zone_mm)
+
+
+def pick_bottle(mask, st: dict, label: str, mapper=None) -> tuple["Detection | None", list]:
+    """Most bottle-like blob in `mask`, plus [(bbox, reason)] for the rejected ones."""
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    H, W = mask.shape[:2]
+    shape_on = st.get("shape_filter", "off") == "on"
+    lo_mm, hi_mm = (st.get("diameter_mm") or [0, 1e9])[:2]
+    best, best_score, rejects = None, -1.0, []
+    for c in contours:
+        sh = blob_shape(c)
+        if sh["area"] < st["min_area"]:
+            continue
+        x, y, w, h = cv2.boundingRect(c)
+        reason = None
+        if shape_on:
+            if st.get("reject_border", True) and (x <= 1 or y <= 1 or x + w >= W - 1 or y + h >= H - 1):
+                reason = "touches edge"
+            elif sh["solidity"] < st["min_solidity"]:
+                reason = f"not solid {sh['solidity']:.2f}"            # hands, cables, clutter
+            elif sh["curve"] < st.get("min_curve", 0.045):
+                reason = f"box corners {sh['curve']:.3f}"             # straight sides + sharp corners
+            elif sh["aspect"] > st.get("max_aspect", 3.5):
+                reason = f"too long {sh['aspect']:.1f}"
+            elif sh["symmetry"] < st.get("min_symmetry", 0.86):
+                reason = f"lopsided {sh['symmetry']:.2f}"             # tape dispenser, stapler, mug
+            elif sh["roundness"] < st.get("min_roundness", 0.0):
+                reason = f"not round {sh['roundness']:.2f}"
+            else:
+                # bottle WIDTH (short side) — a tilted bottle is longer than it is wide
+                d = _px_to_mm(mapper, st.get("zone_size_mm"), sh["rect_center"], sh["width_px"] / 2)
+                if d is not None and not (lo_mm <= d <= hi_mm):
+                    reason = f"size {d:.0f}mm"
+        if reason:
+            rejects.append(((x, y, w, h), reason))
+            continue
+        score = (min(sh["curve"], 0.2) * sh["solidity"] * sh["symmetry"]) if shape_on else sh["area"]
+        if score > best_score:
+            m = cv2.moments(c)
+            cx, cy = (m["m10"] / m["m00"], m["m01"] / m["m00"]) if m["m00"] else (None, None)
+            best_score = score
+            best = Detection(x, y, w, h, area=sh["area"], label=label, cx=cx, cy=cy)
+    return best, rejects
+
+
+def _largest_blob(mask, min_area, label) -> Detection | None:
+    return pick_bottle(mask, {"min_area": min_area, "shape_filter": "off"}, label)[0]
+
+
+def zone_roi(shape, mapper, margin: float = 0.15):
+    """Mask of the start zone (+ margin) in image pixels, from the zone calibration."""
+    m = np.zeros(shape[:2], np.uint8)
+    unit = np.float32([[-margin, -margin], [1 + margin, -margin], [1 + margin, 1 + margin], [-margin, 1 + margin]])
+    Hinv = np.linalg.inv(mapper.H)
+    pts = cv2.perspectiveTransform(unit[None], Hinv)[0]
+    cv2.fillPoly(m, [pts.astype(np.int32)], 255)
+    return m
+
+
+def _apply_zone(mask, st, mapper, cache: dict):
+    if mapper is None or not st.get("zone_only", True):
+        return mask
+    key = mask.shape
+    if cache.get("shape") != key:
+        cache["shape"], cache["roi"] = key, zone_roi(key, mapper, st.get("zone_margin", 0.15))
+    return cv2.bitwise_and(mask, cache["roi"])
 
 
 # ------------------------------------------------------------------ color
@@ -115,29 +242,33 @@ def color_mask(frame_bgr, low, high, open_k: int = 5):
 class ColorDetector:
     name = "color"
 
-    def __init__(self, st: dict):
-        self.st = st
+    def __init__(self, st: dict, mapper=None):
+        self.st, self.mapper, self.rejects, self._roi = st, mapper, [], {}
 
     def mask(self, frame):
-        return color_mask(frame, self.st["hsv_low"], self.st["hsv_high"])
+        return _apply_zone(color_mask(frame, self.st["hsv_low"], self.st["hsv_high"]), self.st, self.mapper, self._roi)
 
     def __call__(self, frame) -> Detection | None:
-        return _largest_blob(self.mask(frame), self.st["min_area"], "bottle (color)")
+        det, self.rejects = pick_bottle(self.mask(frame), self.st, "bottle (color)", self.mapper)
+        return det
 
 
 # ------------------------------------------------------------------ background
 class BackgroundDetector:
     name = "background"
 
-    def __init__(self, st: dict, background=None, roi_mask=None):
+    def __init__(self, st: dict, background=None, roi_mask=None, mapper=None):
         self.st = st
         self.background = background
         self.roi_mask = roi_mask           # optional: only look inside the start zone (+ margin)
+        self.mapper = mapper               # for the size check in mm + zone-only masking
+        self.rejects = []
+        self._roi = {}
 
     @classmethod
     def from_disk(cls, st, mapper=None):
         bg = cv2.imread(str(BACKGROUND_PATH)) if BACKGROUND_PATH.exists() else None
-        return cls(st, bg, None)
+        return cls(st, bg, None, mapper)
 
     def capture(self, frames):
         """Median of several frames of the EMPTY scene (robust to noise / flicker)."""
@@ -174,7 +305,7 @@ class BackgroundDetector:
         m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((11, 11), np.uint8))   # fill a white bottle's holes
         if self.roi_mask is not None:
             m = cv2.bitwise_and(m, self.roi_mask)
-        return m
+        return _apply_zone(m, self.st, self.mapper, self._roi)
 
     def __call__(self, frame) -> Detection | None:
         if self.background is None:
@@ -183,7 +314,8 @@ class BackgroundDetector:
             log.warning("background is %s but frame is %s — re-take it (b)", self.background.shape[:2],
                         frame.shape[:2])
             return None
-        return _largest_blob(self.mask(frame), self.st["min_area"], "bottle")
+        det, self.rejects = pick_bottle(self.mask(frame), self.st, "bottle", self.mapper)
+        return det
 
 
 # ------------------------------------------------------------------ yolo
@@ -219,14 +351,14 @@ def make_detector(cfg: dict | None = None, method: str | None = None, mapper=Non
     if m == "yolo":
         return YoloDetector(st)
     if m == "color":
-        return ColorDetector(st)
+        return ColorDetector(st, mapper)
     raise ValueError(f"unknown perception.method '{m}' (background | yolo | color)")
 
 
 # ------------------------------------------------------------------ helpers used by run.py
 def detect_bottle(frame_bgr, th: dict | None = None) -> Detection | None:
-    """Color detection (kept for compatibility)."""
-    return ColorDetector({**DEFAULTS, **(th or {})})(frame_bgr)
+    """Color detection (kept for compatibility; no shape filter unless asked)."""
+    return ColorDetector({**DEFAULTS, "shape_filter": "off", **(th or {})})(frame_bgr)
 
 
 def detect_amber_bottle(frame_bgr, min_area: int = 1500) -> Detection | None:
@@ -236,7 +368,7 @@ def detect_amber_bottle(frame_bgr, min_area: int = 1500) -> Detection | None:
 def locate_in_zone(frame_bgr, mapper, detector=None, anchor: str | None = None) -> tuple[float, float] | None:
     """Bottle position as zone coords (s, t), or None if not found / outside the zone."""
     if detector is None or isinstance(detector, dict):        # old call style: dict of thresholds
-        detector = ColorDetector({**DEFAULTS, **(detector or {})})
+        detector = ColorDetector({**DEFAULTS, "shape_filter": "off", **(detector or {})})
     det = detector(frame_bgr)
     if det is None:
         return None
@@ -280,9 +412,13 @@ def save_settings(values: dict, path: Path | None = None) -> Path:
 save_thresholds = save_settings   # old name
 
 
-def annotate(frame, det: Detection | None, mapper=None, fps=None, info: str = "", anchor: str = "base"):
+def annotate(frame, det: Detection | None, mapper=None, fps=None, info: str = "", anchor: str = "base",
+             rejects=()):
     if mapper:
         mapper.draw(frame)
+    for (x, y, w, h), reason in rejects:          # why things were NOT taken as a bottle
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 1)
+        cv2.putText(frame, reason, (x + 2, max(12, y - 4)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
     if det:
         cv2.rectangle(frame, (det.x, det.y), (det.x + det.w, det.y + det.h), (0, 255, 0), 2)
         ax, ay = map(int, det.anchor_px(anchor))
@@ -344,6 +480,8 @@ def main(argv=None):
     if args.tune:
         cv2.namedWindow("tune")
         cv2.createTrackbar("min area", "tune", int(st["min_area"]), 20000, lambda _: None)
+        cv2.createTrackbar("box reject x1000", "tune", int(st["min_curve"] * 1000), 150, lambda _: None)
+        cv2.createTrackbar("solidity x100", "tune", int(st["min_solidity"] * 100), 100, lambda _: None)
         if det_fn.name == "background":
             cv2.createTrackbar("diff thresh", "tune", int(st["diff_threshold"]), 120, lambda _: None)
         elif det_fn.name == "color":
@@ -371,6 +509,8 @@ def main(argv=None):
         fps, t_prev = (inst if fps is None else 0.9 * fps + 0.1 * inst), now
         if args.tune:
             det_fn.st["min_area"] = max(1, cv2.getTrackbarPos("min area", "tune"))
+            det_fn.st["min_curve"] = cv2.getTrackbarPos("box reject x1000", "tune") / 1000
+            det_fn.st["min_solidity"] = cv2.getTrackbarPos("solidity x100", "tune") / 100
             if det_fn.name == "background":
                 det_fn.st["diff_threshold"] = cv2.getTrackbarPos("diff thresh", "tune")
             elif det_fn.name == "color":
@@ -386,7 +526,7 @@ def main(argv=None):
             b = match_bottle(wmm) if wmm else None
             info = f"~{wmm:.0f} mm wide" + (f" -> {b['name']}" if b else "")
         cv2.imshow("bottle", annotate(frame, det, mapper, None if still is not None else fps, info,
-                                      det_fn.st.get("anchor", "base")))
+                                      det_fn.st.get("anchor", "base"), getattr(det_fn, "rejects", ())))
         key = cv2.waitKey(30 if still is not None else 1) & 0xFF
         if key == ord("q"):
             break
@@ -400,7 +540,8 @@ def main(argv=None):
             cv2.imwrite(str(out), frame)
             print(f"saved {out}")
         if key == ord("s") and args.tune:
-            keep = {k: det_fn.st[k] for k in ("min_area", "diff_threshold", "hsv_low", "hsv_high")}
+            keep = {k: det_fn.st[k] for k in ("min_area", "diff_threshold", "hsv_low", "hsv_high",
+                                              "min_curve", "min_solidity")}
             print(f"saved to {save_settings({**keep, 'method': det_fn.name})}")
     if cap:
         cap.release()

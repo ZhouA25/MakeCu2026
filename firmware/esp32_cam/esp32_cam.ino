@@ -5,6 +5,7 @@
 //                             ONE viewer at a time: close browser tabs before PillBot/LeRobot connects
 //   http://<ip>/capture       single JPEG
 //   http://<ip>/led?v=0..255  flash LED brightness (lights the cap in the jaws; keep it low)
+//   http://<ip>/control?var=wb_mode&val=3   live image settings (see /control for the list)
 //
 // Board: "AI Thinker ESP32-CAM" (esp32 by Espressif). Enable PSRAM if your board menu shows it.
 // Flashing: use the ESP32-CAM-MB USB board, or an FTDI adapter (5V, GND, U0R, U0T) with IO0 -> GND
@@ -21,6 +22,8 @@ const char* WIFI_SSID = WIFI_SSID_VALUE;   // set in secrets.h
 const char* WIFI_PASS = WIFI_PASS_VALUE;
 const framesize_t FRAME = FRAMESIZE_QVGA;   // 320x240 — must match width/height in robot.yaml
 const int JPEG_QUALITY = 15;               // 10 (better) .. 20 (faster)
+const int WB_MODE = 0;                     // white balance: 0 auto, 1 sunny, 2 cloudy, 3 office, 4 home
+const int SATURATION = -1;                 // -2..2; lower = less colour cast
 const char* HOSTNAME = "pillbot-cam";      // -> http://pillbot-cam.local:81/stream (stable even if the IP changes)
 // --------------------
 
@@ -84,14 +87,47 @@ static esp_err_t led_handler(httpd_req_t* req) {
   return httpd_resp_sendstr(req, "ok");
 }
 
+// Live image tuning, e.g. /control?var=wb_mode&val=3  — /control alone lists the options.
+static esp_err_t control_handler(httpd_req_t* req) {
+  char q[64], var[24], val[12];
+  sensor_t* s = esp_camera_sensor_get();
+  if (httpd_req_get_url_query_str(req, q, sizeof(q)) != ESP_OK ||
+      httpd_query_key_value(q, "var", var, sizeof(var)) != ESP_OK ||
+      httpd_query_key_value(q, "val", val, sizeof(val)) != ESP_OK) {
+    return httpd_resp_sendstr(req,
+      "vars: wb_mode 0 auto,1 sunny,2 cloudy,3 office,4 home | awb 0/1 | awb_gain 0/1 | "
+      "aec 0/1 | agc 0/1 | ae_level -2..2 | brightness -2..2 | contrast -2..2 | "
+      "saturation -2..2 | special 0 none,2 grayscale | hmirror 0/1 | vflip 0/1\n"
+      "example: /control?var=wb_mode&val=3\n"
+      "For background detection: once colors look right, set awb 0 / aec 0 / agc 0 so they stay fixed.");
+  }
+  int v = atoi(val), r = -1;
+  if      (!strcmp(var, "wb_mode"))    r = s->set_wb_mode(s, v);
+  else if (!strcmp(var, "awb"))        r = s->set_whitebal(s, v);
+  else if (!strcmp(var, "awb_gain"))   r = s->set_awb_gain(s, v);
+  else if (!strcmp(var, "aec"))        r = s->set_exposure_ctrl(s, v);
+  else if (!strcmp(var, "agc"))        r = s->set_gain_ctrl(s, v);
+  else if (!strcmp(var, "ae_level"))   r = s->set_ae_level(s, v);
+  else if (!strcmp(var, "brightness")) r = s->set_brightness(s, v);
+  else if (!strcmp(var, "contrast"))   r = s->set_contrast(s, v);
+  else if (!strcmp(var, "saturation")) r = s->set_saturation(s, v);
+  else if (!strcmp(var, "special"))    r = s->set_special_effect(s, v);
+  else if (!strcmp(var, "hmirror"))    r = s->set_hmirror(s, v);
+  else if (!strcmp(var, "vflip"))      r = s->set_vflip(s, v);
+  Serial.printf("control %s=%d -> %s\n", var, v, r == 0 ? "ok" : "unknown/failed");
+  return httpd_resp_sendstr(req, r == 0 ? "ok" : "unknown var or failed");
+}
+
 bool startServers() {
   httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
   httpd_uri_t cap = {"/capture", HTTP_GET, capture_handler, NULL};
   httpd_uri_t led = {"/led", HTTP_GET, led_handler, NULL};
+  httpd_uri_t ctl = {"/control", HTTP_GET, control_handler, NULL};
   esp_err_t e1 = httpd_start(&ctrl_httpd, &cfg);
   if (e1 == ESP_OK) {
     httpd_register_uri_handler(ctrl_httpd, &cap);
     httpd_register_uri_handler(ctrl_httpd, &led);
+    httpd_register_uri_handler(ctrl_httpd, &ctl);
   }
   cfg.server_port = 81;
   cfg.ctrl_port += 1;
@@ -140,6 +176,15 @@ void setup() {
   }
   sensor_t* sens = esp_camera_sensor_get();
   Serial.printf("sensor PID 0x%x (0x26 = OV2640, 0x3660 = OV3660, 0x5640 = OV5640)\n", sens->id.PID);
+  // Colour defaults that fix the usual pink/magenta cast: auto white balance + its gain on,
+  // auto exposure/gain on, lens shading correction on, slightly lower saturation.
+  sens->set_whitebal(sens, 1);
+  sens->set_awb_gain(sens, 1);
+  sens->set_wb_mode(sens, WB_MODE);
+  sens->set_exposure_ctrl(sens, 1);
+  sens->set_gain_ctrl(sens, 1);
+  sens->set_lenc(sens, 1);
+  sens->set_saturation(sens, SATURATION);
   pinMode(LED_GPIO_NUM, OUTPUT);
   analogWrite(LED_GPIO_NUM, 0);
 

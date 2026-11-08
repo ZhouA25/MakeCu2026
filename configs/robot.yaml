@@ -47,6 +47,16 @@ perception:                # bottle detection (tune: detect_bottle --tune)
   method: background         # background (any bottle, fixed viewpoint) | yolo | color (amber)
   camera_on_arm: true        # perception camera rides on the arm -> look from the `scan` pose
   anchor: auto               # point that marks the bottle: center (top-down view) | base (angled view) | auto
+  shape_filter: auto         # on for the wrist camera: reject hands, boxes, sticks — works at an angle too
+  min_curve: 0.045           # box test: outline bend vs a 4-corner shape. Boxes 0-0.03, bottles 0.06+
+  max_aspect: 3.5            # long/short side: rejects sticks, cables, the arm
+  min_symmetry: 0.86         # same shape when turned 180°? bottles 0.87-1.0, tape dispenser/stapler/mug lower
+  zone_only: true            # once the zone is calibrated, ignore everything outside the taped square
+  zone_margin: 0.15          # ...plus 15% of its size around it
+  min_solidity: 0.88         # rejects shapes with gaps (fingers)
+  min_roundness: 0.0         # optional strict circle check (only for a perfectly top-down camera)
+  reject_border: true        # ignore anything touching the image edge (a hand reaching in, the arm)
+  diameter_mm: [25, 80]      # bottle/cap size range seen from above (checked once the zone is calibrated)
   scan_settle_s: 0.8         # wait after reaching `scan` (arm wobble + stream latency)
   align: true                # compensate small view shifts (backlash) before comparing to background
   min_area: 400              # px — ignore smaller blobs (QVGA ~400, VGA ~1500)
