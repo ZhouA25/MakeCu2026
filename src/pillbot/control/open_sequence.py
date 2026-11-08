@@ -30,10 +30,15 @@ class OpenFailed(RuntimeError):
     pass
 
 
-def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None, ocfg: dict | None = None) -> dict:
+def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None, ocfg: dict | None = None,
+             twist=None) -> dict:
     """Returns stats. `monitor` (optional) is a BottleSpinMonitor from perception.
-    `ocfg` = configs/robot.yaml `open:` section (twist_per_grip_deg, loosen_sign, max_slips)."""
+    `ocfg` = configs/robot.yaml `open:` section (twist_per_grip_deg, loosen_sign, max_slips).
+    `twist(roll_deg)` (optional) turns the wrist to `roll_deg` while gripping. Default: wrist_roll only,
+    which turns the cap about the WRIST axis. With the SO-101 gripper the cap's centre sits ~12 mm off
+    that axis, so pass a coordinated twist that also moves the arm (sim/kinematics.py, docs/simulation.md)."""
     o = {**DEFAULT_OPEN, **(ocfg or {})}
+    twist = twist or (lambda roll: io.move_to({"wrist_roll": roll}))
     per_grip, sign, max_slips = float(o["twist_per_grip_deg"]), (-1 if o["loosen_sign"] < 0 else 1), int(o["max_slips"])
     push = bottle["cap_type"] == "push_and_turn"
     io.move_to(poses["cap_above"] | {"gripper": gcfg["open"]})
@@ -47,7 +52,7 @@ def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None, o
         if push:
             io.move_to(poses["cap_press"])                # push down while twisting
         roll0 = io.target["wrist_roll"]
-        io.move_to({"wrist_roll": roll0 + sign * step})   # twist to loosen
+        twist(roll0 + sign * step)                        # twist to loosen
         slipped = tactile.is_slipping(g.pressure)
         if monitor is not None and monitor.bottle_spun():
             raise OpenFailed("bottle is spinning in the clamp — tighten clamp_closed_us / add grippy liner")

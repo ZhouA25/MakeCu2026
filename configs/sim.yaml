@@ -3,25 +3,24 @@
 # arm and put them here; the closer they are, the better sim-trained policies transfer.
 
 arm:
-  base_riser: 0.12          # MEASURE: block the arm base stands on. Without one the arm can't grasp a
-                            # cap top-down (forearm vertical): run `python -m pillbot.sim.workspace`
-  riser_half_width: 0.045    # MEASURE: half the riser's width — keep it smaller than the clip distance
-  shoulder_height: 0.09     # MEASURE: table/riser top -> shoulder_lift axis
-  upper_arm: 0.15           # MEASURE: shoulder_lift axis -> elbow_flex axis
-  forearm: 0.15             # MEASURE: elbow_flex axis -> wrist_roll gear (where the hand starts)
-  hand: 0.046               # wrist -> finger base
-  finger_length: 0.063
-  finger_width: 0.018
-  grasp_depth: 0.040        # grasp point: this far from the finger base along the fingers
-  max_jaw_gap: 0.080        # gap between the jaws at gripper = 100
-  palm_pusher: false        # printed block between the jaws that presses on the cap TOP. In the sim it raised
-                            # vial opening from 24/32 to 32/32 (docs/simulation.md). Set true once it's built
+  # Lengths from your STLs (hardware/stl): link_1 = 150 mm, link_2 = 151 mm. Still MEASURE the joint-to-joint
+  # distances on the built arm — the STLs are an exploded assembly, so axis positions are estimates.
+  base_riser: 0.0           # block under the base (python -m pillbot.sim.workspace --risers 0 0.04 0.08)
+  riser_half_width: 0.075   # base ring is Ø140 mm
+  shoulder_height: 0.17     # MEASURE: table -> shoulder_lift axis (≈ base + drive plate + planetary, from STLs)
+  upper_arm: 0.15           # shoulder_lift axis -> elbow_flex axis (link_1.stl = 150 mm)
+  forearm: 0.15             # elbow_flex axis -> wrist_roll (link_2.stl = 151 mm)
   link_mass: 0.06           # kg per link (PLA + one XL330)
+  meshes: true              # show your STLs (visual only; collisions use fitted boxes)
+  # Gripper = SO-101 wrist-roll follower (fixed jaw) + hinged moving jaw (hardware/stl/gripper_so101)
+  jaw_range_deg: [-10, 100] # SO-101 URDF; LeRobot gripper 0 -> -10° (closed), 100 -> 100° (wide open)
+  grasp_depth: 0.080        # how far out along the fingers (from the wrist) the cap is gripped
+  grip_torque_per_ma: 0.000297   # gripper servo N·m per mA of gripper_goal_current (XL330: 0.52 N·m @ 1750 mA)
+  palm_pusher: false        # printed block between the jaws that presses on the cap TOP (docs/simulation.md)
   # Stall torque per joint (N·m): XL330-M288 = 0.52; shoulder has the 4:1 planetary (×0.8 efficiency).
   torque: {shoulder_pan: 0.52, shoulder_lift: 1.6, elbow_flex: 0.52, wrist_roll: 0.52}
   servo_stiffness_deg: 2.5   # position error at which a servo pushes with its full stall torque (MEASURE:
                              # push a holding joint by hand until it gives; Dynamixel default P gain ~2-4°)
-  grip_force_per_ma: 0.0097  # N of jaw force per mA of gripper_goal_current (~17 N at 1750 mA)
   limits_deg:               # sim joint limits
     shoulder_pan: [-150, 150]
     shoulder_lift: [-100, 100]
@@ -55,12 +54,13 @@ tactile:
   taxel_pitch: 0.004        # SensX25 taxel spacing, MEASURE (5 x 5 grid on the moving jaw)
 
 wrist_camera:
-  offset: [0.0, -0.032, 0.02]   # from the wrist, on the hand: sideways, along the hand
+  offset: [0.012, -0.030, 0.020]   # MEASURE: beside the SO-101 body, over the grip line, looking down the
+                                    # jaws (hand frame: z out along the fingers). Further back can't see the cap
   fovy_deg: 50
   width: 320
   height: 240
 
-gripper_open: 95            # gripper units used to approach the cap in the sim (max_jaw_gap * 0.95 ≈ 76 mm)
+gripper_open: 70            # gripper units used to approach the cap in the sim (SO-101 jaw at ~67°)
 press_depth_mm: 6           # cap_press pose: this far below the grip point. The sim found ~4 mm only
                             # compresses the child-proof spring ~2 mm — barely enough; 6 mm unlocks every cap
 

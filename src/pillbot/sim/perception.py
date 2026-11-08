@@ -13,17 +13,19 @@ simulator knows. So this code carries over to the real robot once the camera is 
 import cv2
 import numpy as np
 
-SCAN_HEIGHT = 0.11            # camera height above the cap top while scanning (m)
 
 
 def scan_pose(world, io, nominal_xy) -> dict:
-    """Real-arm joint angles that put the wrist camera above `nominal_xy`, looking down — as high
-    as the arm can reach up to SCAN_HEIGHT (tall bottles leave less room above the cap)."""
-    for h in np.arange(SCAN_HEIGHT, 0.045, -0.01):
-        sol, err = world.ik([nominal_xy[0], nominal_xy[1], world.cap_top_z + h], site="wrist_cam")
+    """Real-arm joint angles that AIM the wrist camera at the cap. With no wrist pitch the camera
+    looks along the forearm, so "look at the cap from d cm" = "put the point d cm in front of the
+    lens on the cap" — a plain IK problem. Tries the farthest view the arm can reach."""
+    from pillbot.sim.scene import LOOK_CM
+    target = [nominal_xy[0], nominal_xy[1], world.cap_top_z]
+    for d in LOOK_CM:
+        sol, err = world.ik(target, site=f"cam_look_{d}")
         if err < 0.002:
             return io.to_real(sol) | {"wrist_roll": 0}
-    raise RuntimeError(f"wrist camera can't get above a cap at {np.round(nominal_xy, 3)} — "
+    raise RuntimeError(f"wrist camera can't see a cap at {np.round(nominal_xy, 3)} — "
                        "see python -m pillbot.sim.workspace")
 
 
@@ -35,6 +37,8 @@ def find_cap_pixel(frame: np.ndarray, background: np.ndarray, diff_threshold: in
     white = (hsv[..., 2] > bright) & (hsv[..., 1] < 60)
     mask = (diff & white).astype(np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    # close gaps (a printed label / stripe / glare line splits the cap top into pieces)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
     n, labels, stats, cents = cv2.connectedComponentsWithStats(mask)
     if n <= 1:
         return None

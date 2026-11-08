@@ -38,20 +38,20 @@ class SimWorld:
         self.on_tick = None                                # optional fn(world) after every control tick
 
         m = self.model
-        jid = {n: m.joint(n).id for n in (*ARM, "jaw_r", "jaw_l", "cap_x", "cap_y", "cap_rot", "cap_lift", "cap_press")}
+        jid = {n: m.joint(n).id for n in (*ARM, "gripper", "cap_x", "cap_y", "cap_rot", "cap_lift", "cap_press")}
         self.qadr = {n: int(m.jnt_qposadr[i]) for n, i in jid.items()}
         self.jnt_lift = jid["cap_lift"]
         self.dadr = {n: int(m.jnt_dofadr[i]) for n, i in jid.items()}
-        self.act = {n: m.actuator(n).id for n in (*ARM, "jaw_r", "jaw_l")}
+        self.act = {n: m.actuator(n).id for n in (*ARM, "gripper")}
         self.eq_rot = m.equality("cap_rot_lock").id
         self.eq_thread = [m.equality(f"cap_{a}_lock").id for a in ("lift", "x", "y")]
         self.grasp_site = m.site("grasp").id
         self.bottle_body = m.body("bottle").id
-        self.half_gap = self.sim["arm"]["max_jaw_gap"] / 2
+        self.jaw_lo, self.jaw_hi = (math.radians(v) for v in self.sim["arm"]["jaw_range_deg"])
         self.taxel_area = self.sim["tactile"]["taxel_pitch"] ** 2
         self.taxel_sensors = [m.sensor(f"taxel_{r}_{c}").adr[0] for r in range(TAXELS) for c in range(TAXELS)]
         self.pad_geoms = [m.geom(f"taxel_{r}_{c}").id for r in range(TAXELS) for c in range(TAXELS)]
-        self.pad_geoms.append(m.geom("pad_l").id)
+        self.pad_geoms.append(m.geom("fixed_pad").id)
         self.bottle_geoms = [m.geom(n).id for n in ("bottle_body", "cap", "cap_mark")]
         self._rgba = m.geom_rgba.copy()
         self.reset()
@@ -78,8 +78,7 @@ class SimWorld:
         for j in ARM:
             d.qpos[self.qadr[j]] = math.radians(q[j])
         self.set_targets(q | {"gripper": 100})
-        for j in ("jaw_r", "jaw_l"):
-            d.qpos[self.qadr[j]] = self.half_gap
+        d.qpos[self.qadr["gripper"]] = self.jaw_hi
         mujoco.mj_forward(m, d)
         self._cap_logic()
 
@@ -149,22 +148,27 @@ class SimWorld:
         """Servo targets: arm joints in sim degrees, gripper in 0..100 units. Partial dicts are fine."""
         for j, v in deg.items():
             if j == "gripper":
-                q = float(np.clip(v, 0, 100)) / 100 * self.half_gap
-                self.data.ctrl[self.act["jaw_r"]] = q
-                self.data.ctrl[self.act["jaw_l"]] = q
+                self.data.ctrl[self.act["gripper"]] = self.units_to_jaw(v)
             elif j in self.act:
                 self.data.ctrl[self.act[j]] = math.radians(v)
 
+    def units_to_jaw(self, units: float) -> float:
+        """LeRobot gripper units (0 closed .. 100 open) -> SO-101 jaw angle (rad), linear over its range."""
+        return self.jaw_lo + float(np.clip(units, 0, 100)) / 100 * (self.jaw_hi - self.jaw_lo)
+
+    def jaw_to_units(self, rad: float) -> float:
+        return (rad - self.jaw_lo) / (self.jaw_hi - self.jaw_lo) * 100
+
     def targets(self) -> dict:
         t = {j: math.degrees(self.data.ctrl[self.act[j]]) for j in ARM}
-        t["gripper"] = self.data.ctrl[self.act["jaw_r"]] / self.half_gap * 100
+        t["gripper"] = self.jaw_to_units(self.data.ctrl[self.act["gripper"]])
         return t
 
     def read(self) -> dict:
         """Joint positions: arm in sim degrees, gripper in 0..100 units."""
         d = self.data
         out = {j: math.degrees(d.qpos[self.qadr[j]]) for j in ARM}
-        out["gripper"] = d.qpos[self.qadr["jaw_r"]] / self.half_gap * 100
+        out["gripper"] = self.jaw_to_units(d.qpos[self.qadr["gripper"]])
         return out
 
     def joint_torques(self) -> dict:
@@ -188,6 +192,17 @@ class SimWorld:
                 "free": self.cap_free}
 
     # ------------------------------------------------------------------ kinematics
+    def site_pose(self, deg: dict, site: str) -> tuple[np.ndarray, np.ndarray]:
+        """Position and hand-axis direction (fingers / camera view) of `site` for sim angles."""
+        s = self._scratch
+        s.qpos[:] = self.data.qpos
+        for j, v in deg.items():
+            if j in self.qadr:
+                s.qpos[self.qadr[j]] = math.radians(v)
+        mujoco.mj_kinematics(self.model, s)
+        sid = self.model.site(site).id
+        return s.site_xpos[sid].copy(), s.site_xmat[sid].reshape(3, 3)[:, 2].copy()
+
     def fk(self, deg: dict) -> tuple[np.ndarray, np.ndarray]:
         """Grasp point position and hand axis (unit vector, fingers direction) for sim angles."""
         s = self._scratch
@@ -199,12 +214,13 @@ class SimWorld:
         return s.site_xpos[self.grasp_site].copy(), s.site_xmat[self.grasp_site].reshape(3, 3)[:, 2].copy()
 
     def ik(self, target, seeds: list[dict] | None = None, tol: float = 2e-4,
-           site: str = "grasp") -> tuple[dict, float]:
+           site: str = "grasp", fixed: dict | None = None) -> tuple[dict, float]:
         """Sim angles (shoulder_pan, shoulder_lift, elbow_flex) putting `site` (default: the grasp
         point between the jaws; "wrist_cam" = the camera) at `target`.
 
         Damped least squares from several starting guesses; among exact-enough solutions picks the
         one whose fingers point most nearly straight down (best for grabbing a cap from above).
+        `fixed`: other joints to hold at given sim angles while solving (e.g. a wrist_roll).
         Returns (angles, position error in m).
         """
         m, s = self.model, self._scratch
@@ -219,6 +235,8 @@ class SimWorld:
         best = None
         for seed in seeds:
             s.qpos[:] = self.data.qpos
+            for j, v in (fixed or {}).items():
+                s.qpos[self.qadr[j]] = math.radians(v)
             for j in REACH:
                 s.qpos[self.qadr[j]] = math.radians(seed.get(j, 0))
             for _ in range(100):

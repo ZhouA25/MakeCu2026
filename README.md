@@ -184,18 +184,20 @@ Tasks, dataset names and checkpoint paths live in `configs/policies.yaml`.
 
 ## 5. Physics simulation (MuJoCo) — no hardware needed
 
-The arm, clamped bottle, child-proof cap, SensX25 pad and wrist camera in MuJoCo. The real
-`open_sequence.py` runs against it unchanged, and a reach policy is trained in it
-(`models/sim/reach_ppo.zip`). Guide, results and design findings: **`docs/simulation.md`**.
+Your arm (STLs in `hardware/stl`, SO-101 gripper), clamped bottle, child-proof cap, SensX25 pad and
+wrist camera in MuJoCo. The real `open_sequence.py` runs against it unchanged, and a reach policy is
+trained in it (`models/sim/reach_ppo.zip`). A URDF for ROS is generated from the same model.
+Guide, results and design findings (servo, pusher, riser, coordinated twist): **`docs/simulation.md`**.
 ```bash
 # light setup, no LeRobot needed (or `pip install -e ".[sim]"` inside the full pillbot env)
 python3 -m venv .venv && source .venv/bin/activate
 pip install mujoco gymnasium stable-baselines3 imageio opencv-python pyyaml pyserial numpy -e sensx_python
 export PYTHONPATH=src
-python -m pillbot.sim.demo --video outputs/sim.gif   # reach -> find cap -> approach -> grip/push/untwist
-python -m pillbot.sim.demo --episodes 20             # success rate over randomized caps
+python -m pillbot.sim.demo --pusher --strong-gripper --video outputs/sim.gif   # reach -> find -> approach -> open
+python -m pillbot.sim.demo --episodes 16             # success rate over randomized caps (today's hardware)
 python -m pillbot.sim.workspace                      # where the arm can grab a cap from above
 python -m pillbot.sim.train reach                    # retrain the policy after measuring the arm
+python -m pillbot.sim.urdf --check                   # hardware/urdf/pillbot.urdf for ROS (RViz/MoveIt/Gazebo)
 ```
 
 ---
@@ -232,6 +234,7 @@ src/pillbot/
   sim/                MuJoCo physics: world, sim backends for the real control code, cap-finding,
                       training env + PPO, demo, workspace check
 models/sim/           trained reach policy
+hardware/stl/         all STLs (README inside);  hardware/urdf/  generated URDF
   lerobot_args.py     builds LeRobot CLI flags from configs/ (used by scripts/)
 plugins/lerobot_robot_pillbot/   LeRobot plugin: pillbot_koch_follower / pillbot_koch_leader
 firmware/esp32_hub/   ESP32 hub firmware (ultrasonics, buttons, servos, relay)

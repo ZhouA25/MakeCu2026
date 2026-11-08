@@ -26,6 +26,7 @@ import numpy as np
 from pillbot.control.open_sequence import OpenFailed, open_cap
 from pillbot.sim.backends import make_sim
 from pillbot.sim.envs import sample_reachable_goal
+from pillbot.sim.kinematics import orbit_twist
 from pillbot.sim.perception import locate_cap
 from pillbot.sim.train import DEFAULT_MODEL, ReachPolicy
 
@@ -66,7 +67,8 @@ def move_policy_or_ik(world, io, policy, goal) -> float:
 
 
 def run_episode(seed: int, bottle: str, policy, grip_pressure: float | None, recorder=None,
-                n_reach: int = 3, sim_cfg: dict | None = None, robot_cfg: dict | None = None) -> dict:
+                n_reach: int = 3, sim_cfg: dict | None = None, robot_cfg: dict | None = None,
+                orbit: bool = True) -> dict:
     rng = np.random.default_rng(seed)
     world, io, tactile = make_sim(bottle, seed=seed, sim_cfg=sim_cfg, robot_cfg=robot_cfg)
     nominal = np.asarray(world.sim["fixture"]["clip_xy"], float)       # where the clip is supposed to be
@@ -107,7 +109,8 @@ def run_episode(seed: int, bottle: str, policy, grip_pressure: float | None, rec
     tactile.tare()
     try:
         poses = cap_poses(world, io, cap)
-        stats = open_cap(io, tactile, world.bottle, poses, gcfg, ocfg=world.robot_cfg.get("open"))
+        stats = open_cap(io, tactile, world.bottle, poses, gcfg, ocfg=world.robot_cfg.get("open"),
+                         twist=orbit_twist(world, io) if orbit else None)
         removed = world.cap_state()["moved_mm"] > 30
         out.update(stats, result="opened" if removed else "cap not removed")
     except OpenFailed as e:
@@ -146,6 +149,10 @@ def main():
                     help="gripper.target_pressure for the sim run (0 = contact + squeeze only)")
     ap.add_argument("--pusher", action="store_true",
                     help="give the hand the palm pusher (the design change the sim recommends)")
+    ap.add_argument("--strong-gripper", action="store_true",
+                    help="STS3215-class gripper servo (~3x an XL330's torque; what the SO-101 jaw is built for)")
+    ap.add_argument("--wrist-only", action="store_true",
+                    help="twist with wrist_roll alone (no arm compensation) to see why it fails")
     ap.add_argument("--video", type=Path, help="save a GIF of the (first) episode")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO if args.episodes == 1 else logging.WARNING,
@@ -159,15 +166,19 @@ def main():
             print(f"no trained policy at {args.model} — using IK. Train one: python -m pillbot.sim.train reach")
 
     sim_cfg = None
-    if args.pusher:
+    if args.pusher or args.strong_gripper:
         from pillbot.utils.config import load_yaml
         sim_cfg = load_yaml("configs/sim.yaml")
-        sim_cfg["arm"]["palm_pusher"] = True
+        if args.pusher:
+            sim_cfg["arm"]["palm_pusher"] = True
+        if args.strong_gripper:
+            sim_cfg["arm"]["grip_torque_per_ma"] = 0.00089
 
     results, t0 = [], time.time()
     for ep in range(args.episodes):
         rec = GifRecorder() if args.video and ep == 0 else None
-        r = run_episode(args.seed + ep, args.bottle, policy, args.grip_pressure or None, rec, sim_cfg=sim_cfg)
+        r = run_episode(args.seed + ep, args.bottle, policy, args.grip_pressure or None, rec, sim_cfg=sim_cfg,
+                        orbit=not args.wrist_only)
         results.append(r)
         if rec:
             rec.save(args.video)

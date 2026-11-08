@@ -48,7 +48,7 @@ class SimRobotIO(RobotIO):
 
     def read_load(self) -> dict:
         t = self.world.joint_torques()
-        return {j: t.get(j, t.get("jaw_r") if j == "gripper" else 0.0) for j in self.joints}
+        return {j: t.get(j, 0.0) for j in self.joints}
 
     def _send_target(self):
         self.world.set_targets(self.to_sim(self._target))
