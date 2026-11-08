@@ -1,5 +1,6 @@
 """Full PillBot run:
-trigger -> find bottle -> pick -> place in clip -> clamp -> grip cap, push down, twist -> drop cap -> home.
+rest (low current) -> trigger -> find bottle -> pick -> place in clip -> clamp -> grip cap, push down,
+twist -> drop cap -> home -> rest.
 
   python -m pillbot.run --dry-run                         # simulate everything, no hardware
   python -m pillbot.run                                   # scripted pick + scripted open (config defaults)
@@ -17,6 +18,7 @@ import sys
 
 from pillbot.control.bottle_select import check_fits, match_bottle
 from pillbot.control.fixture import Fixture
+from pillbot.control.idle import go_idle, wake
 from pillbot.control.open_sequence import OpenFailed, open_cap, open_with_retry
 from pillbot.control.pick_place import clamp_and_check, pick_bottle, place_in_clip
 from pillbot.control.policy_runner import run_policy_phase
@@ -65,11 +67,13 @@ def find_bottle(cfg, io=None, poses=None):
 def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
     """`bottle`/`poses` may be None when --bottle auto: chosen from the measured width."""
     gcfg = cfg["gripper"]
-    home = (poses or load_poses())["home"]
-    io.move_to(home | {"gripper": gcfg["open"]})
-    tactile.tare()
+    rest_poses = poses or load_poses()
+    go_idle(io, rest_poses, cfg, fixture)          # parked, low current while we wait
     if not args.dry_run:
         wait_for_trigger(args.trigger, hub, cfg.get("trigger", {}))
+    wake(io, fixture, cfg)
+    io.move_to(rest_poses["home"] | {"gripper": gcfg["open"]})
+    tactile.tare()
 
     # 1. pick & place
     if fixture:
@@ -185,7 +189,7 @@ def main():
         log.warning("hub disabled: no clamp — the clip alone must stop the bottle turning")
     fixture = Fixture(hub, cfg["fixture"], dry_run=args.dry_run) if hub_on else None
 
-    io = RobotIO.from_config(cfg, dry_run=args.dry_run)
+    io = RobotIO.from_config(cfg, dry_run=args.dry_run, hub=hub)
     hub.connect()
     tactile = make_tactile(cfg, io, hub=hub, dry_run=args.dry_run)
     io.connect()
@@ -209,13 +213,20 @@ def main():
                 io.move_to(check_poses["home"])
             if not args.loop:
                 break
+        if not args.dry_run:                         # park before torque drops on disconnect
+            go_idle(io, check_poses, cfg, fixture)
     except Aborted:
         code = 2
         log.error("STOP pressed — fixture power cut, arm holding position.")
         if not args.dry_run:
             input("Support the arm, then press Enter to release torque...")
     except KeyboardInterrupt:
-        log.warning("stopped by user")
+        log.warning("stopped by user — parking the arm (Ctrl-C again to skip)")
+        if not args.dry_run:
+            try:
+                go_idle(io, check_poses, cfg, fixture)
+            except (KeyboardInterrupt, Exception) as e:     # noqa: BLE001 — best effort on the way out
+                log.warning("couldn't park: %s", e or "skipped")
     finally:
         if view:
             view.stop()

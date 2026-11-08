@@ -77,7 +77,7 @@ then set `hub.port: socket://<uno-q-address>:5555` in `configs/robot.local.yaml`
 
 *ESP32:* open `firmware/esp32_hub/esp32_hub.ino` in the Arduino IDE, board
 "ESP32 Dev Module", install the **ESP32Servo** library, upload. The serial monitor (115200) should
-print `READY pillbot-hub 2` then `S ...` lines; pressing a button changes the last number.
+print `READY pillbot-hub 3` then `S ...` lines; pressing a button changes the last number.
 
 **c2. Flash the ESP32-CAM wrist camera:** open `firmware/esp32_cam/esp32_cam.ino`, set your Wi-Fi
 name/password at the top, board **"AI Thinker ESP32-CAM"**, upload (ESP32-CAM-MB USB board, or an FTDI

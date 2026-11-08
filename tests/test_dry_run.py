@@ -157,3 +157,52 @@ def test_open_retry_and_reseat():
         assert clamp_and_check(io, Tac(), fx, clip, G, lambda: None)        # can't tell -> accept
     finally:
         pp.reseat = pp_reseat
+
+
+def test_idle_rests_and_wakes():
+    from pillbot.control.idle import go_idle, rest_pose, wake
+    from pillbot.control.poses import load_poses
+    from pillbot.control.robot_io import RobotIO
+    from pillbot.utils.config import load_yaml
+    cfg = load_yaml("configs/robot.yaml")
+    poses = load_poses()
+    io = RobotIO.from_config(cfg, dry_run=True)
+    io.connect()
+
+    class Fix:
+        log = []
+        def release_servo(self): self.log.append("limp")
+        def power(self, on): self.log.append(("power", on))
+    fx = Fix()
+    go_idle(io, poses, cfg, fx)
+    assert io.limp == {"shoulder_pan", "wrist_roll", "gripper"}            # gravity-free joints relaxed
+    assert fx.log == ["limp"]                       # goBILDA elbow still holds the arm: servo rail stays on
+    assert "elbow_flex" in io.joints and "elbow_flex" not in io.limp
+    assert rest_pose({"home": {"a": 1}, "rest": {"a": 0}}) == {"a": 1}       # untaught rest -> home
+    io.move_to({"elbow_flex": 5.0})                    # a move wakes only the joints it moves
+    assert io.limp == {"shoulder_pan", "wrist_roll", "gripper"}
+    io.move_to({j: 0.0 for j in io.joints})
+    assert not io.limp
+    go_idle(io, poses, cfg | {"idle": {"limp": "all"}})
+    assert io.limp == set(io.joints)
+    wake(io, fx, cfg)
+    assert not io.limp and fx.log[-1] == ("power", True)
+
+
+def test_pwm_elbow_joint():
+    from pillbot.control.robot_io import RobotIO
+    from pillbot.sensors.hub import MockHub
+    from pillbot.utils.config import load_yaml
+    cfg = load_yaml("configs/robot.yaml")
+    hub = MockHub()
+    io = RobotIO.from_config(cfg, dry_run=True, hub=hub)
+    io.connect()
+    assert "elbow_flex" in io.joints and "elbow_flex" not in io.bus_joints
+    c = cfg["pwm_joints"]["elbow_flex"]
+    io.move_to({"elbow_flex": 30.0})
+    assert hub.servos[c["channel"]] == io.pwm_us("elbow_flex", 30.0) == round(c["center_us"] + c["sign"] * c["us_per_deg"] * 30)
+    assert io.pwm_us("elbow_flex", 1000) == c["max_us"]                      # clamped to the limits
+    io.torque_off(["elbow_flex"])
+    assert hub.servos[c["channel"]] == 0                                     # limp = pulse off
+    io.move_to({"elbow_flex": 31.0})                                         # wakes it again
+    assert hub.servos[c["channel"]] == io.pwm_us("elbow_flex", 31.0)

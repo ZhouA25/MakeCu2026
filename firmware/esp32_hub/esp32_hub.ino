@@ -1,6 +1,6 @@
 // PillBot Hub — ESP32 (ESP-WROOM-32 DevKit)
 // Reads: 2x HC-SR04, 3x push buttons (START / STOP / MODE)
-// Drives: 4 servo channels (ch0 clamp, ch1-3 spare), 1 relay (hobby-servo power)
+// Drives: 4 servo channels (ch0 clamp, ch1 ELBOW goBILDA, ch2-3 spare), 1 relay (hobby-servo power)
 //
 // Library (Arduino Library Manager): "ESP32Servo"
 // Board: "ESP32 Dev Module". Pin map: hardware/wiring.md
@@ -8,11 +8,13 @@
 // Serial protocol @115200, one line per message:
 //   ESP32 -> host  (every 20 ms):  S <ms> <clip_mm> <zone_mm> <buttons>
 //                                  buttons bitmask: 1=START 2=STOP 4=MODE ; distances -1 = no echo
-//                  at boot:        READY pillbot-hub 2
+//                  at boot:        READY pillbot-hub 3
 //   host -> ESP32:  SV <ch> <us>   set servo channel 0..3 pulse (500..2500), 0 = detach (go limp)
 //                   RL <0|1>       relay off/on (hobby-servo power)
 //                   PING           -> PONG
-// Safety: STOP button immediately cuts the relay and detaches all servos (firmware-level).
+// Safety: STOP button immediately cuts the relay and detaches the servos (firmware-level) — EXCEPT
+// channels in HOLD_ON_STOP: the elbow holds its angle, like the Dynamixels do, so the arm doesn't drop.
+// Wire the elbow servo's power straight from the supply, NOT through the relay.
 
 #include <ESP32Servo.h>
 
@@ -21,6 +23,7 @@ const int PIN_TRIG_CLIP = 4,  PIN_ECHO_CLIP = 34;
 const int PIN_TRIG_ZONE = 16, PIN_ECHO_ZONE = 35;
 const int PIN_BTN_START = 32, PIN_BTN_STOP = 33, PIN_BTN_MODE = 27;
 const int SERVO_PINS[4] = {25, 26, 13, 14};
+const bool HOLD_ON_STOP[4] = {false, true, false, false};   // ch1 = elbow joint
 const int PIN_RELAY = 17;
 const int PIN_LED = 2;
 const bool RELAY_ACTIVE_LOW = true;   // most cheap relay modules switch ON when IN is LOW
@@ -50,7 +53,7 @@ void setServo(int ch, int us) {
 
 void emergencyStop() {
   setRelay(false);
-  for (int i = 0; i < 4; i++) setServo(i, 0);
+  for (int i = 0; i < 4; i++) if (!HOLD_ON_STOP[i]) setServo(i, 0);
 }
 
 long readUltrasonicMm(int trig, int echo) {
@@ -84,7 +87,7 @@ void setup() {
   pinMode(PIN_RELAY, OUTPUT); pinMode(PIN_LED, OUTPUT);
   setRelay(false);                                   // servos unpowered until host enables
   ESP32PWM::allocateTimer(0); ESP32PWM::allocateTimer(1);
-  Serial.println("READY pillbot-hub 1");
+  Serial.println("READY pillbot-hub 3");
 }
 
 void loop() {

@@ -20,7 +20,8 @@ class SimRobotIO(RobotIO):
     def __init__(self, world: SimWorld, cfg: dict | None = None):
         cfg = cfg or world.robot_cfg
         super().__init__("", "sim", dry_run=True, max_step=cfg["safety"]["max_joint_step_deg"],
-                         hz=cfg["safety"]["control_hz"], follower_cfg=cfg["follower"])
+                         hz=cfg["safety"]["control_hz"], follower_cfg=cfg["follower"],
+                         pwm_joints=cfg.get("pwm_joints"))
         self.world = world
         self.jmap = world.sim.get("joint_map", {})
 
