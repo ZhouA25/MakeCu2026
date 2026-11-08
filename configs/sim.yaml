@@ -42,7 +42,7 @@ fixture:
                             # within ~2° of vertical for vials (python -m pillbot.sim.workspace); a
                             # riser under the base must leave the clip's open jaws clear
   pick_xy: [0.06, 0.104]    # the fixed spot the bottle is picked from (12 cm from the base, 60° round)
-  clip_floor: 0.01          # bottle bottom sits this high in the clip
+  clip_floor: 0.0           # flush with the table (the real clip is built that way): the bottle slides in
   pocket_slope_deg: 0       # funnel around the clip floor; 45° made things worse (the held bottle tips on it)
   clamp_force: 30           # N per clamp jaw (goBILDA servo through the rack-and-pinion clamp)
   bottle_mass: 0.03         # kg, empty vial

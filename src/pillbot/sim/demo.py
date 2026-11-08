@@ -11,7 +11,9 @@ Stages (the whole task; --start clip skips 2-4 with the bottle already clamped):
   2. find      wrist camera scan of the pick spot -> where the bottle is (sim/perception.py)
   3. approach  the policy flies above the bottle
   4. pick+place  control/pick_place.pick_bottle / place_in_clip and control/fixture.Fixture.clamp —
-               the code the prototype runs — grip the cap by feel, lift, lower into the clip, clamp
+               the code the prototype runs — grip the cap by feel, then (place.mode slide, default)
+               lift a few mm and slide it into the open clamp on the flush clip, or (lift) carry it
+               over and lower it in; clamp
   5. find      wrist camera -> cap position in the clip
   6. open      control/open_sequence.open_cap: grip by feel, push down, twist (wrist + arm together),
                regrip, lift, verify, drop the cap in the tray
@@ -103,10 +105,12 @@ def pick_place_poses(world, io, bottle_xy) -> dict:
     cx, cy = world.clip_xy
     floor = fx["clip_floor"]
     jaws_top = floor + 0.044                                          # clamp jaws top + margin
+    release_up = 0.004        # let go 4 mm up (1 mm was worse for slide: 5/10 not seated vs 2/10 —
+                              # the IK error then pushes the base into the floor and shoves the bottle)
     poses = {f"zone_{kind}_{k}": pose for kind, pose in (("hover", hover), ("grasp", grasp))
              for k in ("00", "10", "11", "01")}
     poses |= {"clip_above": _highest(world, io, base, [cx, cy, jaws_top], (0.01, 0.005, 0.0), "clip"),
-              "clip_insert": _pose_at(world, io, base, [cx, cy, floor + 0.004], "clip")}   # let go 4 mm up
+              "clip_insert": _pose_at(world, io, base, [cx, cy, floor + release_up], "clip")}
     return poses, site
 
 
@@ -167,9 +171,9 @@ def run_episode(seed: int, bottle: str, policy, grip_pressure: float | None, rec
             out["approach_mm"] = move_policy_or_ik(world, io, policy, hover_pt) * 1000   # policy flies the grasp site
             log.info("3 approach  above the bottle, error %.1f mm", out["approach_mm"])
             tactile.tare()
-            if not pick_bottle(io, tactile, poses, gcfg, 0.5, 0.5):
+            if not pick_bottle(io, tactile, poses, gcfg, 0.5, 0.5, place=world.robot_cfg.get("place")):
                 return done("failed: missed the bottle")
-            place_in_clip(io, poses, gcfg)
+            place_in_clip(io, poses, gcfg, place=world.robot_cfg.get("place"))
             fixture.clamp()
             out["seat_mm"] = float(np.linalg.norm(world.bottle_pos[:2] - world.clip_xy) * 1000)
             log.info("4 place     seated %s, %.1f mm off centre, tilt %.1f°, clamped",

@@ -257,7 +257,7 @@ def build_xml(sim: dict, bottle: dict, grip_current_ma: float = 1000) -> str:
     <geom name="pick_mat" type="box" size="0.07 0.07 0.0005" pos="{px} {py} 0.0005" rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
     <body name="clip" pos="{cx} {cy} 0">
       <geom name="clip_mat" type="box" size="0.09 0.09 0.0005" pos="0 0 0.0005" rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
-      <geom name="clip_floor" class="solid" type="box" size="{body_r + 0.02} {body_r + 0.02} {floor / 2}" pos="0 0 {floor / 2}" rgba="0.25 0.3 0.4 1"/>
+      {f'<geom name="clip_floor" class="solid" type="box" size="{body_r + 0.02} {body_r + 0.02} {floor / 2}" pos="0 0 {floor / 2}" rgba="0.25 0.3 0.4 1"/>' if floor > 0 else ''}
       {_pocket(body_r, floor, slope_deg=fx.get("pocket_slope_deg", 0))}
       <!-- servo clamp (rack-and-pinion, hardware/stl/clamp): two V-jaws slide in and squeeze the body,
            each touching it along two lines (a flat jaw on a round bottle lets it tilt and turn) -->

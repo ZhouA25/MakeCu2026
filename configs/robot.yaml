@@ -107,6 +107,10 @@ open:
   max_slips: 3               # give up after this many slipped twists
   max_extra_twists: 2        # after twist_deg, lift; if the cap is still threaded, twist this many more times
   press: always              # push down to cap_press while twisting: always | child_proof (push_and_turn caps only) | never
+place:                       # getting the bottle from the zone into the clip (control/pick_place.py)
+  mode: slide                # slide = lift a few mm and slide it into the OPEN clamp (clip floor flush
+                             # with the table) | lift = carry it up and over, lower it in
+  skim: 0.06                 # slide height: this fraction of the way from grasp to hover (~3 mm)
 fixture:
   clamp_channel: 0           # hub servo ch0 = GPIO25 (goBILDA 2000)
   clamp_open_us: 1100        # tune: python -m pillbot.tools.fixture_bench tune clamp

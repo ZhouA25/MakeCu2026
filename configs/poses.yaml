@@ -16,8 +16,8 @@ poses:
   zone_grasp_10: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
   zone_grasp_11: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
   zone_grasp_01: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  clip_above:    {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # holding bottle, above the funnel
-  clip_insert:   {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # bottle seated in clip
+  clip_above:    {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # holding bottle, above the clip (lift mode; also where the arm backs off to after letting go)
+  clip_insert:   {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # bottle standing in the clip between the OPEN clamp jaws, base on the table
   cap_above:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws open, above cap
   cap_grip:      {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws around cap
   cap_press:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # ~6 mm BELOW cap_grip (makes the push force; the sim found 4 mm is borderline)

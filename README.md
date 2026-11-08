@@ -4,8 +4,8 @@ MakeCU 2026 · Healthcare track. A small Dynamixel robot arm (LeRobot) plus a mo
 fixture that **picks up a pill bottle and opens it** for people with limited grip strength or
 dexterity (arthritis, Parkinson's, post-stroke, elderly users).
 
-**How it works:** set a bottle in the taped start zone → the arm picks it up and drops it into a
-funnel clip → a servo clamp locks the bottle body → the arm grips the cap (a TouchTronix SensX25
+**How it works:** set a bottle in the taped start zone → the arm grips it and slides it into the
+clip (flush with the table) → a servo clamp locks the bottle body → the arm grips the cap (a TouchTronix SensX25
 tactile pad feels the contact and detects slipping), **pushes down and twists** it off with its wrist →
 and drops the cap in a tray. The arm itself stays general-purpose; only the clamp is task-specific.
 
@@ -228,7 +228,8 @@ python -m pillbot.sim.urdf --check                   # hardware/urdf/pillbot.urd
 | `configs/sim.yaml` | physics simulation: arm measurements, servo strength, cap randomization (`docs/simulation.md`) |
 | `configs/zone_calib.local.yaml` | camera → zone calibration (written by `zone --calibrate`) |
 
-Key switches in `robot.yaml`: `open:` (twist per grip, direction), `follower.gripper_goal_current`,
+Key switches in `robot.yaml`: `open:` (twist per grip, direction, `press`), `place.mode` (`slide` the
+bottle into the flush clip | `lift` it over), `follower.gripper_goal_current`,
 `tactile.backend: sensx | mock | none`,
 `hub.enabled`, `trigger.default`.
 

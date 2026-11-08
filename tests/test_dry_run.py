@@ -102,3 +102,14 @@ def test_press_modes():
     assert not should_press(child, "never")
     with pytest.raises(ValueError):
         should_press(plain, "sometimes")
+
+
+def test_place_modes():
+    import pytest
+    from pillbot.control.pick_place import blend, place_cfg
+    assert place_cfg(None)["mode"] == "slide"
+    assert place_cfg({"mode": "lift"})["mode"] == "lift"
+    with pytest.raises(ValueError):
+        place_cfg({"mode": "throw"})
+    lo, hi = {"shoulder_pan": 0.0, "elbow_flex": 10.0, "gripper": 0.0}, {"shoulder_pan": 0.0, "elbow_flex": 60.0, "gripper": 90.0}
+    assert blend(lo, hi, 0.1) == {"shoulder_pan": 0.0, "elbow_flex": 15.0}     # gripper untouched

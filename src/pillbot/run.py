@@ -94,9 +94,9 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
         log.info("bottle at zone s=%.2f t=%.2f", *st)
         if args.dry_run:
             io.sim_gripper_block = 35.0           # bottle body is wider than the cap
-        if not pick_bottle(io, tactile, poses, gcfg, *st):
+        if not pick_bottle(io, tactile, poses, gcfg, *st, place=cfg.get("place")):
             raise OpenFailed("missed the bottle twice — check zone calibration / taught poses")
-        place_in_clip(io, poses, gcfg)
+        place_in_clip(io, poses, gcfg, place=cfg.get("place"))
     if bottle is None:                                      # auto, but no measurement (policy / skip)
         bottle = get_bottle(cfg.get("default_bottle", "standard_amber_40dr"))
         poses = load_poses(bottle=bottle["name"])

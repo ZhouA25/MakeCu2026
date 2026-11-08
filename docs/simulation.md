@@ -116,17 +116,31 @@ What it took to make picking and placing work at all:
   the cap grip. Taller jaws catch them, and opening fell to 0/8.
 - **Couple the clamp jaws (rack and pinion)** so the clamp centres the bottle as it closes.
 
-**Results today (16 randomized episodes, recommended hardware):** placement and clamping work every time,
-but the whole task opens only **1–2 / 16**. The main failure is the bottle landing 5–12 mm off centre
-(≈ half the runs fail the "seated" check). Next come missed or slipping cap grips after placement,
-because the cap is no longer where the gripper left it. Opening a bottle that's already clamped
-(`--start clip`) is 6/8. Things tried that did **not** help: tighter side guides (1/16), and a 45° funnel
-around the clip floor (0/16: the held bottle tips onto it). The funnel is still in the code as
-`fixture.pocket_slope_deg`; shallower slopes are untested.
+**Slide into a flush clip (current default, `place.mode: slide` in robot.yaml).** The real clip sits
+flush with the table (`fixture.clip_floor: 0`), so the arm no longer carries the bottle up and over the
+jaws. It grips the cap, lifts only a few mm (`place.skim`, 6% of the way to the hover pose), slides the
+bottle across into the OPEN clamp, lets go 4 mm up (1 mm was worse); the coupled rack-and-pinion jaws
+centre it. The pick spot and the clip are both 12 cm from the base axis, so the slide is mostly a
+`shoulder_pan` sweep (no lifting load on shoulder_lift, no swinging bottle). `place.mode: lift` keeps
+the old up-and-over placement.
 
-**Next steps:** release the bottle lower or let go before the clamp closes so it can settle, re-detect
-the cap with the wrist camera after clamping (already done; tighten the seated tolerance), and try a
-shallow (~20°) pocket.
+**Results (10 randomized episodes each — small samples, treat ±2 as noise — amber 40 dr, pusher, 8 cm riser, gripper 1750 mA, slip_ratio 0.3):**
+
+| Placement | Opened | Not seated | Other failures (after placing) |
+|---|---|---|---|
+| lift (old) | 2/10 | 4/10 | cap slipping / still threaded / not seen |
+| slide (new) | **4/10** | **2/10** | cap slipping / missed / not seen |
+
+Opening a bottle that's already clamped (`--start clip`, same settings) is 11/16. Things tried that did
+**not** help: tighter side guides (1/16), and a 45° funnel around a raised clip floor (0/16: the held
+bottle tips onto it). The funnel is still in the code as `fixture.pocket_slope_deg` (only used with
+`clip_floor > 0`).
+
+**Other sweeps (16 episodes, `--start clip`):** gripper current 1000 → 1750 mA: 10 → 11/16;
+`slip_ratio` 0.3 vs 0.5: no difference. Cap/pad friction 0.8–1.2 vs 1.5–2.0: no difference (5/6 both),
+so failures are the twist, not slip. Without a riser, the arm can't get above the clip at all.
+The OTC and multivitamin bottles open 0/12 with every setting tried (press on/off, 3× gripper torque,
+more friction): the large-cap model with the SO-101 jaw is probably wrong, so test those on the real arm.
 
 ## 4. What the sim found (act on these)
 
