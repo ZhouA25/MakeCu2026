@@ -188,7 +188,10 @@ The arm, clamped bottle, child-proof cap, SensX25 pad and wrist camera in MuJoCo
 `open_sequence.py` runs against it unchanged, and a reach policy is trained in it
 (`models/sim/reach_ppo.zip`). Guide, results and design findings: **`docs/simulation.md`**.
 ```bash
-pip install -e ".[sim]"
+# light setup, no LeRobot needed (or `pip install -e ".[sim]"` inside the full pillbot env)
+python3 -m venv .venv && source .venv/bin/activate
+pip install mujoco gymnasium stable-baselines3 imageio opencv-python pyyaml pyserial numpy -e sensx_python
+export PYTHONPATH=src
 python -m pillbot.sim.demo --video outputs/sim.gif   # reach -> find cap -> approach -> grip/push/untwist
 python -m pillbot.sim.demo --episodes 20             # success rate over randomized caps
 python -m pillbot.sim.workspace                      # where the arm can grab a cap from above

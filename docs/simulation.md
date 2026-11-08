@@ -4,8 +4,15 @@ A MuJoCo physics model of the arm, the clamped pill bottle, its child-proof cap,
 the wrist camera. The **real control code** (`grasp.py`, `open_sequence.py`) runs against it unchanged,
 and a policy for moving the arm is trained in it.
 
+Setup, once, from the repo folder. The sim doesn't need LeRobot/PyTorch-for-the-robot, so this is a
+light environment (any Python 3.10+). Already have the full `pillbot` env? `pip install -e ".[sim]"` there.
 ```bash
-pip install -e ".[sim]"                          # mujoco, gymnasium, stable-baselines3, imageio
+python3 -m venv .venv && source .venv/bin/activate
+pip install mujoco gymnasium stable-baselines3 imageio opencv-python pyyaml pyserial numpy -e sensx_python
+export PYTHONPATH=src                            # run pillbot from the repo without installing it
+```
+Then:
+```bash
 python -m pillbot.sim.demo                       # the whole task once, stage by stage
 python -m pillbot.sim.demo --pusher --video outputs/sim.gif   # with the recommended hand change, recorded
 python -m pillbot.sim.demo --episodes 20         # success rate over 20 randomized bottles/caps
