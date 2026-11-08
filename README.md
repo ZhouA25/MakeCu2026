@@ -205,7 +205,8 @@ Guide, results and design findings (servo, pusher, riser, coordinated twist): **
 python3 -m venv .venv && source .venv/bin/activate
 pip install mujoco gymnasium stable-baselines3 imageio opencv-python pyyaml pyserial numpy -e sensx_python
 export PYTHONPATH=src
-python -m pillbot.sim.demo --pusher --strong-gripper --video outputs/sim.gif   # reach -> find -> approach -> open
+python -m pillbot.sim.demo --recommended --video outputs/sim.gif   # pick -> place in clip -> clamp -> unscrew
+python -m pillbot.sim.demo --recommended --start clip                # bottle already clamped: just find + open
 python -m pillbot.sim.demo --episodes 16             # success rate over randomized caps (today's hardware)
 python -m pillbot.sim.workspace                      # where the arm can grab a cap from above
 python -m pillbot.sim.train reach                    # retrain the policy after measuring the arm

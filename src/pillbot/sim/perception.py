@@ -15,12 +15,12 @@ import numpy as np
 
 
 
-def scan_pose(world, io, nominal_xy) -> dict:
+def scan_pose(world, io, nominal_xy, top_z: float | None = None) -> dict:
     """Real-arm joint angles that AIM the wrist camera at the cap. With no wrist pitch the camera
     looks along the forearm, so "look at the cap from d cm" = "put the point d cm in front of the
     lens on the cap" — a plain IK problem. Tries the farthest view the arm can reach."""
     from pillbot.sim.scene import LOOK_CM
-    target = [nominal_xy[0], nominal_xy[1], world.cap_top_z]
+    target = [nominal_xy[0], nominal_xy[1], world.cap_top_z if top_z is None else top_z]
     for d in LOOK_CM:
         sol, err = world.ik(target, site=f"cam_look_{d}")
         if err < 0.002:
@@ -48,24 +48,27 @@ def find_cap_pixel(frame: np.ndarray, background: np.ndarray, diff_threshold: in
     return float(cents[k][0]), float(cents[k][1]), (labels == k)
 
 
-def locate_cap(world, io, nominal_xy=None, looks: int = 2) -> dict | None:
+def locate_cap(world, io, nominal_xy=None, looks: int = 2, surface_z: float | None = None) -> dict | None:
     """Scan with the wrist camera and return {"cap_top": xyz, "cap_center": xyz (where to grip),
     "pixel": (u, v), "image": rgb, "mask": bool image}, or None if no cap is seen.
 
     The 2nd look is centred on the 1st estimate: near the image edge the jaws can hide part of
-    the cap and bias the blob's centre."""
+    the cap and bias the blob's centre. `surface_z`: what the bottle stands on (default: the clip's
+    floor; 0 = the table, i.e. the pick spot). With the bottle's height it gives the cap-top height."""
+    surface = world.sim["fixture"]["clip_floor"] if surface_z is None else surface_z
+    top_z = surface + world.bottle["height_mm"] / 1000
     xy = world.sim["fixture"]["clip_xy"] if nominal_xy is None else nominal_xy
     found = None
     for _ in range(looks):
-        found = _look(world, io, xy) or found
+        found = _look(world, io, xy, top_z) or found
         if found is None:
             return None
         xy = found["cap_top"][:2]
     return found
 
 
-def _look(world, io, nominal_xy) -> dict | None:
-    io.move_to(scan_pose(world, io, nominal_xy) | {"gripper": world.sim.get("gripper_open", 95)}, timeout=10)
+def _look(world, io, nominal_xy, top_z: float) -> dict | None:
+    io.move_to(scan_pose(world, io, nominal_xy, top_z) | {"gripper": world.sim.get("gripper_open", 95)}, timeout=10)
     world.step_seconds(0.5)                               # let the arm settle (real: scan_settle_s)
 
     world.show_bottle(False)                              # real robot: background taken once, clip empty
@@ -77,7 +80,7 @@ def _look(world, io, nominal_xy) -> dict | None:
         return None
     u, v, mask = hit
     origin, ray = world.camera_ray(u, v)
-    z = world.cap_top_z
+    z = top_z                                             # known: bottle profile + what it stands on
     if abs(ray[2]) < 1e-6:
         return None
     top = origin + ray * (z - origin[2]) / ray[2]
