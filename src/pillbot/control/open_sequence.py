@@ -40,6 +40,29 @@ class OpenFailed(RuntimeError):
     pass
 
 
+RETRYABLE = ("could not grip cap", "cap keeps slipping", "cap still on", "cap not seen")   # not "bottle is spinning"
+
+
+def open_with_retry(open_fn, io, gcfg: dict, poses_fn, retries: int = 1) -> dict:
+    """Run `open_fn(poses)` (a wrapped open_cap); on a missed grip / slipping cap / cap still on, let go,
+    back up above the cap, get poses again from `poses_fn()` (re-detect the cap if you can) and retry.
+    The cap may already be partly loose; open_cap's lift-and-check then catches it sooner."""
+    for attempt in range(retries + 1):
+        poses = None
+        try:
+            poses = poses_fn()
+            stats = open_fn(poses)
+            stats["open_attempts"] = attempt + 1
+            return stats
+        except OpenFailed as e:
+            if attempt == retries or not str(e).startswith(RETRYABLE):
+                raise
+            log.warning("open: %s — retrying (%d/%d)", e, attempt + 1, retries)
+            release(io, gcfg)
+            if poses is not None:
+                io.move_to(poses["cap_above"])
+
+
 def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None, ocfg: dict | None = None,
              twist=None) -> dict:
     """Returns stats. `monitor` (optional) is a BottleSpinMonitor from perception.

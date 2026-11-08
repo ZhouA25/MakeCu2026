@@ -113,3 +113,47 @@ def test_place_modes():
         place_cfg({"mode": "throw"})
     lo, hi = {"shoulder_pan": 0.0, "elbow_flex": 10.0, "gripper": 0.0}, {"shoulder_pan": 0.0, "elbow_flex": 60.0, "gripper": 90.0}
     assert blend(lo, hi, 0.1) == {"shoulder_pan": 0.0, "elbow_flex": 15.0}     # gripper untouched
+
+
+def test_open_retry_and_reseat():
+    import pytest
+    from pillbot.control.open_sequence import OpenFailed, open_with_retry
+    from pillbot.control.pick_place import clamp_and_check
+
+    class IO:
+        def __init__(self):
+            self.moves = []
+            self.target = {"gripper": 0.0, "shoulder_pan": 0.0}
+        def move_to(self, g, **kw):
+            self.moves.append(g); self.target |= g; return True
+        def set_gripper(self, v, **kw):
+            self.move_to({"gripper": v})
+    G = {"open": 60, "closed": 0, "step": 5, "squeeze": 2, "stall_margin": 6}
+    io, calls = IO(), []
+    def open_fn(p):
+        calls.append(p)
+        if len(calls) == 1:
+            raise OpenFailed("could not grip cap: missed")
+        return {"turned_deg": 270}
+    poses = {"cap_above": {"shoulder_pan": 1.0}}
+    assert open_with_retry(open_fn, io, G, lambda: poses, retries=1)["open_attempts"] == 2
+    with pytest.raises(OpenFailed):                       # not retryable
+        open_with_retry(lambda p: (_ for _ in ()).throw(OpenFailed("bottle is spinning")), io, G, lambda: poses)
+
+    class Fix:
+        n = 0
+        def clamp(self): self.n += 1
+        def unclamp(self): pass
+    class Tac:
+        available = False
+        def tare(self): pass
+    fx, checks = Fix(), iter([False, True])
+    clip = {"clip_above": {"shoulder_pan": 0.0}, "clip_insert": {"shoulder_pan": 0.0}}
+    import pillbot.control.pick_place as pp
+    pp_reseat = pp.reseat
+    pp.reseat = lambda *a, **k: True
+    try:
+        assert clamp_and_check(io, Tac(), fx, clip, G, lambda: next(checks), retries=1) and fx.n == 2
+        assert clamp_and_check(io, Tac(), fx, clip, G, lambda: None)        # can't tell -> accept
+    finally:
+        pp.reseat = pp_reseat

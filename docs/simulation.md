@@ -131,6 +131,15 @@ the old up-and-over placement.
 |---|---|---|---|
 | lift (old) | 2/10 | 4/10 | cap slipping / still threaded / not seen |
 | slide (new) | **4/10** | **2/10** | cap slipping / missed / not seen |
+| slide + gentle release + retries | 4/10 | 2/10 | cap not seen after a retry (3), cap slipping (1) |
+
+Gentle release (`gripper.release_crack`): opening the hinged jaw fully in one go dragged the cap sideways
+and flung a set-down bottle ~3 cm off the clip; now the jaws open a crack, back up, then open fully.
+Retries (`retry.seat`, `retry.open`): a bottle that isn't seated is regripped in the clip and set down
+again; a missed or slipping cap grip lets go, re-detects the cap and tries once more. They recover
+individual runs but didn't move the 10-run score. What's left: the bottle often sits **~3–4° tilted in
+the clamp**, which puts the cap top 5–6 mm from where the wrist camera expects it, so the jaws grip it
+off-centre and it slips. Next: find why the clamp leaves it tilted (jaw height / V angle / floor contact).
 
 Opening a bottle that's already clamped (`--start clip`, same settings) is 11/16. Things tried that did
 **not** help: tighter side guides (1/16), and a 45° funnel around a raised clip floor (0/16: the held

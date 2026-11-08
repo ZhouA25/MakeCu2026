@@ -17,8 +17,8 @@ import sys
 
 from pillbot.control.bottle_select import check_fits, match_bottle
 from pillbot.control.fixture import Fixture
-from pillbot.control.open_sequence import OpenFailed, open_cap
-from pillbot.control.pick_place import pick_bottle, place_in_clip
+from pillbot.control.open_sequence import OpenFailed, open_cap, open_with_retry
+from pillbot.control.pick_place import clamp_and_check, pick_bottle, place_in_clip
 from pillbot.control.policy_runner import run_policy_phase
 from pillbot.control.poses import load_poses, untaught
 from pillbot.control.robot_io import Aborted, RobotIO
@@ -104,17 +104,21 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
         if not run_policy_phase(io, cfg, pcfg, "pick_place", dry_run=args.dry_run):
             raise OpenFailed("pick_place policy failed")
 
-    if fixture and not args.dry_run and cfg.get("hub", {}).get("enabled"):
+    def seated():                                           # True / False / None = can't tell
+        if not fixture or args.dry_run or not cfg.get("hub", {}).get("enabled"):
+            return None
         if hub.state.clip_mm < 0:
             log.warning("no clip ultrasonic reading — skipping the 'bottle seated' check")
-        elif not fixture.bottle_seated():
-            raise OpenFailed("clip ultrasonic doesn't see a seated bottle")
+            return None
+        return fixture.bottle_seated()
 
     # 2. open
     if args.dry_run:
         io.sim_gripper_block = 15.0               # cap
-    if fixture:
-        fixture.clamp()
+    retry = cfg.get("retry", {})
+    if fixture and not clamp_and_check(io, tactile, fixture, poses, gcfg, seated, place=cfg.get("place"),
+                                       retries=int(retry.get("seat", 1))):
+        raise OpenFailed("clip ultrasonic doesn't see a seated bottle (after reseating)")
     try:
         if args.open_mode == "policy":
             ok = run_policy_phase(io, cfg, pcfg, "open_cap", dry_run=args.dry_run)
@@ -130,7 +134,9 @@ def one_cycle(args, cfg, pcfg, io, tactile, hub, fixture, poses, bottle):
                 monitor = BottleSpinMonitor(monitor_cap)
                 monitor.arm()
             try:
-                stats = open_cap(io, tactile, bottle, poses, cfg["gripper"], monitor=monitor, ocfg=cfg.get("open"))
+                stats = open_with_retry(
+                    lambda p: open_cap(io, tactile, bottle, p, cfg["gripper"], monitor=monitor, ocfg=cfg.get("open")),
+                    io, cfg["gripper"], lambda: poses, retries=int(retry.get("open", 1)))
                 log.info("opened! %s", stats)
             finally:
                 if monitor_cap is not None:

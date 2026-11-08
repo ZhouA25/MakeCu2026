@@ -22,6 +22,16 @@ log = logging.getLogger(__name__)
 DEFAULT_PLACE = {"mode": "slide", "skim": 0.06}
 
 
+def let_go(io, gcfg: dict, up_pose: dict):
+    """Set the bottle free without flinging it: open the jaws only a crack (`gripper.release_crack`
+    units), back straight up to `up_pose`, then open fully. Opening fully at once, the grippy pad on the
+    SO-101's hinged jaw drags the cap sideways as it swings away (the sim lost ~3 cm this way)."""
+    crack = float(gcfg.get("release_crack", 12))
+    io.move_to({"gripper": min(gcfg["open"], io.target["gripper"] + crack)})
+    io.move_to(up_pose)
+    release(io, gcfg)
+
+
 def place_cfg(cfg: dict | None) -> dict:
     p = {**DEFAULT_PLACE, **(cfg or {})}
     if p["mode"] not in ("slide", "lift"):
@@ -61,9 +71,48 @@ def place_in_clip(io, poses: dict, gcfg: dict, place: dict | None = None):
     """Put the held bottle in the clip and let go. The clamp must be OPEN (Fixture.unclamp)."""
     p = place_cfg(place)
     if p["mode"] == "slide":
-        io.move_to(blend(poses["clip_insert"], poses["clip_above"], float(p["skim"])), timeout=10)
+        skim = blend(poses["clip_insert"], poses["clip_above"], float(p["skim"]))
+        # 1) still at the pick angle, move in/out to the clip's distance from the base (everything but
+        #    shoulder_pan from the clip pose), 2) then only shoulder_pan sweeps it in. A straight blend
+        #    from an off-radius pick spot comes in at an angle and catches a clamp jaw.
+        io.move_to(skim | {"shoulder_pan": io.target["shoulder_pan"]})
+        io.move_to(skim, timeout=10)
     else:
         io.move_to(poses["clip_above"])
     io.move_to(poses["clip_insert"])
-    release(io, gcfg)
-    io.move_to(poses["clip_above"])
+    let_go(io, gcfg, poses["clip_above"])
+
+
+def reseat(io, tactile, poses: dict, gcfg: dict, place: dict | None = None) -> bool:
+    """The bottle didn't seat: grip it again where it stands in the clip (the clamp must be OPEN), lift
+    it to skim height and set it down again. False if the gripper found nothing to hold."""
+    p = place_cfg(place)
+    io.move_to(poses["clip_above"] | {"gripper": gcfg["open"]})
+    io.move_to(poses["clip_insert"])
+    g = grip_until_contact(io, tactile, gcfg)
+    if not g.success:
+        log.warning("reseat: nothing to grip at the clip (%s)", g.reason)
+        release(io, gcfg)
+        io.move_to(poses["clip_above"])
+        return False
+    io.move_to(blend(poses["clip_insert"], poses["clip_above"], float(p["skim"])))
+    io.move_to(poses["clip_insert"])
+    let_go(io, gcfg, poses["clip_above"])
+    return True
+
+
+def clamp_and_check(io, tactile, fixture, poses: dict, gcfg: dict, seated, place: dict | None = None,
+                    retries: int = 1) -> bool:
+    """Clamp, then check the bottle is seated (`seated()` -> True / False / None = can't tell, accept).
+    Not seated: unclamp, reseat, clamp again, up to `retries` times. Returns the final check."""
+    for attempt in range(retries + 1):
+        fixture.clamp()
+        ok = seated()
+        if ok is None or ok:
+            return True
+        if attempt == retries:
+            break
+        log.warning("place: bottle not seated, reseating (%d/%d)", attempt + 1, retries)
+        fixture.unclamp()
+        reseat(io, tactile, poses, gcfg, place)
+    return False

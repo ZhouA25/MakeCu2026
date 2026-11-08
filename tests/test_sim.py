@@ -72,7 +72,10 @@ def test_real_open_sequence_opens_easy_cap():
     """Recommended hardware: STS3215-class gripper servo + palm pusher, coordinated twist."""
     from pillbot.sim.kinematics import orbit_twist
     logging.disable(logging.WARNING)
-    world, io, tac = make_sim(seed=0, sim_cfg=_recommended(), clip_xy=[0.11, 0.0])
+    sim = _recommended()
+    sim["arm"]["base_riser"] = 0.0     # pinned: this checks the open logic, not the riser (with the 8 cm
+    #                                    riser this cap position is marginal: docs/simulation.md)
+    world, io, tac = make_sim(seed=0, sim_cfg=sim, clip_xy=[0.11, 0.0])
     world.thread_torque = 0.06
     poses = cap_poses(world, io, world.cap_center)
     g = dict(world.robot_cfg["gripper"]) | {"open": world.sim["gripper_open"]}

@@ -28,7 +28,7 @@ from pathlib import Path
 
 import numpy as np
 
-from pillbot.control.open_sequence import OpenFailed, open_cap
+from pillbot.control.open_sequence import OpenFailed, open_cap, open_with_retry
 from pillbot.sim.backends import make_sim
 from pillbot.sim.envs import sample_reachable_goal
 from pillbot.sim.kinematics import orbit_twist
@@ -120,7 +120,7 @@ def run_episode(seed: int, bottle: str, policy, grip_pressure: float | None, rec
     """start="zone": pick the bottle from the pick spot, put it in the clip, clamp, open (the whole
     task). start="clip": the bottle is already clamped in the clip (opening only)."""
     from pillbot.control.fixture import Fixture
-    from pillbot.control.pick_place import pick_bottle, place_in_clip
+    from pillbot.control.pick_place import clamp_and_check, pick_bottle, place_in_clip
     from pillbot.sim.backends import SimHub
     rng = np.random.default_rng(seed)
     world, io, tactile = make_sim(bottle, seed=seed, sim_cfg=sim_cfg, robot_cfg=robot_cfg)
@@ -134,6 +134,7 @@ def run_episode(seed: int, bottle: str, policy, grip_pressure: float | None, rec
     gcfg = dict(world.robot_cfg["gripper"]) | {"open": world.sim.get("gripper_open", 95)}
     if grip_pressure:
         gcfg["target_pressure"] = grip_pressure
+    retry = world.robot_cfg.get("retry", {})
     hub = SimHub(world)
     fixture = Fixture(hub, world.robot_cfg["fixture"], dry_run=True)   # the real clamp code
     out = {"seed": seed}
@@ -174,25 +175,30 @@ def run_episode(seed: int, bottle: str, policy, grip_pressure: float | None, rec
             if not pick_bottle(io, tactile, poses, gcfg, 0.5, 0.5, place=world.robot_cfg.get("place")):
                 return done("failed: missed the bottle")
             place_in_clip(io, poses, gcfg, place=world.robot_cfg.get("place"))
-            fixture.clamp()
+            seated = clamp_and_check(io, tactile, fixture, poses, gcfg, fixture.bottle_seated,
+                                     place=world.robot_cfg.get("place"), retries=int(retry.get("seat", 1)))
             out["seat_mm"] = float(np.linalg.norm(world.bottle_pos[:2] - world.clip_xy) * 1000)
             log.info("4 place     seated %s, %.1f mm off centre, tilt %.1f°, clamped",
                      fixture.bottle_seated(), out["seat_mm"], world.bottle_upright())
-            if not fixture.bottle_seated():
+            if not seated:
                 return done("failed: bottle not seated in the clip")
 
-        # 5. find the cap in the clip
-        found = locate_cap(world, io, nominal_xy=world.clip_xy)
-        if found is None:
-            return done("cap not seen")
-        cap = found["cap_center"]
-        out["find_mm"] = float(np.linalg.norm(cap - world.cap_center) * 1000)
-        log.info("5 find      cap at %s, true error %.1f mm", np.round(cap, 3), out["find_mm"])
+        # 5. find the cap in the clip (again before each open retry: the cap may have moved)
+        def find_cap_poses():
+            found = locate_cap(world, io, nominal_xy=world.clip_xy)
+            if found is None:
+                raise OpenFailed("cap not seen")
+            cap = found["cap_center"]
+            out["find_mm"] = float(np.linalg.norm(cap - world.cap_center) * 1000)
+            log.info("5 find      cap at %s, true error %.1f mm", np.round(cap, 3), out["find_mm"])
+            return cap_poses(world, io, cap)
 
-        # 6. open with the real control code
+        # 6. open with the real control code (retry a missed grip / slipping cap once)
         tactile.tare()
-        stats = open_cap(io, tactile, world.bottle, cap_poses(world, io, cap), gcfg,
-                         ocfg=world.robot_cfg.get("open"), twist=orbit_twist(world, io) if orbit else None)
+        twist = orbit_twist(world, io) if orbit else None
+        stats = open_with_retry(
+            lambda p: open_cap(io, tactile, world.bottle, p, gcfg, ocfg=world.robot_cfg.get("open"), twist=twist),
+            io, gcfg, find_cap_poses, retries=int(retry.get("open", 1)))
         out.update(stats)
         removed = world.cap_state()["moved_mm"] > 30
         log.info("6 open      %s", "cap off and in the tray" if removed else "cap not removed")
