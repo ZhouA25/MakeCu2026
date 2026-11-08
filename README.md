@@ -241,6 +241,7 @@ tests/                simulation tests
 | `sensx_python` folder empty | `git submodule update --init` |
 | SensX: no frames / port busy | `python -m pillbot.tools.tactile_live doctor` — wiring, permissions and more in `docs/tactile.md` §7 |
 | Motors not found | Wrong port, motor power off, or IDs/baud not set — rerun `scripts/setup_motors.sh` |
+| Hub on the wrong port / ports swap after replugging | `python -m pillbot.tools.ports` lists devices with stable `/dev/serial/by-id/...` names; set `hub.port` to that, or to `auto` (finds the ESP32 by its messages) |
 | `No data from hub` | ESP32 not flashed / wrong port / `hub.enabled` — or set `hub.enabled: false` to run arm-only |
 | Bottle not detected / shadows detected | Re-take the background (`b`) with the zone empty; `--tune` the diff threshold and min area; avoid moving shadows |
 | Wrist camera times out (`Stream timeout`) | The ESP32-CAM streams to **one viewer at a time** — close any browser tab on `:81/stream` (use `/capture` to peek instead), or press RST on the camera |

@@ -70,7 +70,9 @@ perception:                # bottle detection (tune: detect_bottle --tune)
 # ESP32 "PillBot Hub" (firmware/esp32_hub): 2x ultrasonic, START/STOP/MODE buttons, 4 servos, relay
 hub:
   enabled: true          # drives the clamp; set false to run arm-only (no clamp)
-  port: /dev/tty.usbserialHUB  # ESP32 over USB, or UNO Q: socket://<uno-q-address>:5555 (firmware/unoq_hub)
+  port: auto                 # auto = find the ESP32 by its messages | /dev/serial/by-id/... (stable)
+                             # | /dev/ttyUSB0 | socket://<uno-q-address>:5555 (firmware/unoq_hub)
+                             # see: python -m pillbot.tools.ports
   baud: 115200
 
 # SensX25 on a Waveshare FT232R USB-TTL adapter. Guide + Pi setup: docs/tactile.md

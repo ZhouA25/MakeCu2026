@@ -25,8 +25,9 @@ class Hub:
     """Real hub. `port` is a serial device (ESP32 over USB, e.g. /dev/cu.usbserial-0001)
     or a network URL (UNO Q relay, e.g. socket://unoq.local:5555) — pyserial handles both."""
 
-    def __init__(self, port: str, baud: int = 115200):
-        self.port, self.baud = port, baud
+    def __init__(self, port: str, baud: int = 115200, exclude=()):
+        self.port, self.baud = port, baud          # port may be 'auto', a glob, by-id, or socket://
+        self._exclude = exclude
         self.state = HubState()
         self._ser = None
         self._stop = threading.Event()
@@ -34,6 +35,11 @@ class Hub:
 
     def connect(self, timeout: float = 3.0):
         import serial
+        from pillbot.utils.ports import resolve_port
+        spec = self.port
+        self.port = resolve_port(spec, "hub", exclude=self._exclude)
+        if spec == "auto":
+            log.info("hub found on %s", self.port)
         self._ser = serial.serial_for_url(self.port, baudrate=self.baud, timeout=0.1, do_not_open=True)
         # On many ESP32 boards DTR/RTS drive EN/IO0 (auto-reset). Some Linux drivers assert RTS on
         # open, which holds the chip in reset -> no data. Release both lines before opening.
@@ -113,4 +119,6 @@ def make_hub(cfg: dict, dry_run: bool = False):
     h = cfg.get("hub", {}) or {}
     if dry_run or not h.get("enabled", False):
         return MockHub()
-    return Hub(h["port"], h.get("baud", 115200))
+    # don't probe the ports the arm / tactile sensor use when looking for the hub
+    exclude = [cfg.get("follower", {}).get("port"), (cfg.get("tactile") or {}).get("port")]
+    return Hub(h.get("port", "auto"), h.get("baud", 115200), exclude=exclude)
