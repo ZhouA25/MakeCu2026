@@ -108,7 +108,8 @@ the ESP32 hub: its clamp servo drives the sim clamp, and its clip ultrasonic rep
 What it took to make picking and placing work at all:
 - **Pick by the cap, not the body.** A palm pusher is in the way of a body grip, and a cap grip leaves
   room above the clamp jaws.
-- **Base riser ~8 cm and `tool_roll_deg: 90`.** Without the riser the arm can't lift the bottle clear.
+- **Base riser ~8 cm (now the default `arm.base_riser: 0.08`; the clip and pick spot stay on the table) and
+  `tool_roll_deg: 90`.** Without the riser the arm can't get above the clip.
   Without the tool roll, the hinged jaw opens into the riser.
 - **Aim the bottle's base, not the gripper.** A bottle held by its cap hangs tilted, so placement solves
   IK for a `held_base` site.

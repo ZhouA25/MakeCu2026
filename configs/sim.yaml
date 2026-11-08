@@ -5,7 +5,7 @@
 arm:
   # Lengths from your STLs (hardware/stl): link_1 = 150 mm, link_2 = 151 mm. Still MEASURE the joint-to-joint
   # distances on the built arm — the STLs are an exploded assembly, so axis positions are estimates.
-  base_riser: 0.0           # block under the base (python -m pillbot.sim.workspace --risers 0 0.04 0.08)
+  base_riser: 0.08          # 8 cm block under the arm base (clip + pick zone stay on the table). Re-check: python -m pillbot.sim.workspace --risers 0 0.04 0.08
   riser_radius: 0.072       # a round block just wider than the Ø140 mm base ring
   shoulder_height: 0.17     # MEASURE: table -> shoulder_lift axis (≈ base + drive plate + planetary, from STLs)
   upper_arm: 0.15           # shoulder_lift axis -> elbow_flex axis (link_1.stl = 150 mm)
