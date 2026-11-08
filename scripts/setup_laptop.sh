@@ -3,6 +3,7 @@
 #   bash scripts/setup_laptop.sh                     env + installs + check
 #   bash scripts/setup_laptop.sh pillbot-local-....tgz   ...and import the old computer's local files
 #   SIM=1 bash scripts/setup_laptop.sh               also install the simulator (MuJoCo, SB3, torch)
+#   NO_HUB=1 bash scripts/setup_laptop.sh            no ESP32 hub: hub.enabled false (no clamp/buttons)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ENV=${PILLBOT_ENV:-pillbot}
@@ -33,8 +34,13 @@ if [ -n "$BUNDLE" ]; then
   python -m pillbot.tools.setup_local import "$BUNDLE"
 fi
 
-echo "== detecting ports + camera -> configs/robot.local.yaml (plug in the U2D2 and the hub first)"
-python -m pillbot.tools.setup_local init
+if [ "${NO_HUB:-0}" = 1 ]; then
+  echo "== detecting the U2D2 + camera -> configs/robot.local.yaml (no hub)"
+  python -m pillbot.tools.setup_local init --no-hub
+else
+  echo "== detecting ports + camera -> configs/robot.local.yaml (plug in the U2D2 and the hub first)"
+  python -m pillbot.tools.setup_local init
+fi
 echo
 python -m pillbot.tools.setup_local check || true
 if [ "$(uname)" = Darwin ]; then

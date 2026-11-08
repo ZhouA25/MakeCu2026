@@ -1,0 +1,100 @@
+From f9859277d8b41b003844f60072f0078d5ac322c6 Mon Sep 17 00:00:00 2001
+From: Mike Yu <mikeyuyue@gmail.com>
+Date: Sun, 8 Nov 2026 08:24:02 -0500
+Subject: [PATCH] Document full motor ID map and apply it to the follower
+ config
+
+11 shoulder rotation about z (shoulder_pan), 12 horizontal shoulder
+rotation (shoulder_lift), 13 elbow (elbow_flex), 15 wrist (wrist_roll),
+10 top gripper. README table, robot.yaml motor_ids, validation doc and
+the motor-ID config test updated together.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01DXEJNrBX8LMKCoLzQbgEuZ
+---
+ README.md                      | 14 ++++++++++++--
+ configs/robot.yaml             |  6 +++---
+ docs/closed-loop-validation.md |  4 ++--
+ tests/test_motor_ids.py        |  2 +-
+ 4 files changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/README.md b/README.md
+index fd4705b..bfd360a 100644
+--- a/README.md
++++ b/README.md
+@@ -67,9 +67,19 @@ bash scripts/find_devices.sh        # Dynamixel adapter, SensX adapter(s), ESP32
+ 
+ **b. Set the servo IDs** (one motor plugged in at a time, before assembly — order = `follower.joints`):
+ ```bash
+-bash scripts/setup_motors.sh        # IDs 1-5: shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper
++bash scripts/setup_motors.sh        # writes the IDs below (from follower.motor_ids in configs/robot.yaml)
+ ```
+ 
++Motor ID map (Dynamixel XL330-M288, confirmed on the physical arm):
++
++| ID | Joint (`follower.joints` name) | Motion |
++|---:|---|---|
++| 11 | `shoulder_pan` | Shoulder rotation about the vertical (z) axis |
++| 12 | `shoulder_lift` | Horizontal-axis shoulder rotation (lift), 4:1 planetary |
++| 13 | `elbow_flex` | Elbow |
++| 15 | `wrist_roll` | Wrist roll |
++| 10 | `gripper` | Top gripper (moving jaw) |
++
+ **c. Set up the hub** — pick one:
+ 
+ *Arduino UNO Q:* follow `firmware/unoq_hub/README.md` (App Lab app: MCU sketch + Python relay),
+@@ -204,7 +214,7 @@ Every trial saves a local MP4 and telemetry under `outputs/closed_loop`, includi
+ Recorded evidence: [all trial videos and results](outputs/closed_loop/validation-summary.md),
+ [fixed-bottle push-and-twist demo](outputs/closed_loop/20261108T124616Z_fixed_push_twist_seed0_0a20aa/demo.mp4),
+ and [simulation assumptions](docs/fixed-bottle-push-twist.md).
+-Motor-ID overrides are wrist 15, end effector 10, shoulder lift 12.
++Motor IDs: shoulder pan 11, shoulder lift 12, elbow 13, wrist roll 15, gripper 10 (see §2b).
+ The historical reach checkpoint below predates the corrected assembly and must be retrained;
+ model-version checks reject it. New grip validation uses feedback IK.
+ 
+diff --git a/configs/robot.yaml b/configs/robot.yaml
+index 8a62b3b..0a9b1dc 100644
+--- a/configs/robot.yaml
++++ b/configs/robot.yaml
+@@ -8,10 +8,10 @@ follower:
+   id: pillbot_follower
+   preset: all_m288              # we have 5-10 XL330-M288 and no XL430s
+   # Arm: github.com/danslovich/5DOF_Robot_Arm — 5x XL330-M288, 4:1 printed planetary on the shoulder,
+-  # NO wrist pitch. Explicit IDs below were supplied by the user on 2026-11-08.
++  # NO wrist pitch. Explicit IDs below were confirmed by the user on 2026-11-08.
+   joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper]
+-  motor_ids: {shoulder_lift: 12, wrist_roll: 15, gripper: 10}
+-  # shoulder_pan and elbow_flex retain defaults 1 and 3; physical IDs not yet confirmed.
++  # 11 = shoulder rotation about z, 12 = horizontal shoulder rotation, 13 = elbow, 15 = wrist, 10 = top gripper
++  motor_ids: {shoulder_pan: 11, shoulder_lift: 12, elbow_flex: 13, wrist_roll: 15, gripper: 10}
+   gripper_goal_current: 1000    # mA (XL330 max 1750). Higher = stronger grip on the cap, more heat
+   use_degrees: true             # arm joints in degrees (scripted code assumes this)
+ leader:
+diff --git a/docs/closed-loop-validation.md b/docs/closed-loop-validation.md
+index b0eab30..f4cd74a 100644
+--- a/docs/closed-loop-validation.md
++++ b/docs/closed-loop-validation.md
+@@ -35,8 +35,8 @@ The original grasp code could report success after a transient touch followed by
+ | `wrist_roll` | 15 | User supplied |
+ | `gripper` (end effector) | 10 | User supplied |
+ | `shoulder_lift` | 12 | User supplied as “shoulder” |
+-| `shoulder_pan` | 1 | Previous default; not physically confirmed |
+-| `elbow_flex` | 3 | Previous default; not physically confirmed |
++| `shoulder_pan` | 11 | User supplied (shoulder rotation about z) |
++| `elbow_flex` | 13 | User supplied |
+ 
+ `configs/robot.yaml` stores the three explicit overrides. The LeRobot plugin accepts `motor_ids`, preserves unspecified defaults, and rejects duplicate/unknown mappings. CLI argument generation preserves this mapping. No motor IDs were written to devices and no hardware connection was opened. Plugin mapping logic is unit-tested; the complete LeRobot runtime is not installed/validated in this review environment.
+ 
+diff --git a/tests/test_motor_ids.py b/tests/test_motor_ids.py
+index 20ccaad..d8df3dc 100644
+--- a/tests/test_motor_ids.py
++++ b/tests/test_motor_ids.py
+@@ -27,4 +27,4 @@ def test_cli_preserves_explicit_motor_mapping():
+     from pillbot.utils.config import load_yaml
+     import json
+     arg = next(a for a in robot_args(load_yaml('configs/robot.yaml')) if a.startswith('--robot.motor_ids='))
+-    assert json.loads(arg.split('=',1)[1]) == {'shoulder_lift':12,'wrist_roll':15,'gripper':10}
++    assert json.loads(arg.split('=',1)[1]) == {'shoulder_pan':11,'shoulder_lift':12,'elbow_flex':13,'wrist_roll':15,'gripper':10}
+-- 
+2.43.0
+

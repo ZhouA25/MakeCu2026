@@ -35,6 +35,10 @@ cd makecu
 
 # Fastest: one script does the env, installs, port/camera detection and a check
 bash scripts/setup_laptop.sh                        # add a bundle from your old computer: ... pillbot-local-*.tgz
+# Windows (PowerShell, plain venv on Python 3.12 in .venv; LeRobot 0.7 can't install on 3.13+):
+#   Set-ExecutionPolicy -Scope Process Bypass; .\scripts\setup_laptop.ps1   # -Bundle pillbot-local-*.tgz to import
+#   No ESP32 hub? add -NoHub (Windows) / NO_HUB=1 (macOS, Linux): hub.enabled false, no clamp or buttons
+#   then each terminal: .\.venv\Scripts\Activate.ps1   (Git Bash: source .venv/Scripts/activate)
 python -m pillbot.tools.setup_local check           # anytime: what's missing (installs, ports, camera, calibration, poses)
 python -m pillbot.tools.setup_local export          # pack this computer's local-only files for another one
 
@@ -72,8 +76,18 @@ bash scripts/find_devices.sh        # Dynamixel adapter, SensX adapter(s), ESP32
 
 **b. Set the servo IDs** (one motor plugged in at a time, before assembly — order = `follower.joints`):
 ```bash
-bash scripts/setup_motors.sh        # IDs 1-5: shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper
+bash scripts/setup_motors.sh        # writes the IDs below (from follower.motor_ids in configs/robot.yaml)
 ```
+
+Motor ID map (Dynamixel XL330-M288, confirmed on the physical arm):
+
+| ID | Joint (`follower.joints` name) | Motion |
+|---:|---|---|
+| 11 | `shoulder_pan` | Shoulder rotation about the vertical (z) axis |
+| 12 | `shoulder_lift` | Horizontal-axis shoulder rotation (lift), 4:1 planetary |
+| 13 | `elbow_flex` | Elbow |
+| 15 | `wrist_roll` | Wrist roll |
+| 10 | `gripper` | Top gripper (moving jaw) |
 
 **c. Set up the hub** — pick one:
 
@@ -209,7 +223,7 @@ Every trial saves a local MP4 and telemetry under `outputs/closed_loop`, includi
 Recorded evidence: [all trial videos and results](outputs/closed_loop/validation-summary.md),
 [fixed-bottle push-and-twist demo](outputs/closed_loop/20261108T124616Z_fixed_push_twist_seed0_0a20aa/demo.mp4),
 and [simulation assumptions](docs/fixed-bottle-push-twist.md).
-Motor-ID overrides are wrist 15, end effector 10, shoulder lift 12.
+Motor IDs: shoulder pan 11, shoulder lift 12, elbow 13, wrist roll 15, gripper 10 (see §2b).
 The historical reach checkpoint below predates the corrected assembly and must be retrained;
 model-version checks reject it. New grip validation uses feedback IK.
 

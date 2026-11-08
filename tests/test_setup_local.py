@@ -57,3 +57,19 @@ def test_init_updates_only_machine_keys(tmp_path, monkeypatch):
     assert new["follower"] == {"port": "/dev/u2d2", "gripper_goal_current": 1500}   # tuned value kept
     assert new["hub"] == {"enabled": True, "port": "auto"}
     assert new["cameras"]["wrist"]["url"] == "http://pillbot-cam.local:81/stream"
+
+
+def test_init_no_hub_disables_hub(tmp_path, monkeypatch):
+    root, _ = _fake_root(tmp_path, monkeypatch)
+    (root / "configs/robot.local.yaml").write_text("hub:\n  enabled: true\n  port: /dev/cu.usbserial-0001\n")
+    seen = {}
+    def fake_find(probe=True):
+        seen["probe"] = probe
+        return {"follower": "COM5", "hub": None, "u2d2": [{}], "all": []}
+    monkeypatch.setattr(sl, "find_ports", fake_find)
+    monkeypatch.setattr(sl, "camera_ok", lambda url, timeout=3.0: (True, "x"))
+    sl.main(["init", "-y", "--no-hub"])
+    new = yaml.safe_load((root / "configs/robot.local.yaml").read_text())
+    assert seen["probe"] is False                     # never opens ports looking for a hub
+    assert new["hub"]["enabled"] is False             # imported hub setting overridden
+    assert new["follower"]["port"] == "COM5"

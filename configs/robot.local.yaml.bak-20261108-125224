@@ -1,0 +1,82 @@
+# Copy to robot.local.yaml (git-ignored) to override ports/indices on your own laptop.
+# Dynamixel (Koch v1.1-style) arm via our LeRobot plugin (pip install -e plugins/lerobot_robot_pillbot).
+# preset: koch = 2x XL430-W250 + 4x XL330-M288 | all_m288 = 6x XL330-M288 | custom (+ models: [...])
+# Every key except `type` is passed to LeRobot as --robot.<key> / --teleop.<key>.
+follower:
+  type: pillbot_koch_follower
+  port: /dev/tty.usbmodemXXXX   # from `lerobot-find-port` (U2D2 / Waveshare bus board)
+  id: pillbot_follower
+  preset: all_m288              # we have 5-10 XL330-M288 and no XL430s
+  # Arm: github.com/danslovich/5DOF_Robot_Arm — 5x XL330-M288, 4:1 printed planetary on the shoulder,
+  # 150 mm links, NO wrist pitch. Motor IDs 1..5 follow this order (set with scripts/setup_motors.sh).
+  joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper]
+  gripper_goal_current: 1000    # mA (XL330 max 1750). Higher = stronger grip on the cap, more heat
+  use_degrees: true             # arm joints in degrees (scripted code assumes this)
+leader:
+  type: pillbot_koch_leader
+  port: /dev/tty.usbmodemYYYY
+  id: pillbot_leader
+  preset: m288                  # m077 = 6x XL330-M077 | m288 = 6x XL330-M288 (needs 6 more servos;
+                                # skip the leader entirely if you don't have them — scripted mode needs none)
+  use_degrees: true             # MUST match the follower
+
+# Two FIXED cameras (both ~45 deg down) + an ESP32-CAM (or the USB endoscope) on the wrist.
+# Run `lerobot-find-cameras opencv` to get indices + supported resolutions.
+# Indices can change when the phone (dis)connects — re-check before each session.
+# Delete the `wrist` entry if it isn't mounted (LeRobot records every camera listed).
+cameras:
+  wrist:    # ESP32-CAM on the hand (firmware/esp32_cam)
+    type: pillbot_ipcam
+    url: http://10.20.70.37:81/stream   # printed on the ESP32-CAM serial monitor at boot
+    width: 320                           # QVGA — must match FRAME in the sketch
+    height: 240
+    fps: 15
+  phone: null      # not used (one-camera setup)
+  laptop: null
+
+# Camera used by scripted perception (bottle detection, zone mapping, marker tracking)
+perception_camera: wrist
+
+# ESP32 "PillBot Hub" (firmware/esp32_hub): 2x ultrasonic, START/STOP/MODE buttons, 4 servos, relay
+hub:
+  enabled: true          # drives the clamp; set false to run arm-only (no clamp)
+  port: /dev/cu.usbserial-0001  # ESP32 over USB, or UNO Q: socket://<uno-q-address>:5555 (firmware/unoq_hub)
+  baud: 115200
+
+tactile:
+  backend: sensx         # sensx | sensx2 (one per jaw, set port2) | serial | mock | none  (dry runs use mock)
+  port: /dev/tty.usbserialSENSX   # SensX 25 (SNX0505-SNS-01) USB adapter
+  port2: /dev/tty.usbserialSENSX2 # only for backend sensx2 (if you ever get a second sensor)
+  baud: 921600
+  shape: [5, 5]
+  contact_threshold: 300 # SensX: sum of 25 taxels (0..4095 each) above tare that counts as contact
+  slip_ratio: 0.3        # pressure falling below this fraction of grip pressure = slipping
+
+gripper:                 # LeRobot gripper units: 0 = closed, 100 = open
+  open: 60
+  closed: 0
+  step: 2.0              # close this much per tick while searching for contact
+  squeeze: 4.0           # extra closing after contact for a firm grip
+  stall_margin: 6.0      # no tactile: if gripper stops this far above `closed`, we're holding something
+
+# Opening: the clamp holds the bottle body; the ARM grips the cap, pushes down, and twists with wrist_roll.
+open:
+  twist_per_grip_deg: 90     # wrist_roll per grip; bigger = fewer regrips (limited by wrist cable slack)
+  loosen_sign: -1            # -1 = decreasing wrist_roll unscrews the cap. Flip to 1 if it tightens instead
+  max_slips: 3               # give up after this many slipped twists
+
+fixture:
+  clamp_channel: 0           # hub servo ch0 = GPIO25 (goBILDA 2000)
+  clamp_open_us: 1100        # tune: python -m pillbot.tools.fixture_bench tune clamp
+  clamp_closed_us: 1700
+  clamp_settle_s: 0.6
+  clip_seated_mm: 60         # clip ultrasonic reads <= this when a bottle is seated (optional sensor)
+
+trigger:
+  default: enter             # enter | button | zone
+  zone_present_mm: 120
+  hold_s: 0.3
+
+safety:
+  max_joint_step_deg: 2.0      # per-tick target change in scripted mode (XL330s are light + fast)
+  control_hz: 30

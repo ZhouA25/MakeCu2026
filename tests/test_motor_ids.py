@@ -27,4 +27,4 @@ def test_cli_preserves_explicit_motor_mapping():
     from pillbot.utils.config import load_yaml
     import json
     arg = next(a for a in robot_args(load_yaml('configs/robot.yaml')) if a.startswith('--robot.motor_ids='))
-    assert json.loads(arg.split('=',1)[1]) == {'shoulder_lift':12,'wrist_roll':15,'gripper':10}
+    assert json.loads(arg.split('=',1)[1]) == {'shoulder_pan':11,'shoulder_lift':12,'elbow_flex':13,'wrist_roll':15,'gripper':10}

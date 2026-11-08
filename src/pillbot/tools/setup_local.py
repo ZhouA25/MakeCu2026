@@ -2,6 +2,7 @@
 
   python -m pillbot.tools.setup_local init                 detect the U2D2, hub and camera -> configs/robot.local.yaml
   python -m pillbot.tools.setup_local init --camera-ip 10.20.70.37
+  python -m pillbot.tools.setup_local init --no-hub        no ESP32 hub on this setup: hub.enabled false (no clamp/buttons)
   python -m pillbot.tools.setup_local init --fresh         start the local file over (old one backed up)
   python -m pillbot.tools.setup_local check                what's installed, connected, calibrated and taught
   python -m pillbot.tools.setup_local export               pack this computer's local-only files into a .tgz
@@ -112,8 +113,10 @@ def ask(prompt: str, default: str, yes: bool) -> str:
 def cmd_init(args):
     first_time = not LOCAL.exists()
     current = {} if (first_time or args.fresh) else (yaml.safe_load(LOCAL.read_text()) or {})
-    print("Looking for the U2D2 and the hub..." if not args.no_probe else "Looking for the U2D2...")
-    found = find_ports(probe=not args.no_probe)
+    no_hub = getattr(args, "no_hub", False)
+    probe = not (args.no_probe or no_hub)
+    print("Looking for the U2D2 and the hub..." if probe else "Looking for the U2D2...")
+    found = find_ports(probe=probe)
     for p in found["all"]:
         print(f"   {p['device']:32s} {p['guess']}")
     if not found["all"]:
@@ -123,10 +126,15 @@ def cmd_init(args):
 
     follower = ask("U2D2 port (follower.port)", found["follower"] or
                    (current.get("follower") or {}).get("port", "") or "", args.yes)
-    hub_port = "auto" if found["hub"] or args.no_probe else ask(
-        "Hub not found (flashed? Serial Monitor closed?). hub.port", "auto", args.yes)
-    if found["hub"]:
-        print(f"   hub found on {found['hub']} -> hub.port: auto")
+    if no_hub:
+        print("   --no-hub: hub.enabled false (no clamp, no START/STOP buttons; Ctrl-C stops a run)")
+        hub_cfg = {"enabled": False}
+    else:
+        hub_port = "auto" if found["hub"] or args.no_probe else ask(
+            "Hub not found (flashed? Serial Monitor closed?). hub.port", "auto", args.yes)
+        if found["hub"]:
+            print(f"   hub found on {found['hub']} -> hub.port: auto")
+        hub_cfg = {"enabled": True, "port": hub_port}
 
     cams = []
     if args.camera_ip:
@@ -144,7 +152,7 @@ def cmd_init(args):
         url = ask("Camera stream URL (http://<ip>:81/stream)", cams[0], args.yes)
 
     update = {"follower": {"port": follower} if follower else {},
-              "hub": {"enabled": True, "port": hub_port},
+              "hub": hub_cfg,
               "cameras": {"wrist": {"url": url}}}
     # Keep everything already in the local file (tuned values) and only set these keys.
     new = deep_merge(current, update)
@@ -278,6 +286,8 @@ def main(argv=None):
     p = sub.add_parser("init", help="detect ports + camera, write configs/robot.local.yaml")
     p.add_argument("--camera-ip", help="ESP32-CAM IP if pillbot-cam.local doesn't resolve")
     p.add_argument("--no-probe", action="store_true", help="don't open ports to look for the hub")
+    p.add_argument("--no-hub", action="store_true",
+                   help="this setup has no ESP32 hub: write hub.enabled false (no clamp, no buttons)")
     p.add_argument("-y", "--yes", action="store_true", help="accept detected values, no questions")
     p.add_argument("--dry-run", action="store_true", help="print the file instead of writing it")
     p.add_argument("--fresh", action="store_true",

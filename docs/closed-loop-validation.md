@@ -35,8 +35,8 @@ The original grasp code could report success after a transient touch followed by
 | `wrist_roll` | 15 | User supplied |
 | `gripper` (end effector) | 10 | User supplied |
 | `shoulder_lift` | 12 | User supplied as “shoulder” |
-| `shoulder_pan` | 1 | Previous default; not physically confirmed |
-| `elbow_flex` | 3 | Previous default; not physically confirmed |
+| `shoulder_pan` | 11 | User supplied (shoulder rotation about z) |
+| `elbow_flex` | 13 | User supplied |
 
 `configs/robot.yaml` stores the three explicit overrides. The LeRobot plugin accepts `motor_ids`, preserves unspecified defaults, and rejects duplicate/unknown mappings. CLI argument generation preserves this mapping. No motor IDs were written to devices and no hardware connection was opened. Plugin mapping logic is unit-tested; the complete LeRobot runtime is not installed/validated in this review environment.
 
