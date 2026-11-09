@@ -73,3 +73,30 @@ def test_init_no_hub_disables_hub(tmp_path, monkeypatch):
     assert seen["probe"] is False                     # never opens ports looking for a hub
     assert new["hub"]["enabled"] is False             # imported hub setting overridden
     assert new["follower"]["port"] == "COM5"
+
+
+def test_find_camera_scans_subnet(monkeypatch):
+    import socket as so
+    monkeypatch.setattr(sl, "local_ipv4s", lambda: ["192.168.4.20"])
+
+    class _Conn:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake_connect(addr, timeout=None):
+        if addr == ("192.168.4.37", 81):
+            return _Conn()
+        raise OSError("closed")
+    monkeypatch.setattr(so, "create_connection", fake_connect)
+    monkeypatch.setattr(sl, "camera_ok", lambda url, timeout=3.0: ("192.168.4.37" in url, "jpeg"))
+    assert sl.find_camera() == "192.168.4.37"
+
+
+def test_init_uses_scanned_camera_when_name_fails(tmp_path, monkeypatch):
+    root, _ = _fake_root(tmp_path, monkeypatch)
+    monkeypatch.setattr(sl, "find_ports", lambda probe=True: {"follower": "COM3", "hub": None, "u2d2": [{}], "all": []})
+    monkeypatch.setattr(sl, "camera_ok", lambda url, timeout=3.0: (False, "can't resolve"))
+    monkeypatch.setattr(sl, "find_camera", lambda: "10.0.0.37")
+    sl.main(["init", "-y", "--no-hub"])
+    new = yaml.safe_load((root / "configs/robot.local.yaml").read_text())
+    assert new["cameras"]["wrist"]["url"] == "http://10.0.0.37:81/stream"

@@ -443,7 +443,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default="configs/robot.yaml")
     ap.add_argument("--method", choices=["background", "yolo", "color"])
-    ap.add_argument("--camera", help="camera name from robot.yaml (default: perception_camera)")
+    ap.add_argument("--camera", help="robot.yaml name, esp32, a webcam number (0) or a stream URL (default: perception_camera)")
     ap.add_argument("--image", help="test on an image file instead of a camera")
     ap.add_argument("--tune", action="store_true", help="sliders for the current method; s saves")
     ap.add_argument("--goto-scan", action="store_true", help="move the arm to the `scan` pose and hold")
@@ -471,8 +471,9 @@ def main(argv=None):
             raise SystemExit(f"can't read {args.image}")
     else:
         from pillbot.perception.cameras import open_camera
-        name = args.camera or cfg.get("perception_camera", "phone")
-        cap = open_camera(cfg["cameras"][name])
+        from pillbot.perception.cameras import resolve_camera
+        name, cam_cfg = resolve_camera(cfg, args.camera)
+        cap = open_camera(cam_cfg)
         print(f"camera: {name}   method: {det_fn.name}")
     if det_fn.name == "background" and det_fn.background is None:
         print("No background yet: clear the zone and press b.")

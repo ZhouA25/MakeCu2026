@@ -11,6 +11,8 @@ a 5-servo arm (e.g. no wrist_flex on danslovich/5DOF_Robot_Arm), and `use_degree
 (follower and leader MUST match). The follower also takes `gripper_goal_current` (mA) — the gripper
 runs in current-limited mode, so this sets how hard it squeezes (it twists caps off by friction).
 The follower accepts `motor_ids: {joint_name: id}` overrides for existing nonsequential IDs.
+Both accept `baudrate` (default: LeRobot's 1,000,000): set it to your servos' rate, e.g. 57600
+(the Dynamixel factory default), instead of re-flashing every servo.
 
   camera type  pillbot_ipcam           network MJPEG camera (ESP32-CAM): `url: http://<ip>:81/stream`.
                                        Stock `opencv` can't take a URL (it turns it into a Path) and
@@ -18,6 +20,7 @@ The follower accepts `motor_ids: {joint_name: id}` overrides for existing nonseq
 
 Install:  pip install -e plugins/lerobot_robot_pillbot      (LeRobot CLIs auto-discover it)
 """
+import logging
 from dataclasses import dataclass, field
 from .motor_ids import resolve_motor_ids
 
@@ -32,6 +35,8 @@ from lerobot.robots.config import RobotConfig
 from lerobot.robots.koch_follower import KochFollower, KochFollowerConfig
 from lerobot.teleoperators.config import TeleoperatorConfig
 from lerobot.teleoperators.koch_leader import KochLeader, KochLeaderConfig
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_JOINTS = ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper"]
 
@@ -75,6 +80,12 @@ class PillbotKochFollowerConfig(KochFollowerConfig):
     joints: list[str] = field(default_factory=lambda: list(DEFAULT_JOINTS))
     motor_ids: dict[str, int] | None = None
     gripper_goal_current: int | None = None   # mA; None = motor default
+    baudrate: int | None = None               # bus baud; None = LeRobot default (1,000,000)
+    # Stiffer/stronger joints. {joint: [P, I, D]} position gains (XL330 default ~[400, 0, 0]); a little I
+    # makes a joint keep pushing until it reaches its goal under gravity. current_limit (mA, XL330 max 1750)
+    # caps every arm joint's current.
+    pid_gains: dict[str, list[int]] | None = None
+    current_limit: int | None = None
 
 
 class PillbotKochFollower(KochFollower):
@@ -86,6 +97,8 @@ class PillbotKochFollower(KochFollower):
         models = resolve_models(config.preset, config.models, config.joints, FOLLOWER_PRESETS)
         self.bus = SerialMotorsBus(port=config.port, calibration=self.calibration,
                                    motors=build_motors(config.joints, models, config.use_degrees, config.motor_ids))
+        if config.baudrate:                   # the port opens at default_baudrate on every connect
+            self.bus.default_baudrate = int(config.baudrate)
 
     def calibrate(self) -> None:
         """Koch calibration, made safe for geared joints and reduced joint sets.
@@ -104,6 +117,12 @@ class PillbotKochFollower(KochFollower):
             lo, hi = max(0, min(c.range_min, res)), max(0, min(c.range_max, res))
             if hi <= lo:                      # whole recorded range was off one end
                 lo, hi = 0, res
+            if name == "gripper" and hi - lo < 200:
+                # The gripper is scaled 0..100 across this range: a tiny range = a claw that can't move.
+                raise RuntimeError(
+                    f"gripper range is only {hi - lo} steps ({lo}..{hi}): it wasn't moved while recording. "
+                    "Re-run calibration and open AND close the claw fully when asked to move every joint "
+                    "through its range (before pressing Enter).")
             c.range_min, c.range_max = lo, hi
         self.calibration = cal
         self.bus.write_calibration(cal)
@@ -121,6 +140,17 @@ class PillbotKochFollower(KochFollower):
                 self.bus.write("Position_P_Gain", "elbow_flex", 1500)
                 self.bus.write("Position_I_Gain", "elbow_flex", 0)
                 self.bus.write("Position_D_Gain", "elbow_flex", 600)
+            if self.config.current_limit is not None:      # EEPROM: must be written with torque off
+                for motor in self.bus.motors:
+                    try:
+                        self.bus.write("Current_Limit", motor, int(self.config.current_limit))
+                    except Exception as e:  # noqa: BLE001 — not every model has it
+                        logger.warning("Current_Limit not set on %s: %s", motor, e)
+            for motor, gains in (self.config.pid_gains or {}).items():
+                if motor not in self.bus.motors:
+                    continue
+                for reg, val in zip(("Position_P_Gain", "Position_I_Gain", "Position_D_Gain"), gains):
+                    self.bus.write(reg, motor, int(val))
             if self.config.gripper_goal_current is not None:
                 # caps come off by friction: grip current sets the squeeze (and the max twist before slip)
                 self.bus.write("Goal_Current", "gripper", int(self.config.gripper_goal_current))
@@ -134,6 +164,7 @@ class PillbotKochLeaderConfig(KochLeaderConfig):
     models: list[str] | None = None
     joints: list[str] = field(default_factory=lambda: list(DEFAULT_JOINTS))
     use_degrees: bool = False
+    baudrate: int | None = None               # bus baud; None = LeRobot default (1,000,000)
 
 
 class PillbotKochLeader(KochLeader):
@@ -145,6 +176,8 @@ class PillbotKochLeader(KochLeader):
         models = resolve_models(config.preset, config.models, config.joints, LEADER_PRESETS)
         self.bus = SerialMotorsBus(port=config.port, calibration=self.calibration,
                                    motors=build_motors(config.joints, models, config.use_degrees))
+        if config.baudrate:
+            self.bus.default_baudrate = int(config.baudrate)
 
 
 # ---------------------------------------------------------------- network camera

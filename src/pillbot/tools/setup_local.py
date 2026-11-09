@@ -2,6 +2,7 @@
 
   python -m pillbot.tools.setup_local init                 detect the U2D2, hub and camera -> configs/robot.local.yaml
   python -m pillbot.tools.setup_local init --camera-ip 10.20.70.37
+  python -m pillbot.tools.setup_local find-camera          scan the network for the ESP32-CAM (init does this too)
   python -m pillbot.tools.setup_local init --no-hub        no ESP32 hub on this setup: hub.enabled false (no clamp/buttons)
   python -m pillbot.tools.setup_local init --fresh         start the local file over (old one backed up)
   python -m pillbot.tools.setup_local check                what's installed, connected, calibrated and taught
@@ -77,6 +78,60 @@ def camera_ok(url: str, timeout: float = 3.0) -> tuple[bool, str]:
         return False, str(getattr(e, "reason", e))
 
 
+def local_ipv4s() -> list[str]:
+    """This computer's LAN IPv4 addresses (no loopback / link-local)."""
+    ips = set()
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))                 # picks the default-route interface; sends nothing
+        ips.add(s.getsockname()[0])
+        s.close()
+    except OSError:
+        pass
+    try:
+        ips.update(a[4][0] for a in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET))
+    except OSError:
+        pass
+    return sorted(ip for ip in ips if not ip.startswith(("127.", "169.254.")))
+
+
+def find_camera(timeout: float = 0.4, workers: int = 64) -> str | None:
+    """Scan this computer's /24 network(s) for an ESP32-CAM: port 81 open and a JPEG at :80/capture.
+    For when pillbot-cam.local doesn't resolve (Windows apps often can't do .local names)."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    def port_open(ip):
+        try:
+            with socket.create_connection((ip, 81), timeout=timeout):
+                return ip
+        except OSError:
+            return None
+
+    for me in local_ipv4s():
+        base = me.rsplit(".", 1)[0]
+        hosts = [f"{base}.{i}" for i in range(1, 255) if f"{base}.{i}" != me]
+        print(f"   scanning {base}.0/24 for the camera...")
+        with ThreadPoolExecutor(workers) as ex:
+            candidates = [ip for ip in ex.map(port_open, hosts) if ip]
+        for ip in candidates:
+            if camera_ok(f"http://{ip}:81/stream")[0]:
+                return ip
+    return None
+
+
+def ip_url(url: str) -> str:
+    """http://name.local:81/stream -> http://<ip>:81/stream when the name resolves here: OpenCV/ffmpeg
+    on Windows can't resolve .local names even when Python can."""
+    u = urlparse(url)
+    if not (u.hostname or "").endswith(".local"):
+        return url
+    try:
+        ip = socket.gethostbyname(u.hostname)
+    except OSError:
+        return url
+    return url.replace(u.hostname, ip, 1)
+
+
 def find_ports(probe: bool = True) -> dict:
     """{'follower': port|None, 'hub': port|None, 'all': [...]}: U2D2 by its USB id, hub by its messages."""
     from pillbot.utils.ports import list_serial, probe_hub, stable_name
@@ -148,8 +203,17 @@ def cmd_init(args):
         if ok:
             url = u
             break
+    if url is None and not getattr(args, "no_scan", False):
+        ip = find_camera()
+        if ip:
+            url = f"http://{ip}:81/stream"
+            print(f"   camera found at {ip}")
+        else:
+            print("   no camera found on this network (same Wi-Fi? camera powered?)")
     if url is None:
         url = ask("Camera stream URL (http://<ip>:81/stream)", cams[0], args.yes)
+    elif platform.system() == "Windows":
+        url = ip_url(url)
 
     update = {"follower": {"port": follower} if follower else {},
               "hub": hub_cfg,
@@ -166,6 +230,15 @@ def cmd_init(args):
     LOCAL.write_text(text)
     print(f"\nwrote {LOCAL.relative_to(ROOT)}" + (f" (old one saved as {b.name})" if b else ""))
     print("Next: python -m pillbot.tools.setup_local check")
+
+
+def cmd_find_camera(args):
+    ip = find_camera()
+    if not ip:
+        print("No camera found. Same Wi-Fi as the camera? Is it powered (LED / serial monitor)?")
+        return 1
+    print(f"Camera: http://{ip}:81/stream\nSave it:  python -m pillbot.tools.setup_local init --camera-ip {ip}")
+    return 0
 
 
 # ------------------------------------------------------------------ check
@@ -292,6 +365,8 @@ def main(argv=None):
     p.add_argument("--dry-run", action="store_true", help="print the file instead of writing it")
     p.add_argument("--fresh", action="store_true",
                    help="start the local file from scratch (old one backed up) instead of updating it")
+    p.add_argument("--no-scan", action="store_true", help="don't scan the network for the camera")
+    sub.add_parser("find-camera", help="scan this computer's network for the ESP32-CAM and print its IP")
     sub.add_parser("check", help="installed / connected / calibrated / taught")
     p = sub.add_parser("export", help="pack local-only files + LeRobot calibration")
     p.add_argument("--out")
@@ -300,7 +375,7 @@ def main(argv=None):
     p.add_argument("bundle")
     p.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
-    return {"init": cmd_init, "check": cmd_check, "export": cmd_export, "import": cmd_import}[args.cmd](args) or 0
+    return {"init": cmd_init, "check": cmd_check, "find-camera": cmd_find_camera, "export": cmd_export, "import": cmd_import}[args.cmd](args) or 0
 
 
 if __name__ == "__main__":

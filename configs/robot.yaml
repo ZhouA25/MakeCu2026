@@ -13,7 +13,14 @@ follower:
   joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper]
   # 11 = shoulder rotation about z, 12 = horizontal shoulder rotation, 13 = elbow, 15 = wrist, 10 = top gripper
   motor_ids: {shoulder_pan: 11, shoulder_lift: 12, elbow_flex: 13, wrist_roll: 15, gripper: 10}
-  gripper_goal_current: 1000    # mA (XL330 max 1750). Higher = stronger grip on the cap, more heat
+  baudrate: 57600               # our servos run at the Dynamixel factory 57600 (LeRobot default: 1000000)
+  gripper_goal_current: 1600    # mA (XL330 max 1750). Higher = stronger grip on the cap, more heat
+  current_limit: 1750           # mA, every joint (XL330 max). Lower it if servos run hot
+  pid_gains:                    # [P, I, D] position gains; XL330 default ~[400, 0, 0]. Raise P for stiffer,
+    shoulder_lift: [1600, 150, 600]   # I makes it keep pushing to the goal against gravity. If a joint
+    elbow_flex:    [1600, 150, 600]   # buzzes or oscillates: lower P / D, or set I to 0.
+    shoulder_pan:  [1200, 50, 400]
+    wrist_roll:    [1000, 0, 300]
   use_degrees: true             # arm joints in degrees (scripted code assumes this)
 leader:
   type: pillbot_koch_leader

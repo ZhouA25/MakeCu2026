@@ -29,13 +29,14 @@ class SharedCamera:
 
     @classmethod
     def get(cls, cfg: dict, name: str | None = None) -> "SharedCamera":
-        """Shared reader for a camera from robot.yaml (default: perception_camera)."""
-        from pillbot.perception.cameras import open_camera
-        name = name or cfg.get("perception_camera", "wrist")
+        """Shared reader for a camera: a robot.yaml name, a webcam number or a URL
+        (default: $PILLBOT_CAMERA, else perception_camera; see cameras.resolve_camera)."""
+        from pillbot.perception.cameras import open_camera, resolve_camera
+        name, cam_cfg = resolve_camera(cfg, name)
         with cls._lock:
             cam = cls._instances.get(name)
             if cam is None or not cam._thread.is_alive():
-                cam = cls(lambda: open_camera(cfg["cameras"][name]), name)
+                cam = cls(lambda: open_camera(cam_cfg), name)
                 cls._instances[name] = cam
             return cam
 

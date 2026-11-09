@@ -3,7 +3,8 @@
 Keeps a full joint *target* and always sends all joints, so commanding the arm never
 loosens a grip (the gripper target stays where we squeezed it, even if the servo stalled).
 
-Joint keys: shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll, gripper
+Joint keys come from configs/robot.yaml `follower.joints`. Our arm (danslovich 5DOF, no wrist pitch):
+shoulder_pan, shoulder_lift, elbow_flex, wrist_roll, gripper
 Arm joints are in degrees; gripper is 0 (closed) .. 100 (open).
 
 PWM joints (configs/robot.yaml `pwm_joints:`): a joint driven by a hobby servo on the ESP32 hub
@@ -16,7 +17,7 @@ import time
 
 log = logging.getLogger(__name__)
 
-JOINTS = ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper"]
+JOINTS = ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_roll", "gripper"]   # 5 motors, no wrist_flex
 ARM_JOINTS = JOINTS[:-1]
 
 

@@ -38,7 +38,7 @@ HINTS = {
     "cap_above": "jaws open, ~3 cm above the cap of a clipped bottle",
     "cap_grip": "jaws around the cap",
     "cap_press": "same as cap_grip but pushed a few mm DOWN (this sets the push force)",
-    "cap_drop": "above the cap tray",
+    "cap_drop": "above the cap tray (optional: no tray = skip it, the arm holds the cap up for you)",
 }
 
 

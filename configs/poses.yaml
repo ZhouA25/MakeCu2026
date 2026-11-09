@@ -1,25 +1,86 @@
-# Joint-space poses (degrees), taught by hand with:  python -m pillbot.control.teach --all
-# Gripper is NOT stored in poses; it's commanded separately.
-#
-# Start zone: a marked ~20x20 cm square on the table. Teach hover + grasp at its 4 corners;
-# bottle positions inside the zone are bilinearly interpolated between them (no IK needed).
-#   zone_*_00 = corner 1 (s=0,t=0)   zone_*_10 = corner 2 (s=1,t=0)
-#   zone_*_11 = corner 3 (s=1,t=1)   zone_*_01 = corner 4 (s=0,t=1)
 poses:
-  home:          {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  rest:          {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # parked while idle: low, forearm upright over the shoulder (little gravity load). Untaught = home
-  scan:          {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # wrist cam looking down at the zone
-  zone_hover_00: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  zone_hover_10: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  zone_hover_11: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  zone_hover_01: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  zone_grasp_00: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  zone_grasp_10: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  zone_grasp_11: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  zone_grasp_01: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
-  clip_above:    {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # holding bottle, above the clip (lift mode; also where the arm backs off to after letting go)
-  clip_insert:   {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # bottle standing in the clip between the OPEN clamp jaws, base on the table
-  cap_above:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws open, above cap
-  cap_grip:      {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # jaws around cap
-  cap_press:     {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # ~6 mm BELOW cap_grip (makes the push force; the sim found 4 mm is borderline)
-  cap_drop:      {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}  # over the cap tray
+  home:
+    shoulder_pan: -3.6
+    shoulder_lift: 23.3
+    elbow_flex: 1.9
+    wrist_roll: -33.3
+  rest:
+    shoulder_pan: 0
+    shoulder_lift: 0
+    elbow_flex: 0
+    wrist_roll: 0
+  scan:
+    shoulder_pan: -3.6
+    shoulder_lift: -226.5
+    elbow_flex: 20.5
+    wrist_roll: -32.9
+  zone_hover_00:
+    shoulder_pan: -3.6
+    shoulder_lift: -246.4
+    elbow_flex: 22.4
+    wrist_roll: -41.2
+  zone_hover_10:
+    shoulder_pan: -3.6
+    shoulder_lift: -264.2
+    elbow_flex: 24.3
+    wrist_roll: -41.2
+  zone_hover_11:
+    shoulder_pan: -3.6
+    shoulder_lift: -264.1
+    elbow_flex: 24.3
+    wrist_roll: -41.2
+  zone_hover_01:
+    shoulder_pan: -3.6
+    shoulder_lift: -264.1
+    elbow_flex: 24.3
+    wrist_roll: -41.2
+  zone_grasp_00:
+    shoulder_pan: -3.6
+    shoulder_lift: -270.3
+    elbow_flex: 29.1
+    wrist_roll: -46.3
+  zone_grasp_10:
+    shoulder_pan: -3.6
+    shoulder_lift: -272.7
+    elbow_flex: 29.4
+    wrist_roll: -43.9
+  zone_grasp_11:
+    shoulder_pan: -3.6
+    shoulder_lift: -272.7
+    elbow_flex: 29.4
+    wrist_roll: -43.9
+  zone_grasp_01:
+    shoulder_pan: -3.6
+    shoulder_lift: -272.7
+    elbow_flex: 29.4
+    wrist_roll: -43.9
+  clip_above:
+    shoulder_pan: -3.6
+    shoulder_lift: -272.7
+    elbow_flex: 28.9
+    wrist_roll: -45.8
+  clip_insert:
+    shoulder_pan: -3.6
+    shoulder_lift: -272.7
+    elbow_flex: 29.0
+    wrist_roll: -45.8
+  cap_above:
+    shoulder_pan: -3.6
+    shoulder_lift: -247.8
+    elbow_flex: 27.6
+    wrist_roll: -39.4
+  cap_grip:
+    shoulder_pan: -3.6
+    shoulder_lift: -280.0
+    elbow_flex: 29.3
+    wrist_roll: -32.5
+  cap_press:
+    shoulder_pan: -3.5
+    shoulder_lift: -283.2
+    elbow_flex: 26.8
+    wrist_roll: -25.5
+  cap_drop:
+    shoulder_pan: -3.5
+    shoulder_lift: -283.3
+    elbow_flex: 26.6
+    wrist_roll: -25.4

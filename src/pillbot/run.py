@@ -22,7 +22,7 @@ from pillbot.control.idle import go_idle, wake
 from pillbot.control.open_sequence import OpenFailed, open_cap, open_with_retry
 from pillbot.control.pick_place import clamp_and_check, pick_bottle, place_in_clip
 from pillbot.control.policy_runner import run_policy_phase
-from pillbot.control.poses import load_poses, untaught
+from pillbot.control.poses import OPEN_ONLY, load_poses, untaught
 from pillbot.control.robot_io import Aborted, RobotIO
 from pillbot.perception.scan import camera_on_arm
 from pillbot.control.triggers import wait_for_trigger
@@ -178,7 +178,7 @@ def main():
         poses = check_poses = load_poses(bottle=bottle["name"])
         if (warn := check_fits(bottle, cfg["gripper"])):
             sys.exit(warn)
-    if not args.dry_run and (missing := untaught(check_poses)):
+    if not args.dry_run and (missing := untaught(check_poses, OPEN_ONLY if args.pick == "skip" else None)):
         sys.exit(f"Untaught poses: {missing}\nRun: python -m pillbot.control.teach --missing")
 
     hub = make_hub(cfg, dry_run=args.dry_run)

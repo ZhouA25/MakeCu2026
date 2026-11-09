@@ -168,6 +168,18 @@ python -m pillbot.tools.fake_sensx              # virtual sensor for testing wit
 
 ## 3. Run it
 
+**Just the taught poses** (no camera, hub or tray) — check each pose, or play a sequence for a demo:
+```bash
+python -m pillbot.tools.goto --list                     # what's taught
+python -m pillbot.tools.goto cap_grip                   # go to one pose and hold
+python -m pillbot.tools.goto --step --slow home cap_above cap_grip close cap_press twist-90 open cap_above home
+```
+Steps are pose names or `open` / `close` / `grip=40` / `twist-90` / `wait=1`. `--step` waits for Enter
+before each move. `cap_drop` and `rest` are optional: with no cap tray the arm lifts the cap and holds
+it until you take it, and `run --pick skip` only needs `home`, `cap_above`, `cap_grip`, `cap_press`.
+
+**Full runs:**
+
 ```bash
 python -m pillbot.run                          # wait for Enter → find bottle → pick → place → open
 python -m pillbot.run --trigger button         # start with the START button
@@ -187,6 +199,18 @@ Suggested bring-up order: `--pick skip` (tune the clamp, grip, push and twist on
 `--zone-st 0.5,0.5` (tune pick/place) → full run with vision → `--trigger zone` for the demo.
 
 ---
+
+### Choosing the camera
+Every vision tool takes `--camera`: a name from `robot.yaml` (`wrist` / `esp32` = the ESP32-CAM), a
+number for a webcam or USB camera (`0` is usually the laptop's), or a stream URL.
+```bash
+python -m pillbot.perception.cameras              # list what you can pick (probes local webcams)
+python -m pillbot.perception.cameras --show 0     # preview one
+python -m pillbot.tools.live_view --camera 0      # dashboard with the laptop webcam
+python -m pillbot.perception.detect_bottle --camera esp32
+```
+For every tool at once (including `run`): set `PILLBOT_CAMERA=0` in the terminal
+(PowerShell: `$env:PILLBOT_CAMERA="0"`), or `perception_camera: 0` in `configs/robot.local.yaml`.
 
 ### Live viewer (watch from any browser)
 The ESP32-CAM serves only one stream client, so the machine running PillBot (e.g. the Pi) keeps that

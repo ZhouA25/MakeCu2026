@@ -1,0 +1,68 @@
+# Written by `python -m pillbot.tools.setup_local init` — only this computer's settings.
+# Everything else comes from configs/robot.yaml. Re-run init after moving computers.
+follower:
+  type: pillbot_koch_follower
+  port: COM3
+  id: pillbot_follower
+  preset: all_m288
+  joints:
+  - shoulder_pan
+  - shoulder_lift
+  - elbow_flex
+  - wrist_roll
+  - gripper
+  gripper_goal_current: 1000
+  use_degrees: true
+leader:
+  type: pillbot_koch_leader
+  port: /dev/tty.usbmodemYYYY
+  id: pillbot_leader
+  preset: m288
+  use_degrees: true
+cameras:
+  wrist:
+    type: pillbot_ipcam
+    url: http://pillbot-cam.local:81/stream
+    width: 320
+    height: 240
+    fps: 15
+  phone: null
+  laptop: null
+perception_camera: wrist
+hub:
+  enabled: false
+  port: /dev/cu.usbserial-0001
+  baud: 115200
+tactile:
+  backend: sensx
+  port: COM4
+  port2: /dev/tty.usbserialSENSX2
+  baud: 921600
+  shape:
+  - 5
+  - 5
+  contact_threshold: 300
+  slip_ratio: 0.3
+gripper:
+  open: 60
+  closed: 0
+  step: 2.0
+  squeeze: 4.0
+  stall_margin: 6.0
+open:
+  twist_per_grip_deg: 90
+  loosen_sign: -1
+  max_slips: 3
+fixture:
+  clamp_channel: 0
+  clamp_open_us: 1100
+  clamp_closed_us: 1700
+  clamp_settle_s: 0.6
+  clip_seated_mm: 60
+trigger:
+  default: enter
+  zone_present_mm: 120
+  hold_s: 0.3
+safety:
+  max_joint_step_deg: 2.0
+  control_hz: 30

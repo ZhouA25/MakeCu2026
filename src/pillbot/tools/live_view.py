@@ -231,13 +231,30 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default="configs/robot.yaml")
     ap.add_argument("--port", type=int, default=8080)
-    ap.add_argument("--camera", help="camera name from robot.yaml (default: perception_camera)")
+    ap.add_argument("--camera", help="robot.yaml name, esp32, a webcam number (0) or a stream URL (default: perception_camera)")
+    ap.add_argument("--no-tactile", action="store_true", help="don't open the SensX pad (e.g. a run already has it)")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
     from pillbot.perception.shared_camera import SharedCamera
     from pillbot.utils.config import load_yaml
     cfg = load_yaml(args.config)
-    view = LiveView(cfg, SharedCamera.get(cfg, args.camera), port=args.port).start()
+    view = LiveView(cfg, SharedCamera.get(cfg, args.camera), port=args.port)
+    tactile = None
+    if not args.no_tactile:                          # standalone: open the pad ourselves (run --view passes its own)
+        from pillbot.sensors.tactile import make_tactile
+        try:
+            tactile = make_tactile(cfg)
+            if getattr(tactile, "available", False):
+                tactile.connect()
+                tactile.tare()
+                view.tactile_fn = tactile.read
+                logging.info("tactile: %s on %s", cfg.get("tactile", {}).get("backend"), getattr(tactile, "port", "-"))
+            else:
+                logging.info("tactile: backend '%s' — no pressure grid", cfg.get("tactile", {}).get("backend", "none"))
+        except Exception as e:  # noqa: BLE001 — the video is still worth showing
+            logging.warning("tactile not available (%s) — check tactile.port, or run tactile_live doctor", e)
+            tactile = None
+    view.start()
     host = socket.gethostname()
     print(f"\nOpen  http://{host}.local:{view.port}  (or http://<this machine's IP>:{view.port})   Ctrl-C to stop\n")
     try:
@@ -245,6 +262,9 @@ def main(argv=None):
             time.sleep(1)
     except KeyboardInterrupt:
         view.stop()
+    finally:
+        if tactile is not None:
+            tactile.close()
 
 
 if __name__ == "__main__":

@@ -9,9 +9,10 @@ Run alone:  python -m pillbot.control.open_sequence --bottle standard_amber_40dr
 """
 import argparse
 import logging
+import sys
 
 from pillbot.control.grasp import grip_until_contact, release
-from pillbot.control.poses import load_poses
+from pillbot.control.poses import is_taught, load_poses
 from pillbot.control.robot_io import RobotIO
 from pillbot.sensors.tactile import make_tactile
 from pillbot.utils.config import get_bottle, load_yaml
@@ -128,7 +129,12 @@ def open_cap(io, tactile, bottle: dict, poses: dict, gcfg: dict, monitor=None, o
     if not lifted:
         release(io, gcfg)
         raise OpenFailed(f"cap still on after {turned:.0f} deg of twisting — raise twist_deg or grip harder")
-    io.move_to(poses["cap_drop"])
+    if is_taught(poses.get("cap_drop")):
+        io.move_to(poses["cap_drop"])
+    else:                                            # no cap tray: hold the cap up for someone to take
+        log.info("open: cap off — no cap_drop pose (no tray), holding it above the bottle")
+        if not io.dry_run and sys.stdin.isatty():
+            input("Take the cap from the gripper, then press Enter...")
     release(io, gcfg)
     return {"cycles": cycles + extra_twists, "slips": slips, "turned_deg": turned, "cap_lifted": lifted,
             "extra_twists": extra_twists}

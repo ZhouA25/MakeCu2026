@@ -79,12 +79,12 @@ def open_sensor(args):
 
 
 def live(tac):
-    t0, best = time.time(), 0.0
+    t0, best = time.perf_counter(), 0.0   # perf_counter: time.time() ticks ~15 ms on Windows
     sys.stdout.write("\033[2J")
     while True:
         s = tac.snapshot()
         best = max(best, s.pressure)
-        rate = f"{tac.frames / (time.time() - t0):5.0f} frames/s" if isinstance(tac, SensXTactile) else ""
+        rate = f"{tac.frames / max(time.perf_counter() - t0, 1e-3):5.0f} frames/s" if isinstance(tac, SensXTactile) else ""
         bar_len = 40
         fill = min(bar_len, int(bar_len * s.pressure / max(tac.contact_threshold * 2, 1)))
         bar = "#" * fill + "-" * (bar_len - fill)
